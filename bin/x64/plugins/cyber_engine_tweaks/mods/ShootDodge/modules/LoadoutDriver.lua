@@ -45,7 +45,7 @@ local function heldCounts(player)
     for _, record in pairs(overrides) do wanted[record] = TweakDBID.new(record) end
   end
   local ok, list = Game.GetTransactionSystem():GetItemList(player)
-  if not ok or list == nil then return counts end
+  if not ok or list == nil then return counts, false end
   for _, data in ipairs(list) do
     local okId, tdbid = pcall(function() return data:GetID().id end)
     if okId and tdbid ~= nil then
@@ -57,7 +57,7 @@ local function heldCounts(player)
       end
     end
   end
-  return counts
+  return counts, true
 end
 
 -- Check the save and grant what's missing. Safe to call any number of times.
@@ -77,8 +77,15 @@ function LoadoutDriver.Check()
   end
   local failed = {}
   for _, entry in ipairs(plan) do
+    local before, canCount = heldCounts(player)
     local okAdd, added = pcall(Game.AddToInventory, entry.record, entry.count)
-    if okAdd and added ~= false and added ~= nil then
+    local success = okAdd and added ~= false
+    if success and canCount then
+      -- CET's helper may return nothing, so judge by what V actually holds now.
+      local after, okAfter = heldCounts(player)
+      if okAfter and (after[entry.record] or 0) <= (before[entry.record] or 0) then success = false end
+    end
+    if success then
       print(string.format("[ShootDodge] loadout: +%d %s (%s)", entry.count, entry.record,
         entry.label))
     else
