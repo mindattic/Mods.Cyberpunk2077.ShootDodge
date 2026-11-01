@@ -47,6 +47,9 @@ local function isGrounded(player)
   return grounded
 end
 
+-- Shared with the dive (C2SD-T7) so lift-off and landing use the same ground check as the combo.
+Input.IsGrounded = isGrounded
+
 local function isInVehicle(player)
   local ok, vehicle = pcall(function() return Game.GetMountedVehicle(player) end)
   return ok and vehicle ~= nil

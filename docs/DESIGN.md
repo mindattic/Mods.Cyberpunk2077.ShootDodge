@@ -20,9 +20,15 @@ writes this one state rather than inventing its own flags. Shown in the debug ov
 times.
 
 ### Dive trigger (C2SD-T7)
-`NONE -> DIVING`: an impulse sends V airborne, horizontally, toward the aim direction. The first
-pass reuses an existing jump/dodge animation rather than a bespoke dive pose — see "Open question"
-below.
+`NONE -> DIVING`: an impulse sends V airborne, horizontally, in the **held movement direction
+relative to the camera** (forward, back, left, right or a diagonal) — not the aim direction. The
+direction is captured at launch and locked for the whole dive: mid-air movement input can't steer
+it (`modules/Dive.lua` computes the direction and the corrective push that cancels any sideways or
+backward drift), while the camera and aim stay free and first person throughout. The leap rides
+the stock jump the same button press starts, plus the game's own `PSMImpulse` locomotion impulse
+(`modules/DiveDriver.lua`), rather than a bespoke dive pose — see "Open question" below. The state
+guard only allows `dive` from `NONE`, so a combo mid-air does nothing. Until the landing branch
+(C2SD-T10) exists, touching down again ends the dive back to `NONE`.
 
 ### Bullet-time (C2SD-T8) and responsive aim/fire (C2SD-T9)
 On entering `DIVING`, world time dilation drops (default 0.2x) via the game's time system, the

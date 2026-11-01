@@ -1,9 +1,10 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
--- Skeleton only -- no mechanics are implemented yet. See docs/DESIGN.md in the repo root for the
--- planned states and build order (follow the ticket log's requires chain, docs/USER_STORIES.md).
+-- Implemented so far: combo detection, the state machine and the dive trigger (C2SD-T5..T7). See
+-- docs/DESIGN.md in the repo root for the planned states and build order (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
 local StateMachine = require("modules/StateMachine")
+local DiveDriver = require("modules/DiveDriver")
 
 local ShootDodge = {
   enabled = false,
@@ -21,19 +22,27 @@ registerForEvent("onInit", function()
   -- A new combo can't start while a Shootdodge is already in progress.
   Input.isBlocked = function() return ShootDodge.machine:IsActive() end
 
-  -- C2SD-T5: detect the Shootdodge combo (aim held + jump + move). Detection only: a trigger is
-  -- recorded and shown in the overlay, but nothing is wired to a state transition yet (C2SD-T6).
+  -- C2SD-T5: detect the Shootdodge combo (aim held + jump + move).
+  -- C2SD-T7: a detected combo launches the dive (NONE -> DIVING) in the held movement direction.
+  DiveDriver.isGrounded = Input.IsGrounded
   ShootDodge.combo = Input.Install()
   ShootDodge.combo:SetEnabled(ShootDodge.enabled)
   ShootDodge.combo:AddListener(function(trigger)
     print(string.format("[ShootDodge] combo detected at %.2fs (move %.2f, %.2f)",
       trigger.time, trigger.moveX, trigger.moveY))
+    local ok, err = pcall(DiveDriver.Start, ShootDodge.machine, trigger)
+    if not ok then
+      print("[ShootDodge] dive start error: " .. tostring(err))
+      DiveDriver.Cancel()
+      ShootDodge.machine:Reset("dive start error")
+    end
   end)
-  print("[ShootDodge] loaded (skeleton, no mechanics active)")
+  print("[ShootDodge] loaded (dive trigger active; bullet-time and landing not yet)")
 end)
 
 registerForEvent("onShutdown", function()
   Input.Reset()
+  DiveDriver.Cancel()
   ShootDodge.machine:Reset("shutdown")
 end)
 
@@ -43,15 +52,17 @@ registerForEvent("onUpdate", function(deltaTime)
   local ok, err = pcall(function()
     machine:Update(deltaTime)
     if not ShootDodge.enabled then
+      DiveDriver.Cancel()
       if machine:IsActive() then machine:Reset("mod disabled") end
       return
     end
-    -- TODO: dive / bullet-time / landing branch drive the machine here (C2SD-T7 onward), in the
-    -- order laid out in docs/DESIGN.md and the ticket log. Until then nothing fires a transition,
-    -- so the state stays NONE.
+    -- C2SD-T7: the dive drives DIVING (direction lock, lift-off/landing check). Bullet-time and
+    -- the landing branch hook in here next (C2SD-T8 onward), per docs/DESIGN.md.
+    DiveDriver.Update(machine, deltaTime)
   end)
   if not ok then
     print("[ShootDodge] update error: " .. tostring(err))
+    DiveDriver.Cancel()
     machine:Reset("update error")
   end
 end)
@@ -86,7 +97,17 @@ registerForEvent("onDraw", function()
       ImGui.Text(string.format("Last jump not a combo: %s", combo.lastReject.reason))
     end
   end
-  ImGui.TextWrapped("No mechanics implemented yet -- scaffold only.")
+  local dive = DiveDriver.dive
+  if dive.active then
+    ImGui.Text(string.format("Dive: locked dir %.2f, %.2f | air %.2fs", dive.dirX, dive.dirY,
+      dive.airTime))
+  elseif DiveDriver.lastEnd then
+    ImGui.Text(string.format("Last dive ended: %s", DiveDriver.lastEnd.reason))
+  end
+  if DiveDriver.lastError then
+    ImGui.Text(string.format("Dive problem: %s", DiveDriver.lastError))
+  end
+  ImGui.TextWrapped("Dive trigger only -- bullet-time and landing not implemented yet.")
 
   ImGui.End()
 end)

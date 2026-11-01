@@ -16,7 +16,7 @@ order — each ticket's `requires` link names what must land first).
 
 - **Loadout** — twin pistols and a trench coat are granted to V's inventory on mod load.
 - **Shootdodge trigger** — aim held + jump + a movement direction launches V into a horizontal
-  dive toward the aim direction, restricted to pistols/revolvers/small SMGs.
+  dive in the held movement direction (locked for the whole dive; aim stays free), restricted to pistols/revolvers/small SMGs.
 - **Bullet-time** — world time slows dramatically for the dive, while V's own aim turn-speed and
   weapon fire-rate stay at normal speed.
 - **Landing branch** — holding movement on landing scrambles V back to their feet; releasing it
