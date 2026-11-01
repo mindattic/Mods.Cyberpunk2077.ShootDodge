@@ -123,7 +123,7 @@ registerForEvent("onDraw", function()
   end
 
   local changed
-  changed, ShootDodge.enabled = ImGui.Checkbox("Enabled", ShootDodge.enabled)
+  ShootDodge.enabled, changed = ImGui.Checkbox("Enabled", ShootDodge.enabled)
   if changed and ShootDodge.combo then ShootDodge.combo:SetEnabled(ShootDodge.enabled) end
 
   local machine = ShootDodge.machine
@@ -160,7 +160,7 @@ registerForEvent("onDraw", function()
   -- C2SD-T8: bullet-time controls and live status.
   local bt = BulletTimeDriver.rules
   local btChanged
-  btChanged, bt.config.enabled = ImGui.Checkbox("Bullet-time", bt.config.enabled)
+  bt.config.enabled, btChanged = ImGui.Checkbox("Bullet-time", bt.config.enabled)
   local factor
   factor, btChanged = ImGui.SliderFloat("Time scale", bt.config.factor, bt.config.minFactor,
     bt.config.maxFactor, "%.2f")
