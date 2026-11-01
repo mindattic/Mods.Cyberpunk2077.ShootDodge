@@ -26,8 +26,13 @@ not published. Design notes and the Max Payne 2 research live in [`docs/DESIGN.m
 - [Phone Extension](https://www.nexusmods.com/cyberpunk2077/mods/24949) (by r457 and gh057),
   **optional**: needed only for Max Payne's text. It is the framework that lets that contact text V
   in the phone's Messages app, and itself four redscript files that need nothing but redscript.
+- [Input Loader](https://www.nexusmods.com/cyberpunk2077/mods/4575) (by jackhumbert, needs
+  [RED4ext](https://www.nexusmods.com/cyberpunk2077/mods/2380)), **optional**: gives Bullet Time mode
+  its default key, Numpad Enter (`r6/input/ShootDodge.xml`). Without it, bind the key in CET's
+  Bindings tab instead.
 
-That is all. The code uses no TweakXL records, ArchiveXL, Codeware or RED4ext: the loadout gives
+That is all. The code uses no TweakXL records, ArchiveXL, Codeware or RED4ext of its own (only the
+optional Input Loader runs on RED4ext): the loadout gives
 vanilla items by their existing TweakDB IDs. The `.reds` file is guarded with
 redscript conditional compilation (`@if(ModuleExists(...))`), so without Phone Extension it compiles
 to nothing and no redscript mod is affected. Install order does not matter; without Phone Extension
@@ -37,7 +42,8 @@ only Max Payne's text is missing.
 
 ### With Vortex
 
-1. Install Cyber Engine Tweaks and redscript, plus Phone Extension if you want Max Payne's text (Vortex lists them as requirements on
+1. Install Cyber Engine Tweaks and redscript, plus Phone Extension if you want Max Payne's text and
+   Input Loader if you want Numpad Enter as the Bullet Time key out of the box (Vortex lists them as requirements on
    the Nexus page).
 2. Download `ShootDodge-<version>.zip` with **Mod Manager Download**, or drag the zip into Vortex's
    Mods page (**Install From File**). Enable and deploy it.
@@ -147,12 +153,16 @@ The hourglass follows *Max Payne 2*:
   64 px tall) at all times in game, with or without the CET overlay open. It is hidden in menus and
   while the game is paused. Switch it off with the overlay's **Hourglass HUD** tick.
 
-**Binding the Bullet Time hotkey.** It is unbound by default. Open the CET overlay, go to the
-**Bindings** tab, find **ShootDodge** and bind **Bullet-time mode (Max Payne 2, toggle)** to a key.
-CET gives mods no way to ship a default key, so this one is yours to set. **Recommended: Numpad Enter**
-(the intended default; keyboards without a numpad should bind another free key, for example
-Mouse 4). **Do not bind it to V**: V is the vehicle summon in the base game. See
-[`docs/DESIGN.md`](docs/DESIGN.md) for how the key was chosen.
+**The Bullet Time hotkey.** **Numpad Enter is the default** when
+[Input Loader](https://www.nexusmods.com/cyberpunk2077/mods/4575) is installed: the mod adds a game
+input action (`r6/input/ShootDodge.xml`) on that key, on foot only. The game has one key code for
+both Enter keys, so the main Enter key toggles it too, and so does Enter used to pick a dialogue
+choice while on foot. Without Input Loader, or to use another key, open the CET overlay, go to the
+**Bindings** tab, find **ShootDodge** and bind **Bullet-time mode (Max Payne 2, toggle)** (CET gives
+mods no way to ship a default key, so that binding starts empty; keyboards without a numpad can use
+Mouse 4). Binding Numpad Enter there as well is harmless: one press toggles once. **Do not bind it
+to V**: V is the vehicle summon in the base game. See [`docs/DESIGN.md`](docs/DESIGN.md) for how the
+key was chosen.
 Pressing it starts the mode, pressing it again stops it. The overlay's **Start/Stop bullet-time
 mode** button does the same. Like the dive's slow-mo, the mode refuses to start when the
 **Bullet-time** tick is off or the **Time scale** slider is at 1.00, since there would be no slow-mo
@@ -297,5 +307,7 @@ matters), with a Results table.
   CET glue next to each (`*Driver.lua`, `Input.lua`). `IntroMessage` holds Max Payne's text thread.
 - `r6/scripts/ShootDodge/ShootDodgePhone.reds`: the "Max Payne" phone contact (redscript, through
   Phone Extension), filled and triggered by `IntroMessageDriver.lua`.
+- `r6/input/ShootDodge.xml` + `r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds`: Bullet Time
+  mode's default key (Numpad Enter, through Input Loader), read by `BulletTimeKeyDriver.lua`.
 - `tools/package.ps1`: builds the Vortex-ready release zip into `dist/`.
 - `docs/`: design notes, Nexus page, testing checklist and the ticket log.

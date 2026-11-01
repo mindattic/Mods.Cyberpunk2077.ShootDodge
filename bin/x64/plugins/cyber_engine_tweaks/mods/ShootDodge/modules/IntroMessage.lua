@@ -113,10 +113,9 @@ IntroMessage.messages = {
     .. "nothing happens, you jump like a civilian and eat the floor like one too. It starts off "
     .. "every session, a bad habit of this town. And the debug window only shows while the "
     .. "overlay is open. Close the glass and it's gone. The mod keeps working in the dark.",
-  "Bullet Time has its own switch. Open the Bindings tab in that same overlay and find "
-    .. "ShootDodge. It ships unbound, because CET won't let a mod pick your keys. I'd give it "
-    .. "Numpad Enter. No numpad, or want another key? Click the binding, press the key you "
-    .. "want, done. Never V. V "
+  "Bullet Time has its own switch, and Numpad Enter is the default. It needs Input Loader "
+    .. "installed. Without it, or for another key, open the Bindings tab in that same overlay, "
+    .. "find ShootDodge, click the binding, press the key you want, done. Never V. V "
     .. "already summons your ride and the city has enough cars trying to kill you.",
   "Aim. Hold a direction. Jump. Throw the rules out the window, odds are you'll go that way too. "
     .. "You leave the ground sideways, like a bad decision with a head start. Gravity swears it "
@@ -131,7 +130,7 @@ IntroMessage.messages = {
   "Get up fast. The genius of the hole: no matter how long you spend climbing out, you can "
     .. "still fall back down in an instant.",
   "I don't know about angels, but it's fear that gives men wings. Mine come with an hourglass. "
-    .. "Bullet Time, once you bind it (Numpad Enter, say), is the answer. Press it and the city crawls while the "
+    .. "Bullet Time, Numpad Enter, is the answer. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
   "And in Bullet Time you don't need the whole ritual. Space alone sends you flying. No aim, "

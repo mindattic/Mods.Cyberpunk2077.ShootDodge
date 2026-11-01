@@ -515,7 +515,8 @@ V (where the user first bound it) is the base game's vehicle summon, so it is wr
   CET's `bindings.json` is not available either, and Lua has no raw key poll outside the overlay.
   Reading the key through the game would need a new input action in `r6/input` XML plus an input
   loader dependency, which is out of scope here. So the binding stays user-set; docs and Max's text
-  recommend Numpad Enter and say it can be rebound in the Bindings tab.
+  recommend Numpad Enter and say it can be rebound in the Bindings tab. (Superseded by C2SD-T37
+  below: the game-input route now gives Numpad Enter as the default when Input Loader is installed.)
 - **Is Numpad Enter unused? Not verified.** No Cyberpunk 2077 install exists on this machine
   (checked D:\Games), so `r6/config/inputUserMappings.xml` and `inputContexts.xml` could not be
   read. The published control lists below do not show Numpad Enter assigned, but menus accept
@@ -526,3 +527,84 @@ V (where the user first bound it) is the base game's vehicle summon, so it is wr
   https://www.magicgameworld.com/?p=125476 (PC keyboard controls) ,
   https://www.gosunoob.com/cyberpunk-2077/rebind-controls-change-keybinds/ ,
   https://steamcommunity.com/app/1091500/discussions/0/5876659925420076318
+
+## Bullet Time default key through Input Loader (C2SD-T37)
+
+CET can't give a binding a default key (above), so the default comes from the game's own input
+system: a new input action, added by the Input Loader mod, read by a small redscript listener.
+
+**How Input Loader works.** A RED4ext plugin (Nexus mod 4575, jackhumbert). At startup it reads every
+`r6/input/*.xml`, merges each `<bindings>` child into the game's `r6/config` input files (`mapping`,
+`buttonGroup`, `pairedAxes`, `preset` into `inputUserMappings.xml`; `context`, `blend`, `hold`,
+`multitap`, `repeat`, `toggle`, `acceptedEvents` into `inputContexts.xml`), writes the result to
+`r6/cache/` and points the game at it through `engine/config/platform/pc/input_loader.ini`.
+`append="true"` on a node adds to the existing definition instead of replacing it. Log:
+`red4ext/logs/input_loader.log`. The vanilla `r6/config` input files must be unmodified.
+
+**The file**, `r6/input/ShootDodge.xml`: a context `ShootDodgeActions` with the action
+`ShootDodgeBulletTime` mapped to `ShootDodgeBulletTime_Button`; the vanilla `Locomotion` context gets
+`<include name="ShootDodgeActions" />` with `append="true"`; the mapping is `type="Button"` with
+`<button id="IK_Enter" />`. `Locomotion` is included by `Exploration` (the main on-foot context) and so
+by `Aiming`, and not by the vehicle or menu contexts, so the key works on foot only.
+
+**The key name: `IK_Enter`. There is no `IK_NumEnter`.** The game's `EInputKey` enum (RED4ext.SDK
+`EInputKey.hpp`, 334 keys) follows Windows virtual-key codes: `IK_Enter = 13`, `IK_NumPad0..9 = 96..105`,
+`IK_NumStar`, `IK_NumPlus`, `IK_Separator = 108`, `IK_NumMinus`, `IK_NumPeriod`, `IK_NumSlash`, and no
+numpad Enter entry, because Windows reports both Enter keys as `VK_RETURN` (13). Community posts on
+editing `inputUserMappings.xml` say the same (`IK_Enter` is both Enter and Numpad Enter). So the default is
+Numpad Enter **and** main Enter; the input XML cannot tell them apart. (`IK_Separator` is the
+separator key of some non-US keypads, not Numpad Enter.)
+
+**Enter's other uses on foot.** The vanilla `inputContexts.xml` maps `DialogConfirm` (Enter) to
+`ChoiceApply` and `Apply_Button` to `UI_Apply` in `InteractionActions`, which `Exploration` includes
+through `UIExploration`. The game delivers an action to every listener for it, so picking a dialogue
+choice with Enter on foot can also toggle Bullet Time. This is accepted and documented (TESTING.md
+I3d); F and the mouse pick choices too. Menus, the phone, chat (`EnterChat`) and photo mode use other
+contexts and are unaffected.
+
+**The listener.** Whether CET's `Observe("PlayerPuppet", "OnAction")` (used by `Input.lua`) also
+sees a mod-added action is not documented anywhere found; a listener registered by action name is the
+documented pattern, so `r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds` registers its own listener
+for the action name: a `ScriptableSystem` (`ShootDodgeBulletTimeKeySystem`) wraps
+`PlayerPuppet.OnGameAttached` and calls `player.RegisterInputListener(listener, n"ShootDodgeBulletTime")`
+(the pattern from jackhumbert's Mod Settings readme); the listener's `cb func OnAction` counts
+`ListenerAction.IsButtonJustPressed` presses. `modules/BulletTimeKeyDriver.lua` takes the count each
+frame through `Game.GetScriptableSystemsContainer():Get(...)` (the same bridge as the phone text) and
+toggles through `MeterDriver.ToggleMode`. The file needs nothing but redscript; it is not guarded,
+since it uses only vanilla classes.
+
+**Fallback and debounce.** The CET binding stays (rebinding, and the only route without Input Loader
+or redscript: the action then never fires and the system reports 0 presses). Both routes go through
+`modules/BulletTimeKey.lua`: a press from the other route within 0.25 s of the last accepted one is
+the same physical press and is dropped; presses from one route are never dropped. So a player who
+also binds Numpad Enter in CET still toggles once per press.
+
+**Requirement.** Input Loader is optional (README, NEXUS_PAGE): without it everything works, Bullet
+Time just has no default key. It needs RED4ext; ShootDodge itself still has no RED4ext code.
+
+**Vortex.** The Nexus-Mods/game-cyberpunk2077 extension (commit `0ddc3e8`) treats `r6/input/*.xml` as
+the `ConfigXmlLayout.Mergeable` layout (`src/installers.layouts.ts`), which `installer.config.xml.ts`
+allows in MultiType without a prompt (only the `Protected` `r6/config` files prompt). So the zip
+(CET + redscript + mergeable XML) still installs with no prompt. `tools/package.ps1` adds
+`r6/input/*.xml` and checks that `r6/input/ShootDodge.xml` is in the zip.
+
+**Not verified in game** (no Cyberpunk 2077 install here): that the merged action fires on Numpad
+Enter (I3a), once per press with both routes (I3b), the no-Input-Loader fallback (I3c) and the
+dialogue overlap (I3d). The context names come from a vanilla `inputContexts.xml` copy from 2021
+(game 1.x); `Locomotion`/`Exploration` are still the on-foot contexts mods append to, but check
+`input_loader.log` if the key does nothing.
+
+Sources: https://github.com/jackhumbert/cyberpunk2077-input-loader (readme: file locations, node
+routing, `append`, log) ,
+https://www.nexusmods.com/cyberpunk2077/mods/4575 (Input Loader) ,
+https://github.com/jackhumbert/mod_settings (readme: `RegisterInputListener(this, n"...")` +
+`OnAction` with `ListenerAction.GetName`) ,
+https://github.com/ElysiumRL/CustomHackingSystem (readme: listener class registered from a
+`PlayerPuppet.OnGameAttached` wrap) ,
+https://raw.githubusercontent.com/WopsS/RED4ext.SDK/master/include/RED4ext/Scripting/Natives/Generated/EInputKey.hpp
+(key names) ,
+https://github.com/themaoci/Cyberpunk2077/blob/HEAD/inputContexts.xml (vanilla contexts) ,
+https://gist.github.com/gemakie/fbc84e7c17bbd89f37492f4caaa10230 (an `inputUserMappings.xml`:
+`<mapping name=... type="Button"><button id="IK_Enter" />`, Enter's vanilla uses) ,
+https://github.com/Nexus-Mods/game-cyberpunk2077 (`src/installers.layouts.ts`,
+`src/installer.config.xml.ts`, `src/installer.multitype.ts`).

@@ -30,11 +30,19 @@ local ShootDodge = {
   machine = StateMachine.new(),
 }
 
+-- C2SD-T37: Bullet Time mode's key routes. The default, Numpad Enter, is a game input action
+-- (r6/input/ShootDodge.xml through Input Loader, read by BulletTimeKeyDriver.Update); the CET
+-- binding below is the rebind/fallback. Both are debounced so one press toggles once.
+local BulletTimeKeyDriver = require("modules/BulletTimeKeyDriver")
+BulletTimeKeyDriver.toggle = function()
+  return MeterDriver.ToggleMode(ShootDodge.enabled, ShootDodge.machine)
+end
+
 -- C2SD-T15: Max Payne 2's Bullet Time mode, toggled by a CET binding (Bindings tab; unbound by
--- default; CET gives mods no way to ship a default key, docs recommend Numpad Enter, never V). It drains the hourglass; the shootdodge does not. CET only accepts this at load time.
+-- default; CET gives mods no way to ship a default key, never V). It drains the hourglass; the shootdodge does not. CET only accepts this at load time.
 registerInput("ShootDodgeBulletTimeMode", "Bullet-time mode (Max Payne 2, toggle)", function(down)
   if not down then return end
-  local ok, err = pcall(MeterDriver.ToggleMode, ShootDodge.enabled, ShootDodge.machine)
+  local ok, err = pcall(BulletTimeKeyDriver.Press, "cet")
   if not ok then print("[ShootDodge] bullet-time mode error: " .. tostring(err)) end
 end)
 
@@ -140,6 +148,9 @@ end)
 
 registerForEvent("onUpdate", function(deltaTime)
   Input.Update(deltaTime)
+  -- C2SD-T37: Numpad Enter presses from the game input action (Input Loader), debounced.
+  local keyOk, keyErr = pcall(BulletTimeKeyDriver.Update, deltaTime)
+  if not keyOk then BulletTimeKeyDriver.lastError = "update: " .. tostring(keyErr) end
   -- C2SD-T4: grant the loadout once per save (independent of the enabled toggle).
   local loadoutOk, loadoutErr = pcall(LoadoutDriver.Update, deltaTime)
   if not loadoutOk then LoadoutDriver.lastError = "update: " .. tostring(loadoutErr) end
@@ -351,6 +362,12 @@ registerForEvent("onDraw", function()
     MeterDriver.Persist(true)
   end
   MeterDriver.hud.visible = ImGui.Checkbox("Hourglass HUD", MeterDriver.hud.visible)
+  -- C2SD-T37: the Numpad Enter route (Input Loader) and the last key press of either route.
+  ImGui.Text(string.format("Bullet Time key: %s | last: %s", BulletTimeKeyDriver.Status(),
+    BulletTimeKeyDriver.lastResult))
+  if BulletTimeKeyDriver.lastError then
+    ImGui.Text(string.format("Bullet Time key problem: %s", BulletTimeKeyDriver.lastError))
+  end
   if MeterDriver.lastError then
     ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end

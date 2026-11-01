@@ -6,9 +6,10 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
 
 ## Setup
 
-1. Install Cyber Engine Tweaks and redscript (Phone Extension too, for the text cases; it may go in before or after ShootDodge), then ShootDodge: the release zip
+1. Install Cyber Engine Tweaks and redscript (Phone Extension too, for the text cases; it may go in before or after ShootDodge;
+   RED4ext + Input Loader too, for the Numpad Enter default key, cases I3-I3d), then ShootDodge: the release zip
    through Vortex (section N) or extracted into the game folder, or from the repo copy
-   `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` and `r6/scripts/ShootDodge/` into the game's
+   `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/`, `r6/scripts/ShootDodge/` and `r6/input/` into the game's
    matching folders (see the README).
 2. Start the game with Cyber Engine Tweaks installed. Load a save in an area with room to move and a few
    enemies (or a training dummy).
@@ -220,9 +221,34 @@ while paused.
 **I2. HUD toggle.** In the overlay, untick Hourglass HUD.
 Expected: the hourglass hides; tick it and it returns.
 
-**I3. Bind the hotkey.** CET overlay, Bindings, bind "Bullet-time mode (Max Payne 2, toggle)" to **Numpad Enter** (no numpad: another free key).
-Do not use V: it summons the vehicle. Confirm the key does nothing else in the base game.
-Expected: the binding is listed under ShootDodge and can be bound.
+**I3. The hotkey.** With Input Loader installed (and RED4ext), leave the CET binding
+"Bullet-time mode (Max Payne 2, toggle)" **unbound**. The I4/I5 "hotkey" is **Numpad Enter**. Do not
+use V for the CET binding: it summons the vehicle. Confirm Numpad Enter does nothing else on foot.
+Expected: the binding is listed under ShootDodge and can be bound; the overlay line "Bullet Time key"
+says "game key route: listening".
+
+**I3a. Numpad Enter with no binding (C2SD-T37).** Input Loader installed, CET binding unbound, Enabled
+ticked, on foot. Press Numpad Enter.
+Expected: Bullet Time mode starts; press again, it stops. `red4ext/logs/input_loader.log` lists
+`ShootDodge.xml` with no error; the overlay's "Bullet Time key" line counts the presses and says
+"game press ... toggled". Main Enter does the same (the game has one key code for both). In a
+vehicle and in menus, Numpad Enter does not toggle.
+
+**I3b. Once per press (C2SD-T37).** Also bind Numpad Enter in the CET Bindings tab. Press it once,
+then several times at a normal pace.
+Expected: each press toggles exactly once (the overlay shows "... ignored (same press as ...)" for the
+second route); the mode never flips on and straight back off.
+
+**I3c. No Input Loader (C2SD-T37).** Remove Input Loader (or its `r6/input/ShootDodge.xml` effect:
+disable the plugin), start the game, bind the CET binding to Numpad Enter.
+Expected: no error at startup; the overlay says "0 presses (none = Input Loader missing?)" and
+Numpad Enter toggles the mode through the CET binding alone, once per press. Unbind it again: Numpad
+Enter does nothing.
+
+**I3d. Dialogue Enter (C2SD-T37, note only).** On foot with Input Loader, pick a dialogue choice with
+Enter.
+Expected: note whether Bullet Time also toggles (known side effect: Enter is also the dialogue confirm
+key; pick choices with F or the mouse instead).
 
 **I4. Mode on.** Press the hotkey in normal play with Enabled ticked.
 Expected: the world slows to the time scale; aim and fire stay fast; the hourglass sand drains from the
@@ -365,8 +391,8 @@ entries). Use a Vortex profile with Cyber Engine Tweaks, redscript and Phone Ext
 installed, and no copy of ShootDodge in the game folder.
 
 **N1. Zip layout.** Open `dist/ShootDodge-<version>.zip`.
-Expected: only `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua`, its `modules/*.lua`
-and `r6/scripts/ShootDodge/ShootDodgePhone.reds`. No docs, no `polish_restore.txt`, no `db.sqlite3`,
+Expected: only `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua`, its `modules/*.lua`,
+`r6/scripts/ShootDodge/*.reds` (the phone contact and `ShootDodgeBulletTimeKey.reds`) and `r6/input/ShootDodge.xml`. No docs, no `polish_restore.txt`, no `db.sqlite3`,
 no logs.
 
 **N2. Install From File.** In Vortex's Mods page, **Install From File** and pick the zip.
@@ -376,14 +402,14 @@ for this mod.
 
 **N3. Deploy.** Enable the mod and deploy.
 Expected: `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` and
-`<game>/r6/scripts/ShootDodge/ShootDodgePhone.reds` exist (as Vortex links), and nothing landed
+`<game>/r6/scripts/ShootDodge/ShootDodgePhone.reds` and `<game>/r6/input/ShootDodge.xml` exist (as Vortex links), and nothing landed
 anywhere else (no stray `bin` or `ShootDodge` folder at the game root).
 
 **N4. It runs.** Start the game.
 Expected: no redscript compile error at startup, and cases A1 and O1 pass.
 
 **N5. Uninstall.** Disable and remove the mod in Vortex, then deploy.
-Expected: both files are gone from the game folder, and the game starts with no redscript error.
+Expected: the mod's files are gone from the game folder, and the game starts with no redscript error.
 
 ## O. Text from Max Payne (C2SD-T27)
 

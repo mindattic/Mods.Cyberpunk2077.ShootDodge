@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+  ShootDodge (C2SD-T37): Bullet Time mode's default key, Numpad Enter.
+
+  Read by Input Loader (Nexus mod 4575, RED4ext plugin), which merges every r6/input/*.xml into the
+  game's input config at startup. Without Input Loader this file is ignored and the CET binding
+  (Bindings tab, "Bullet-time mode (Max Payne 2, toggle)") is the only route.
+
+  The game's key enum (EInputKey) has no separate Numpad Enter: both Enter keys are IK_Enter
+  (Windows VK_RETURN, 13), so main Enter toggles too. The action lives in the on-foot Locomotion
+  context, which Exploration and Aiming include, so it does nothing in vehicles or menus.
+  r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds listens for the action and the CET side turns
+  each press into MeterDriver.ToggleMode (debounced against the CET binding).
+-->
+<bindings>
+	<context name="ShootDodgeActions" >
+		<action name="ShootDodgeBulletTime"		map="ShootDodgeBulletTime_Button" />
+	</context>
+
+	<context name="Locomotion" append="true">
+		<include name="ShootDodgeActions" />
+	</context>
+
+	<mapping name="ShootDodgeBulletTime_Button" type="Button" >
+		<button id="IK_Enter" />
+	</mapping>
+</bindings>
