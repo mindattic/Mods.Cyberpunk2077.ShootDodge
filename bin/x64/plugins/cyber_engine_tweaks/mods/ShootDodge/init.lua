@@ -194,10 +194,16 @@ registerForEvent("onUpdate", function(deltaTime)
   end
 end)
 
+-- C2SD-T18: the debug window draws only while the CET overlay is open.
+local overlayOpen = false
+registerForEvent("onOverlayOpen", function() overlayOpen = true end)
+registerForEvent("onOverlayClose", function() overlayOpen = false end)
+
 registerForEvent("onDraw", function()
   -- C2SD-T15: the in-game hourglass HUD, drawn whether or not the CET overlay is open.
   local hudOk, hudErr = pcall(MeterDriver.DrawHud, BulletTimeDriver.paused)
   if not hudOk then MeterDriver.lastError = "hud: " .. tostring(hudErr) end
+  if not overlayOpen then return end
 
   if not ImGui.Begin("ShootDodge") then
     ImGui.End()
