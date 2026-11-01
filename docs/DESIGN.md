@@ -27,8 +27,8 @@ it (`modules/Dive.lua` computes the direction and the corrective push that cance
 backward drift), while the camera and aim stay free and first person throughout. The leap rides
 the stock jump the same button press starts, plus the game's own `PSMImpulse` locomotion impulse
 (`modules/DiveDriver.lua`), rather than a bespoke dive pose — see "Open question" below. The state
-guard only allows `dive` from `NONE`, so a combo mid-air does nothing. Until the landing branch
-(C2SD-T10) exists, touching down again ends the dive back to `NONE`.
+guard only allows `dive` from `NONE`, so a combo mid-air does nothing. Touching down again ends the
+dive in the landing branch below (C2SD-T10).
 
 ### Bullet-time (C2SD-T8) and responsive aim/fire (C2SD-T9)
 On entering `DIVING`, world time dilation drops (default 0.2x) via the game's time system, the
@@ -106,11 +106,22 @@ in its one `defaults` table. `modules/BulletTimeMeterDriver.lua` wires it in:
   shows the exact level, mode, tint and kill count, plus refill/empty buttons for testing.
 
 ### Landing branch (C2SD-T10, C2SD-T11, C2SD-T12)
-A ground-contact check fires once per dive and reads whether movement is held at that instant:
-- Held -> `AIRBORNE -> GETUP -> NONE` (scramble-up transition, full control back only once it
-  finishes).
-- Not held -> `AIRBORNE -> PRONE` (free-aim/fire from the ground, no timer — only a later
-  stand/move input exits to `GETUP -> NONE`).
+As in Max Payne 2, every dive ends lying on the ground and slow-mo ends on impact.
+
+**Ground contact (C2SD-T10, `modules/Dive.lua` + `modules/DiveDriver.lua`).** The dive driver owns
+both `DIVING` and `AIRBORNE`: the frame V actually leaves the ground it fires `DIVING -> AIRBORNE`;
+the landing is the airborne -> grounded transition of V's locomotion state (the same ground check
+the combo uses). It fires once per dive, always `-> PRONE` whatever input is held, and records
+whether a movement input was held at impact (`DiveDriver.lastLanding.moveHeld`), so the get-up can
+start right after impact without a fresh press. No false positives from grazes: the touchdown must
+stay grounded for `landConfirmFrames` (2) consecutive frames, and a grounded reading while V is
+still rising faster than `maxLandingRiseSpeed` doesn't count; a shorter contact is counted as a
+graze and the arc carries on. A dive that never lifts off, or hits the 4 s cap, isn't a landing and
+aborts to `NONE`. The overlay and the CET log show one landing event per dive with its held flag.
+
+- `PRONE` (C2SD-T11): free-aim/fire from the ground, first person, no timer.
+- Get-up (C2SD-T12): `PRONE -> GETUP -> NONE` on a movement input, immediately after impact when
+  movement was already held at the landing.
 
 ### Weapon restriction (C2SD-T13)
 The input check (C2SD-T5) also reads the equipped weapon type. Pistols, revolvers, and small SMGs

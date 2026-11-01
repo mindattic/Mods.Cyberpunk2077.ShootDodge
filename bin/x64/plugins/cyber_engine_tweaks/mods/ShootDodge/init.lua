@@ -1,6 +1,7 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
--- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), landing detection
+-- (C2SD-T10), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
@@ -51,6 +52,18 @@ registerForEvent("onInit", function()
   -- C2SD-T7: a detected combo launches the dive (NONE -> DIVING) in the held movement direction.
   DiveDriver.isGrounded = Input.IsGrounded
   ShootDodge.combo = Input.Install()
+  -- C2SD-T10: the landing records whether movement is held at impact (for the get-up, C2SD-T12),
+  -- read from the same movement tracking the combo uses.
+  DiveDriver.isMoveHeld = function()
+    local combo = ShootDodge.combo
+    if combo == nil then return false, 0 end
+    return combo:IsMoving(), combo:MoveMagnitude()
+  end
+  DiveDriver.AddLandingListener(function(landing)
+    print(string.format("[ShootDodge] landing #%d at %.2fs: movement %s (%.2f), air %.2fs, grazes %d",
+      landing.index, landing.time, landing.moveHeld and "held" or "not held", landing.moveMagnitude,
+      landing.airTime, landing.grazes))
+  end)
   ShootDodge.combo:SetEnabled(ShootDodge.enabled)
   ShootDodge.combo:AddListener(function(trigger)
     print(string.format("[ShootDodge] combo detected at %.2fs (move %.2f, %.2f)",
@@ -62,7 +75,7 @@ registerForEvent("onInit", function()
       ShootDodge.machine:Reset("dive start error")
     end
   end)
-  print("[ShootDodge] loaded (dive trigger and bullet-time active; landing not yet)")
+  print("[ShootDodge] loaded (dive trigger, bullet-time and landing detection active)")
 end)
 
 registerForEvent("onShutdown", function()
@@ -84,7 +97,7 @@ registerForEvent("onUpdate", function(deltaTime)
     end
     -- C2SD-T7: the dive drives DIVING (direction lock, lift-off/landing check). Its timers and
     -- velocity estimate run on game time, so they keep working while bullet-time slows V too.
-    -- The landing branch hooks in here next (C2SD-T10 onward), per docs/DESIGN.md.
+    -- C2SD-T10: it also drives AIRBORNE and fires the landing (-> PRONE) on ground contact.
     DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
   end)
   if not ok then
@@ -156,6 +169,12 @@ registerForEvent("onDraw", function()
   if DiveDriver.lastError then
     ImGui.Text(string.format("Dive problem: %s", DiveDriver.lastError))
   end
+  -- C2SD-T10: one landing event per dive, with the held-movement flag at impact.
+  local landing = DiveDriver.lastLanding
+  ImGui.Text(string.format("Landings: %d%s", DiveDriver.landingCount,
+    landing and string.format(" | last #%d at %.2fs: movement %s (%.2f), air %.2fs, grazes %d",
+      landing.index, landing.time, landing.moveHeld and "held" or "not held",
+      landing.moveMagnitude, landing.airTime, landing.grazes) or ""))
 
   -- C2SD-T8: bullet-time controls and live status.
   local bt = BulletTimeDriver.rules
@@ -209,7 +228,7 @@ registerForEvent("onDraw", function()
   if MeterDriver.lastError then
     ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end
-  ImGui.TextWrapped("Dive and bullet-time only -- landing not implemented yet.")
+  ImGui.TextWrapped("Dive, bullet-time and landing detection -- prone pose and get-up not implemented yet.")
 
   ImGui.End()
 end)

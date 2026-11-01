@@ -12,7 +12,13 @@
 -- the ground. It never touches the camera or aim: V stays first person and free to look and shoot
 -- anywhere while flying.
 --
--- Until the landing branch exists (C2SD-T10) the end of a dive simply returns the machine to NONE.
+-- C2SD-T10 ground contact: the driver owns both DIVING and AIRBORNE. The frame V actually leaves
+-- the ground it fires DIVING -> AIRBORNE (launch); the frame the landing is confirmed (see
+-- Dive:Update, which rejects grazes) it fires land -> PRONE, always, whatever input is held, and
+-- records one landing event with whether a movement input was held at impact (`lastLanding`, for
+-- the get-up in C2SD-T12). PRONE itself is driven by C2SD-T11; until then the state machine's
+-- driver timeout returns it to NONE. A dive that never lifts off or hits the time cap is not a
+-- landing and still aborts to NONE.
 
 local Dive = require("modules/Dive")
 
@@ -24,7 +30,20 @@ local DiveDriver = {
   impulseOk = nil, -- whether the last impulse was queued successfully
   -- Ground check, injected from modules/Input.lua so both use one definition of "grounded".
   isGrounded = function() return true end,
+  -- C2SD-T10: whether a movement input is held right now (held, magnitude), injected from the
+  -- combo detector, which tracks MoveX/MoveY at all times.
+  isMoveHeld = function() return false, 0 end,
+  -- C2SD-T10: the most recent landing { index, time, moveHeld, moveMagnitude, airTime, grazes }
+  -- and the number of landings this session.
+  lastLanding = nil,
+  landingCount = 0,
+  landingListeners = {},
 }
+
+-- C2SD-T10: fn(landing) is called once per landing, right after AIRBORNE -> PRONE.
+function DiveDriver.AddLandingListener(fn)
+  table.insert(DiveDriver.landingListeners, fn)
+end
 
 local function cameraForward(player)
   local ok, fwd = pcall(function() return Game.GetCameraSystem():GetActiveCameraForward() end)
@@ -48,7 +67,7 @@ end
 
 local function worldPosition(player)
   local ok, pos = pcall(function() return player:GetWorldPosition() end)
-  if ok and pos ~= nil then return { x = pos.x, y = pos.y } end
+  if ok and pos ~= nil then return { x = pos.x, y = pos.y, z = pos.z } end
   return nil
 end
 
@@ -88,7 +107,7 @@ end
 function DiveDriver.Update(machine, deltaTime)
   local dive = DiveDriver.dive
   if not dive.active then return end
-  if not machine:Is("DIVING") then
+  if not (machine:Is("DIVING") or machine:Is("AIRBORNE")) then
     -- Something else (reset, abort, the driver timeout) took the state away: let go.
     DiveDriver.Cancel()
     return
@@ -105,20 +124,48 @@ function DiveDriver.Update(machine, deltaTime)
   -- Direction lock: estimate V's horizontal velocity from the frame's movement and push back
   -- onto the locked line.
   local pos = worldPosition(player)
+  local vz = nil
   if pos and DiveDriver.lastPos and deltaTime and deltaTime > 0 then
     local vx = (pos.x - DiveDriver.lastPos.x) / deltaTime
     local vy = (pos.y - DiveDriver.lastPos.y) / deltaTime
+    if pos.z and DiveDriver.lastPos.z then vz = (pos.z - DiveDriver.lastPos.z) / deltaTime end
     local cx, cy = dive:Correction(vx, vy)
     if cx then queueImpulse(player, cx, cy, 0) end
   end
   DiveDriver.lastPos = pos
 
-  local reason = dive:Update(deltaTime, DiveDriver.isGrounded(player))
-  if reason then
-    DiveDriver.lastEnd = { reason = reason, time = machine.clock }
-    DiveDriver.lastPos = nil
-    -- C2SD-T10 replaces this with the landing branch (DIVING/AIRBORNE -> PRONE).
+  -- C2SD-T10: sample the held movement input the same frame as the ground check, so the landing
+  -- records what was held at impact.
+  local moveHeld, moveMagnitude = DiveDriver.isMoveHeld()
+  local reason = dive:Update(deltaTime, DiveDriver.isGrounded(player), vz)
+  if reason == nil then
+    -- C2SD-T10: V has really left the ground -> AIRBORNE (once; refused harmlessly otherwise).
+    if dive.leftGround and machine:Is("DIVING") then machine:Fire("launch", "left the ground") end
+    return
+  end
+
+  DiveDriver.lastEnd = { reason = reason, time = machine.clock }
+  DiveDriver.lastPos = nil
+  if reason ~= Dive.End.landed then
     machine:Fire("abort", "dive over: " .. reason)
+    return
+  end
+
+  -- C2SD-T10: the landing. Every dive that lands goes prone, held input or not.
+  DiveDriver.landingCount = DiveDriver.landingCount + 1
+  local landing = {
+    index = DiveDriver.landingCount,
+    time = machine.clock,
+    moveHeld = moveHeld and true or false,
+    moveMagnitude = moveMagnitude or 0,
+    airTime = dive.airTime,
+    grazes = dive.grazes,
+  }
+  DiveDriver.lastLanding = landing
+  machine:Fire("land", landing.moveHeld and "landed, movement held" or "landed, no movement held")
+  for _, fn in ipairs(DiveDriver.landingListeners) do
+    local ok, err = pcall(fn, landing)
+    if not ok then print("[ShootDodge] landing listener error: " .. tostring(err)) end
   end
 end
 

@@ -24,6 +24,13 @@ Dive.defaults = {
   -- Grounded frames before this much air time don't count as the dive having landed (the stock
   -- jump needs a moment to actually leave the ground).
   minAirSec = 0.15,
+  -- C2SD-T10: consecutive grounded frames needed before touchdown counts as the landing. A single
+  -- grounded frame between airborne ones is a graze (clipping a low obstacle, a ledge lip) and
+  -- the dive carries on. Counted in frames, not seconds, so slow-mo doesn't stretch the delay.
+  landConfirmFrames = 2,
+  -- C2SD-T10: a grounded reading while V is still rising faster than this (m/s, game time) is a
+  -- graze too: the arc hasn't come down yet.
+  maxLandingRiseSpeed = 1.0,
   -- If V never visibly leaves the ground (blocked by a wall, low ceiling) give up after this long.
   leaveGroundTimeoutSec = 0.6,
   -- Hard cap on a single dive, whatever the ground check says.
@@ -62,6 +69,11 @@ function Dive:Clear()
   self.elapsed = 0
   self.airTime = 0
   self.leftGround = false
+  -- C2SD-T10 ground contact: the current run of grounded frames, when it began (elapsed time of
+  -- the touchdown frame), and how many runs were rejected as grazes.
+  self.groundedFrames = 0
+  self.touchdownAt = nil
+  self.grazes = 0
 end
 
 -- World-space unit direction for movement input (moveX right, moveY forward) relative to a camera
@@ -116,8 +128,14 @@ function Dive:Correction(vx, vy)
   return -offX * scale, -offY * scale
 end
 
--- Advance the dive one frame. Returns an end reason (Dive.End.*) once the dive is over, else nil.
-function Dive:Update(deltaTime, grounded)
+-- Advance the dive one frame. `vz` is V's vertical velocity (m/s, up positive, game time), or nil
+-- when unknown. Returns an end reason (Dive.End.*) once the dive is over, else nil.
+--
+-- C2SD-T10 ground contact: the landing is the airborne -> grounded transition, confirmed once V
+-- has stayed grounded for landConfirmFrames frames in a row without still rising. A shorter run
+-- (a graze) is dropped and the airborne arc continues. touchdownAt keeps the first frame of the
+-- run that confirmed, i.e. the actual moment of impact.
+function Dive:Update(deltaTime, grounded, vz)
   if not self.active then return nil end
   local cfg = self.config
   deltaTime = deltaTime or 0
@@ -125,13 +143,26 @@ function Dive:Update(deltaTime, grounded)
   if not grounded then
     self.leftGround = true
     self.airTime = self.airTime + deltaTime
+    if self.groundedFrames > 0 then self.grazes = self.grazes + 1 end
+    self.groundedFrames = 0
+    self.touchdownAt = nil
+  elseif self.leftGround and self.airTime >= cfg.minAirSec then
+    if vz ~= nil and vz > cfg.maxLandingRiseSpeed then
+      -- Touching something while the arc is still going up: not a landing.
+      if self.groundedFrames > 0 then self.grazes = self.grazes + 1 end
+      self.groundedFrames = 0
+      self.touchdownAt = nil
+    else
+      if self.groundedFrames == 0 then self.touchdownAt = self.elapsed end
+      self.groundedFrames = self.groundedFrames + 1
+    end
   end
 
   local reason
-  if self.elapsed >= cfg.maxDurationSec then
-    reason = Dive.End.timeout
-  elseif self.leftGround and grounded and self.airTime >= cfg.minAirSec then
+  if self.leftGround and self.groundedFrames >= cfg.landConfirmFrames then
     reason = Dive.End.landed
+  elseif self.elapsed >= cfg.maxDurationSec then
+    reason = Dive.End.timeout
   elseif not self.leftGround and self.elapsed >= cfg.leaveGroundTimeoutSec then
     reason = Dive.End.noLiftOff
   end
