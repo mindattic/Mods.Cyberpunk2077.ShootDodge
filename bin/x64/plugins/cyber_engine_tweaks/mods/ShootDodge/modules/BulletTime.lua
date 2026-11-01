@@ -50,6 +50,12 @@ function BulletTime:SetFactor(factor)
   self.config.factor = self:ClampFactor(factor)
 end
 
+-- C2SD-T22: can slow-mo apply at all? False when bullet-time is off or the factor is 1.0, so Bullet
+-- Time mode must not run (it would drain the hourglass with the world at normal speed).
+function BulletTime:CanSlow()
+  return self.config.enabled and self.config.factor < 1.0
+end
+
 -- The factor that should be active right now, or nil for normal time.
 -- ctx = { state = <machine state>, paused = bool, dead = bool,
 --         diveSlow = bool (C2SD-T15: the meter grants the dive's slow-mo; nil = granted),

@@ -10,6 +10,7 @@
 --     yellow after kills, as MP2's does.
 
 local Meter = require("modules/BulletTimeMeter")
+local BulletTimeDriver = require("modules/BulletTimeDriver")
 
 local FACT = "shootdodge_bt_meter"
 
@@ -124,6 +125,8 @@ end
 function MeterDriver.ToggleMode(enabled, machine)
   if not enabled then return false end
   if machine ~= nil and machine:IsActive() then return false end
+  -- C2SD-T22: no slow-mo to grant (bullet-time off / factor 1.0) -> don't start (ending is fine).
+  if not MeterDriver.meter.mode and not BulletTimeDriver.rules:CanSlow() then return false end
   local changed = MeterDriver.meter:ToggleMode()
   MeterDriver.Persist(true)
   return changed
@@ -147,6 +150,7 @@ function MeterDriver.Update(deltaTime, ctx)
     MeterDriver.hadPlayer = ok and restored == true
   end
   if not ctx.enabled then meter:EndMode("mod disabled") end
+  if meter.mode and not BulletTimeDriver.rules:CanSlow() then meter:EndMode("no slow-mo") end
   local okDead, dead = pcall(function() return Game.GetPlayer():IsDead() end)
   ctx.dead = okDead and dead == true
   meter:Update(deltaTime, ctx)
