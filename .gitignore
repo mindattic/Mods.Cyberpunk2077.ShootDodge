@@ -1,0 +1,5 @@
+bin/x64/plugins/*/mods/*/db.sqlite3*
+*.log
+.vs/
+obj/
+dist/
