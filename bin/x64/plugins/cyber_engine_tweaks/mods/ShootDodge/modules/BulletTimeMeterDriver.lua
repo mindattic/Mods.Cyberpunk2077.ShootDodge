@@ -56,23 +56,30 @@ function MeterDriver.Persist(force)
 end
 
 -- Read the level back from the loaded save; a save without it starts full.
+-- Returns true once the save was actually read (the session then opens and Persist may write);
+-- false leaves the session closed so nothing overwrites the saved level, and the caller retries.
 function MeterDriver.Restore()
   local meter = MeterDriver.meter
+  local ok, value = pcall(function() return questSystem():GetFactStr(FACT) end)
+  if not ok then
+    note("load", value)
+    MeterDriver.restoredFrom = "default (save unreadable)"
+    return false
+  end
   meter:EndMode("load")
   meter.yellow = 0
   MeterDriver.counted = {}
-  local ok, value = pcall(function() return questSystem():GetFactStr(FACT) end)
-  local level = ok and meter:Decode(value) or nil
+  local level = meter:Decode(value)
   if level ~= nil then
     meter:SetLevel(level)
     MeterDriver.restoredFrom = "save"
   else
     meter:SetLevel(meter.config.startLevel)
-    MeterDriver.restoredFrom = ok and "default" or "default (save unreadable)"
-    if not ok then note("load", value) end
+    MeterDriver.restoredFrom = "default"
   end
   MeterDriver.lastSaved = meter:Encode()
   MeterDriver.sessionOpen = true
+  return true
 end
 
 local function entityKey(npc)
@@ -108,17 +115,9 @@ function MeterDriver.Install()
     local ok, err = pcall(onDeath, npc, evt)
     if not ok then note("kill", err) end
   end)
-  -- Session start (save loaded / new game): the HUD controller every session creates.
-  Observe("QuestTrackerGameController", "OnInitialize", function()
-    local ok, err = pcall(MeterDriver.Restore)
-    if not ok then note("load", err) end
-  end)
-  Observe("QuestTrackerGameController", "OnUninitialize", function()
-    MeterDriver.sessionOpen = false
-    MeterDriver.meter:EndMode("session end")
-  end)
+  -- The session follows the player appearing (see Update), not a HUD widget's lifetime: a HUD
+  -- rebuild mid-session must neither end Bullet Time mode nor stop saving.
   MeterDriver.installed = true
-  pcall(MeterDriver.Restore)
 end
 
 -- Bullet Time mode toggle (the hotkey / overlay button). Refused mid-dive and when disabled.
@@ -135,11 +134,17 @@ function MeterDriver.Update(deltaTime, ctx)
   local meter = MeterDriver.meter
   local hasPlayer = Game.GetPlayer() ~= nil
   -- Fallback session detection: the player reappearing after none (main menu -> load).
-  if hasPlayer and not MeterDriver.hadPlayer then MeterDriver.Restore() end
-  MeterDriver.hadPlayer = hasPlayer
   if not hasPlayer then
+    MeterDriver.hadPlayer = false
+    MeterDriver.sessionOpen = false
     meter:EndMode("no player")
     return
+  end
+  if not MeterDriver.hadPlayer then
+    -- Retried every frame until the save was readable.
+    local ok, restored = pcall(MeterDriver.Restore)
+    if not ok then note("load", restored) end
+    MeterDriver.hadPlayer = ok and restored == true
   end
   if not ctx.enabled then meter:EndMode("mod disabled") end
   local okDead, dead = pcall(function() return Game.GetPlayer():IsDead() end)
