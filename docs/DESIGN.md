@@ -65,7 +65,8 @@ variant suffix in `Loadout.items` to the runner-up that is.
 reloaded in game), 1.5 s after V exists, the driver reads the save's quest fact
 `shootdodge_mp2_loadout`. Unset: it counts what V already holds of each record, gives only the
 shortfall (`Game.AddToInventory`, which mints a separate weapon per pistol), and writes the fact
-into the save. Set: nothing. So reloading the save or restarting CET never re-grants, and a piece
+into the save only when every add succeeded (a failed item is reported in the overlay and the fact
+stays unset, so "Check loadout now" retries the shortfall). Set: nothing. So reloading the save or restarting CET never re-grants, and a piece
 the player later sells stays sold. The overlay shows the last result and the body type read, with
 a "Check loadout now" button. Nothing is auto-equipped: V equips the pieces from the inventory.
 
