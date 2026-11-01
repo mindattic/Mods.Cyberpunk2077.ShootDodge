@@ -269,8 +269,9 @@ r6/scripts/ShootDodge/ShootDodgePhone.reds
 Only git-tracked `.lua` and `.reds` files under those two folders go in (git-add a new file before
 building), so docs, dev files and runtime state like `polish_restore.txt` or CET's `db.sqlite3` never
 ship. The script checks the result (forward-slash entry names, every entry under one of the two
-folders, `init.lua` directly in the mod folder) and prints the file list. `dist/` and the runtime
-files are in `.gitignore`. A quick syntax check of each Lua file is `luac -p <file>`.
+folders, `init.lua` directly in the mod folder) and prints the file list. `dist/` is tracked in git: it
+keeps the released zip of every version, so commit each new `dist/ShootDodge-<version>.zip`. The
+runtime files are in `.gitignore`. A quick syntax check of each Lua file is `luac -p <file>`.
 
 ## Testing
 
