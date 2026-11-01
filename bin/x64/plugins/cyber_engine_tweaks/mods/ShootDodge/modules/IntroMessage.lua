@@ -134,6 +134,9 @@ IntroMessage.messages = {
     .. "Bullet Time, once you bind it (Numpad Enter, say), is the answer. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
+  "And in Bullet Time you don't need the whole ritual. Space alone sends you flying. No aim, "
+    .. "just the way you're leaning, or straight ahead if you're leaning nowhere. The dive takes "
+    .. "over the slow-mo and the hourglass stops running. Land, switch it back on, do it again.",
   "I felt the rise of that old familiar feeling. I hated it. I welcomed it. Death is "
     .. "inevitable. Our fear of it makes us play safe, blocks out emotion. It's a losing game. "
     .. "Without passion you are already dead.",

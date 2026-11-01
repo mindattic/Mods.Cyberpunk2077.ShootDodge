@@ -171,6 +171,29 @@ in its one `defaults` table. `modules/BulletTimeMeterDriver.lua` wires it in:
   sand draining from the top bulb as the level drops and tinted yellow by kills; the debug overlay
   shows the exact level, mode, tint and kill count, plus refill/empty buttons for testing.
 
+### Space is the Shootdodge in Bullet Time mode (C2SD-T38)
+
+While Bullet Time mode is on (`MeterDriver.meter.mode`), a fresh jump press is the Shootdodge on
+its own, as in MP2 where you just dive in slow-mo. `Input.Context` passes `bulletTime` to
+`ComboDetector:Evaluate`, which then skips the aim checks (held, `minAimHoldSec`) and the movement
+hold time (`minMoveHoldSec`); every other guard is unchanged: mod enabled, not blocked (vehicle,
+menus, a dive/prone/get-up already in progress), grounded, the weapon gate (C2SD-T13/T30, so with a
+disallowed weapon Space stays a plain jump) and the 1 s cooldown. Outside the mode nothing changed.
+
+- **Direction.** The held movement direction (past the 0.5 dead zone), relative to the camera at
+  launch and locked as usual (`Dive.Direction`). **No direction held: dive straight forward**
+  (the trigger carries move 0, 1). Forward is where the camera, and so the gun, already points, it
+  is the safest guess for "just hit Space", and refusing would turn Space into a plain jump in the
+  middle of a slow-mo fight, which reads as the mod failing. The hold time is skipped too because
+  in this mode every Space is meant as a dive; a direction pressed together with Space counts.
+- **Meter interaction: kept as is.** Starting a dive still ends Bullet Time mode
+  (`Meter:OnDiveStart`, "shootdodge"), and the dive's own free slow-mo takes over, as in MP2
+  (Max Payne Wiki, *Shootdodge*, above). The code offers no better fit: the dive and the mode use the
+  same 0.2x dilation, so the switch is seamless, and keeping the mode on would keep draining sand
+  for a dive that MP2 makes free. The cost is that after landing, the mode has to be toggled on
+  again for the next Space-dive; until then Space is a normal jump again.
+- **Overlay.** The debug overlay shows "Space = Shootdodge (Bullet Time)" while the mode is on.
+
 ### Landing branch (C2SD-T10, C2SD-T11, C2SD-T12)
 As in Max Payne 2, every dive ends lying on the ground and slow-mo ends on impact.
 

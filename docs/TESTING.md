@@ -469,6 +469,36 @@ Expected: exactly as before ("Exempt now: weapons 1" during the dive).
 combo still detects aim and whether each gun fires at full cadence in the dive.
 Expected: note the result only; it is not a requirement.
 
+## Q. Space is the Shootdodge in Bullet Time mode (C2SD-T38)
+
+Enabled, a pistol drawn, a full hourglass (overlay **Refill meter**), the Bullet Time hotkey bound
+(case I3). Keep the overlay open.
+
+**Q1. Overlay hint.** Start Bullet Time mode.
+Expected: the overlay shows "Space = Shootdodge (Bullet Time)" under the Combo line; stop the mode and
+the line disappears.
+
+**Q2. Space with a direction.** Start Bullet Time mode, hold strafe left (no aim), press Space.
+Expected: V dives left relative to the camera, locked as usual; the detected count rises by 1, the
+mode ends ("Bullet-time mode last ended: shootdodge") and the dive's slow-mo carries on to the landing.
+
+**Q3. Space with no direction.** Start Bullet Time mode, stand still, no aim, press Space.
+Expected: V dives straight forward (where the camera faces); the console's `combo detected` line
+shows move 0.00, 1.00.
+
+**Q4. Disallowed weapon.** Draw a rifle or shotgun (or fists), start Bullet Time mode, press Space
+(with and without a direction).
+Expected: a normal jump, no dive; "Last jump not a combo: weapon not allowed (...)"; the mode stays on.
+
+**Q5. Guards still apply.** In Bullet Time mode: press Space mid-air (jump first, then Space again),
+and right after a Q2 dive's landing restart the mode and press Space within a second of the last
+trigger.
+Expected: no dive mid-air ("airborne"), none while prone or getting up (Space never stands V up), and
+"cooldown" inside the second.
+
+**Q6. Space outside Bullet Time mode.** Mode off, press Space alone, then with a direction held.
+Expected: normal jumps, no dive ("aim not held"); the aim + direction + jump combo (B2) still works.
+
 ## Results
 
 | Case | Pass / Fail | Notes |
@@ -588,3 +618,9 @@ Expected: note the result only; it is not a requirement.
 | P7 |  |  |
 | P8 |  |  |
 | P9 |  |  |
+| Q1 |  |  |
+| Q2 |  |  |
+| Q3 |  |  |
+| Q4 |  |  |
+| Q5 |  |  |
+| Q6 |  |  |

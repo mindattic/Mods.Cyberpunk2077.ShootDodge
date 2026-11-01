@@ -96,7 +96,14 @@ What happens next:
   and there is a 1 second cooldown between combos.
 
 The combo only fires from the ground, on foot, with an allowed weapon. Jumping, aiming or moving on
-its own never triggers it.
+its own never triggers it, except in Bullet Time mode (below).
+
+**In Bullet Time mode, Space alone is the Shootdodge.** While the mode is on, press jump (Space) and V
+dives, no aim needed: in the direction you hold, or straight forward when you hold none. The weapon
+restriction, the on-the-ground check and the cooldown still apply, so with a disallowed weapon Space
+is a normal jump. Starting the dive ends Bullet Time mode (the dive's own slow-mo takes over, as in
+Max Payne 2), so after you land Space is a normal jump again until you switch the mode back on.
+Outside Bullet Time mode nothing changes: you need the aim + direction + jump combo.
 
 ### Weapon restriction
 

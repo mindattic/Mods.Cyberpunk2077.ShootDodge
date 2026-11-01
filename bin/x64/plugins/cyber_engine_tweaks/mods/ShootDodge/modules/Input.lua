@@ -17,6 +17,9 @@ local Input = {
   installed = false,
   -- Extra veto the state machine (C2SD-T6) can set, e.g. to block a new combo mid-dive.
   isBlocked = function() return false end,
+  -- C2SD-T38: whether Bullet Time mode is on (set by init.lua from the meter); while it is, jump
+  -- alone is the Shootdodge (see modules/ComboDetector.lua).
+  isBulletTimeMode = function() return false end,
 }
 
 -- Detailed locomotion states in which V is not standing on the ground. Looked up by name and
@@ -124,6 +127,7 @@ function Input.Context(player)
     grounded = player ~= nil and isGrounded(player) or false,
     weaponAllowed = weaponAllowed,
     weapon = weapon,
+    bulletTime = Input.isBulletTimeMode() == true,
   }
 end
 

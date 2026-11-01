@@ -70,6 +70,8 @@ registerForEvent("onInit", function()
   IntroMessageDriver.Install()
   -- A new combo can't start while a Shootdodge is already in progress.
   Input.isBlocked = function() return ShootDodge.machine:IsActive() end
+  -- C2SD-T38: in Bullet Time mode, Space alone is the Shootdodge (no aim; held direction or forward).
+  Input.isBulletTimeMode = function() return MeterDriver.meter.mode == true end
 
   -- C2SD-T5: detect the Shootdodge combo (aim held + jump + move).
   -- C2SD-T7: a detected combo launches the dive (NONE -> DIVING) in the held movement direction.
@@ -249,6 +251,8 @@ registerForEvent("onDraw", function()
   if combo then
     ImGui.Text(string.format("Combo: aim %s | move %.2f | detected %d",
       combo.aimHeld and "held" or "-", combo:MoveMagnitude(), combo.triggerCount))
+    -- C2SD-T38: Space alone dives while Bullet Time mode is on.
+    if MeterDriver.meter.mode then ImGui.Text("Space = Shootdodge (Bullet Time)") end
     if combo.lastReject then
       ImGui.Text(string.format("Last jump not a combo: %s", combo.lastReject.reason))
     end

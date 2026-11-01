@@ -19,6 +19,11 @@
 --     modules/WeaponGate.lua). The weapon is read at the jump press itself, so a swap takes
 --     effect on the very next combo.
 --
+-- C2SD-T38: while Bullet Time mode is on (context.bulletTime), jump alone is the Shootdodge: the aim
+-- guards and the movement hold time are skipped, the held direction is used when one is held, and
+-- with none held the trigger dives straight forward (moveX 0, moveY 1). The disabled/blocked,
+-- grounded, weapon and cooldown guards still apply, so a disallowed weapon keeps Space a jump.
+--
 -- Nothing here starts a dive: a trigger only records the combo and notifies listeners. The state
 -- machine (C2SD-T6) and the dive itself (C2SD-T7) decide what a trigger does.
 
@@ -121,8 +126,9 @@ function ComboDetector:OnMove(x, y, now)
 end
 
 -- Returns the trigger table when the combo fires, else nil (with the reason in lastReject).
--- context: { blocked = bool, grounded = bool, weaponAllowed = bool, weapon = label }; a missing
--- field means "not blocked" / "grounded" / "weapon allowed".
+-- context: { blocked = bool, grounded = bool, weaponAllowed = bool, weapon = label,
+-- bulletTime = bool }; a missing field means "not blocked" / "grounded" / "weapon allowed" /
+-- "not in Bullet Time mode".
 function ComboDetector:OnJump(pressed, now, context)
   if not pressed then
     self.jumpHeld = false
@@ -139,6 +145,7 @@ function ComboDetector:Evaluate(now, context)
   context = context or {}
 
   local reason
+  local bulletTime = context.bulletTime == true
   if not self.enabled then
     reason = R.disabled
   elseif context.blocked then
@@ -148,6 +155,11 @@ function ComboDetector:Evaluate(now, context)
   elseif context.weaponAllowed == false then
     reason = R.weapon
     if context.weapon then reason = reason .. " (" .. context.weapon .. ")" end
+  elseif bulletTime then
+    -- C2SD-T38: Space alone dives in Bullet Time mode; only the cooldown is left to check.
+    if self.lastTriggerTime and now - self.lastTriggerTime < cfg.cooldownSec then
+      reason = R.cooldown
+    end
   elseif not self.aimHeld then
     reason = R.noAim
   elseif now - self.aimSince < cfg.minAimHoldSec then
@@ -165,7 +177,12 @@ function ComboDetector:Evaluate(now, context)
     return nil
   end
 
-  local trigger = { time = now, moveX = self.moveX, moveY = self.moveY }
+  local moveX, moveY = self.moveX, self.moveY
+  if bulletTime and not self:IsMoving() then
+    -- C2SD-T38: no direction held in Bullet Time mode: dive forward (see docs/DESIGN.md).
+    moveX, moveY = 0, 1
+  end
+  local trigger = { time = now, moveX = moveX, moveY = moveY, bulletTime = bulletTime }
   self.lastTriggerTime = now
   self.lastTrigger = trigger
   self.lastReject = nil
