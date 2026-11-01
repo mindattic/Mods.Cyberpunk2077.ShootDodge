@@ -63,7 +63,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Hold aim, press a direction and jump: V leaps, time slows but your aim and fire stay fast, V lands prone and keeps shooting, then a move key gets V up. Pistols, revolvers, SMGs. Bullet-time hourglass, Max's outfit, and Max texts you. Needs CET, redscript, Phone Extension.
+Max Payne 2's Shootdodge in first person. Hold aim, press a direction and jump: V leaps, time slows but your aim and fire stay fast, V lands prone and keeps shooting, then a move key gets V up. Pistols, revolvers, SMGs. Bullet-time hourglass, Max's outfit, and Max texts you. Needs CET and redscript; Phone Extension is optional (Max's text only).
 
 ## Tags
 
@@ -78,7 +78,7 @@ install them and the page lists them:
 |---|---|---|
 | Cyber Engine Tweaks | https://www.nexusmods.com/cyberpunk2077/mods/107 | Runs the whole mod. |
 | redscript | https://www.nexusmods.com/cyberpunk2077/mods/1511 | Compiles the Max Payne phone contact. |
-| Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Lets Max Payne text V in the Messages app. |
+| Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Optional. Lets Max Payne text V in the Messages app. |
 
 Plus Cyberpunk 2077 (PC). Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Phone Extension
 itself needs only redscript.
@@ -160,7 +160,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/1511]redscript[/url]
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/24949]Phone Extension[/url] (for Max Payne's text)
 [/list]
-Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Install Phone Extension before this mod: without it redscript can't compile the phone contact.
+Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Phone Extension is optional and install order does not matter: without it the phone script compiles to nothing, only Max Payne's text is missing, and no other redscript mod is affected.
 
 [size=5][b]Install[/b][/size]
 [list=1]

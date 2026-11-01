@@ -48,7 +48,7 @@ end
 function IntroMessageDriver.Check()
   local phone = IntroMessageDriver.PhoneSystem()
   if phone == nil then
-    IntroMessageDriver.lastError = "phone route missing: install redscript and Phone Extension "
+    IntroMessageDriver.lastError = "phone route missing: install redscript and Phone Extension (optional, only for the text) "
       .. "(r6/scripts/ShootDodge/ShootDodgePhone.reds did not load)"
     IntroMessageDriver.lastResult = "not sent (no phone route)"
     IntroMessageDriver.done = true

@@ -259,7 +259,10 @@ layout rules above by reading the extension's source. Vortex itself was not run 
 so the actual "Install From File" + deploy is TESTING.md section N.
 
 **Requirements** (declared on the Nexus page so Vortex offers them): Cyber Engine Tweaks (everything),
-redscript (the phone contact) and Phone Extension (the Messages integration). Phone Extension is four
+redscript (the phone contact) and, optionally, Phone Extension (the Messages integration; only the
+text needs it). `ShootDodgePhone.reds` guards its imports and every declaration with
+`@if(ModuleExists("PhoneExtension.Classes"))` / `System`, so without the framework it compiles to
+nothing and cannot break other redscript mods (C2SD-T29). Phone Extension is four
 `.reds` files (`r6/scripts/PhoneExtension/PhoneExtension.{Classes,DataStructures,Overrides,System}.reds`)
 and depends on nothing but redscript. Nothing in the code uses TweakXL, ArchiveXL, Codeware or RED4ext.
 
@@ -348,7 +351,7 @@ underneath is proven — that's a follow-up ticket once C2SD-T14 lands, not part
 
 - **Cyber Engine Tweaks (CET)** — input hooks, the state machine, time dilation calls, the ImGui
   debug overlay. Everything in the ticket log above is CET Lua only.
-- **redscript + Phone Extension** — only for Max Payne's phone text (C2SD-T27,
+- **redscript + optional Phone Extension** — only for Max Payne's phone text (C2SD-T27,
   `r6/scripts/ShootDodge/ShootDodgePhone.reds`); everything else stays CET Lua.
 - **TweakXL** — not needed: the loadout grant (C2SD-T4) gives vanilla TweakDB records as they are.
 - **WolvenKit + REDmod**, if/when the animation follow-up is picked up: extracting the player

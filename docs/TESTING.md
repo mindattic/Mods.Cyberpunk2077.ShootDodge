@@ -6,7 +6,7 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
 
 ## Setup
 
-1. Install Cyber Engine Tweaks, redscript and Phone Extension, then ShootDodge: the release zip
+1. Install Cyber Engine Tweaks and redscript (Phone Extension too, for the text cases; it may go in before or after ShootDodge), then ShootDodge: the release zip
    through Vortex (section N) or extracted into the game folder, or from the repo copy
    `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` and `r6/scripts/ShootDodge/` into the game's
    matching folders (see the README).
@@ -420,10 +420,10 @@ Expected: no new notification, and the thread is still there with its unread bad
 **O7. Another save.** Load a different save that never had the mod.
 Expected: the text arrives once for that save, as in O1.
 
-**O8. Missing framework.** Remove Phone Extension (and ShootDodge's `.reds`, or redscript will refuse
-to compile) and load a save.
-Expected: no text, no on-screen substitute, and the overlay shows `Intro message problem: phone route
-missing ...`. Put both back afterwards.
+**O8. Missing framework.** Remove Phone Extension only (keep ShootDodge's `.reds`) and load a save.
+Expected: redscript compiles with no error (the phone script compiles to nothing), the game and all
+other redscript mods work, no text, no on-screen substitute, and the overlay shows `Intro message
+problem: phone route missing ...`. Put Phone Extension back afterwards.
 
 The overlay's **Re-send to phone** button (under **Texts from Max Payne**) pops the notification
 again for retesting O2-O4 without a new save; it does not change the save's fact.

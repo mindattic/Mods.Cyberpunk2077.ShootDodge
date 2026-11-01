@@ -1,7 +1,8 @@
 // ShootDodge (C2SD-T27): the "Max Payne" contact in V's phone, whose text thread explains the mod.
 //
 // A real phone text in the Messages app, through the Phone Extension framework (Nexus mod 24949,
-// by r457 & gh057), which this file requires along with redscript. The words live in the CET side
+// by r457 & gh057), which is OPTIONAL: every declaration below is guarded with @if(ModuleExists(...)), so without
+// Phone Extension this file compiles to nothing (no error, no effect on other redscript mods). The words live in the CET side
 // (bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/modules/IntroMessage.lua); every session
 // that Lua side fills this system's thread through ClearThread/AddMessage/SetUnread, and only the
 // first time on a save (quest fact shootdodge_intro_message unset) does it call Notify, so the HUD
@@ -11,9 +12,12 @@
 // The contact uses only an existing in-game avatar (PhoneAvatars.Avatar_Unknown) and is hidden
 // until the thread has been filled.
 
+@if(ModuleExists("PhoneExtension.Classes"))
 import PhoneExtension.Classes.*
+@if(ModuleExists("PhoneExtension.System"))
 import PhoneExtension.System.*
 
+@if(ModuleExists("PhoneExtension.Classes") && ModuleExists("PhoneExtension.System"))
 public class ShootDodgeMaxPayneContact extends PhoneEventsListener {
   private let m_owner: wref<ShootDodgePhoneSystem>;
 
@@ -69,6 +73,7 @@ public class ShootDodgeMaxPayneContact extends PhoneEventsListener {
   }
 }
 
+@if(ModuleExists("PhoneExtension.Classes") && ModuleExists("PhoneExtension.System"))
 public class ShootDodgePhoneSystem extends ScriptableSystem {
   private let m_contact: ref<ShootDodgeMaxPayneContact>;
   private let m_sender: String;
@@ -190,6 +195,7 @@ public class ShootDodgePhoneSystem extends ScriptableSystem {
   }
 }
 
+@if(ModuleExists("PhoneExtension.Classes") && ModuleExists("PhoneExtension.System"))
 @wrapMethod(NewHudPhoneGameController)
 protected cb func OnInitialize() -> Bool {
   let ret: Bool = wrappedMethod();
@@ -203,6 +209,7 @@ protected cb func OnInitialize() -> Bool {
   return ret;
 }
 
+@if(ModuleExists("PhoneExtension.Classes") && ModuleExists("PhoneExtension.System"))
 @wrapMethod(NewHudPhoneGameController)
 protected cb func OnUninitialize() -> Bool {
   let ret: Bool = wrappedMethod();

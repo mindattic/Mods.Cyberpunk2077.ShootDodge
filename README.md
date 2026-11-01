@@ -23,20 +23,21 @@ not published. Design notes and the Max Payne 2 research live in [`docs/DESIGN.m
 - [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) (CET): the whole mod.
 - [redscript](https://www.nexusmods.com/cyberpunk2077/mods/1511): compiles the phone contact
   (`r6/scripts/ShootDodge/ShootDodgePhone.reds`).
-- [Phone Extension](https://www.nexusmods.com/cyberpunk2077/mods/24949) (by r457 and gh057): the
-  framework that lets that contact text V in the phone's Messages app. It is itself four redscript
-  files and needs nothing but redscript.
+- [Phone Extension](https://www.nexusmods.com/cyberpunk2077/mods/24949) (by r457 and gh057),
+  **optional**: needed only for Max Payne's text. It is the framework that lets that contact text V
+  in the phone's Messages app, and itself four redscript files that need nothing but redscript.
 
 That is all. The code uses no TweakXL records, ArchiveXL, Codeware or RED4ext: the loadout gives
-vanilla items by their existing TweakDB IDs. Because the `.reds` file imports Phone Extension,
-**install Phone Extension before ShootDodge**: without it redscript refuses to compile the script
-cache (its error names `ShootDodgePhone.reds`), which affects every redscript mod, not just this one.
+vanilla items by their existing TweakDB IDs. The `.reds` file is guarded with
+redscript conditional compilation (`@if(ModuleExists(...))`), so without Phone Extension it compiles
+to nothing and no redscript mod is affected. Install order does not matter; without Phone Extension
+only Max Payne's text is missing.
 
 ## Install
 
 ### With Vortex
 
-1. Install Cyber Engine Tweaks, redscript and Phone Extension (Vortex lists them as requirements on
+1. Install Cyber Engine Tweaks and redscript, plus Phone Extension if you want Max Payne's text (Vortex lists them as requirements on
    the Nexus page).
 2. Download `ShootDodge-<version>.zip` with **Mod Manager Download**, or drag the zip into Vortex's
    Mods page (**Install From File**). Enable and deploy it.
@@ -172,7 +173,7 @@ Bullet Time hotkey and the hourglass), woven around 25 genuine lines from *Max P
 - The overlay shows the result ("sent", "already sent for this save", ...) and keeps the whole thread
   under **Texts from Max Payne**, with a **Re-send to phone** button for testing (it pops the
   notification again without touching the save's fact).
-- There is no on-screen fallback. If redscript or Phone Extension is missing, no text arrives and the
+- There is no on-screen fallback. If Phone Extension (or redscript) is missing, no text arrives and the
   overlay shows "Intro message problem: phone route missing ...".
 
 ### The debug overlay
