@@ -119,7 +119,16 @@ still rising faster than `maxLandingRiseSpeed` doesn't count; a shorter contact 
 graze and the arc carries on. A dive that never lifts off, or hits the 4 s cap, isn't a landing and
 aborts to `NONE`. The overlay and the CET log show one landing event per dive with its held flag.
 
-- `PRONE` (C2SD-T11): free-aim/fire from the ground, first person, no timer.
+- `PRONE` (C2SD-T11, `modules/Prone.lua` + `modules/ProneDriver.lua`): free-aim/fire from the
+  ground, first person, no timer. The prone driver owns `PRONE` and drives the state machine every
+  frame, so the driver timeout never stands V up; it ends only on a *fresh* movement or jump press
+  (an input still held from the dive must be released once first, and none counts in the first
+  0.25 s after impact), which `ProneDriver.onStandRequest` hands to the get-up as `PRONE -> GETUP`.
+  Aiming and firing are left entirely to the game, so V shoots in any direction from the ground.
+  CP77 has no prone stance, so "lying down" is V's first-person camera lowered by `eyeDrop`
+  (1.3 m, eye ~0.4 m off the floor; tunable in the overlay), eased down over 0.12 s and back up over
+  0.2 s when `PRONE` ends any way (get-up, abort, disable, reload). V's body and collision stay
+  standing until the animation follow-up below. Knocked off a ledge while prone aborts to `NONE`.
 - Get-up (C2SD-T12): `PRONE -> GETUP -> NONE` on a movement input, immediately after impact when
   movement was already held at the landing.
 

@@ -1,12 +1,13 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
 -- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), landing detection
--- (C2SD-T10), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T10), prone shooting from the ground (C2SD-T11), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
 local StateMachine = require("modules/StateMachine")
 local DiveDriver = require("modules/DiveDriver")
+local ProneDriver = require("modules/ProneDriver")
 local BulletTimeDriver = require("modules/BulletTimeDriver")
 local MeterDriver = require("modules/BulletTimeMeterDriver")
 
@@ -59,6 +60,16 @@ registerForEvent("onInit", function()
     if combo == nil then return false, 0 end
     return combo:IsMoving(), combo:MoveMagnitude()
   end
+  -- C2SD-T11: PRONE holds V on the ground (camera lowered, aim/fire untouched) until a fresh
+  -- movement or jump press, read from the same combo tracking; no timer.
+  ProneDriver.isGrounded = Input.IsGrounded
+  ProneDriver.isMoveHeld = function()
+    return ShootDodge.combo ~= nil and ShootDodge.combo:IsMoving()
+  end
+  ProneDriver.isJumpHeld = function()
+    return ShootDodge.combo ~= nil and ShootDodge.combo.jumpHeld == true
+  end
+  ShootDodge.machine:AddListener(ProneDriver.OnStateChange)
   DiveDriver.AddLandingListener(function(landing)
     print(string.format("[ShootDodge] landing #%d at %.2fs: movement %s (%.2f), air %.2fs, grazes %d",
       landing.index, landing.time, landing.moveHeld and "held" or "not held", landing.moveMagnitude,
@@ -81,6 +92,7 @@ end)
 registerForEvent("onShutdown", function()
   Input.Reset()
   DiveDriver.Cancel()
+  ProneDriver.Cancel()
   ShootDodge.machine:Reset("shutdown")
   BulletTimeDriver.Clear()
 end)
@@ -92,6 +104,7 @@ registerForEvent("onUpdate", function(deltaTime)
     machine:Update(deltaTime)
     if not ShootDodge.enabled then
       DiveDriver.Cancel()
+      ProneDriver.Cancel()
       if machine:IsActive() then machine:Reset("mod disabled") end
       return
     end
@@ -99,10 +112,13 @@ registerForEvent("onUpdate", function(deltaTime)
     -- velocity estimate run on game time, so they keep working while bullet-time slows V too.
     -- C2SD-T10: it also drives AIRBORNE and fires the landing (-> PRONE) on ground contact.
     DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
+    -- C2SD-T11: PRONE (and the camera easing back up after it), on real time.
+    ProneDriver.Update(machine, deltaTime or 0)
   end)
   if not ok then
     print("[ShootDodge] update error: " .. tostring(err))
     DiveDriver.Cancel()
+    pcall(ProneDriver.Cancel)
     machine:Reset("update error")
   end
   -- C2SD-T15: drain (Bullet Time mode) or refill (passive) the hourglass on real time, before the
@@ -176,6 +192,19 @@ registerForEvent("onDraw", function()
       landing.index, landing.time, landing.moveHeld and "held" or "not held",
       landing.moveMagnitude, landing.airTime, landing.grazes) or ""))
 
+  -- C2SD-T11: prone status and the eye height.
+  local prone = ProneDriver.prone
+  ImGui.Text(string.format("Prone: %s | eye %.2f m | camera %s%s",
+    prone.active and string.format("down %.2fs", prone.elapsed) or "no", prone:Height(),
+    ProneDriver.cameraOk == nil and "-" or (ProneDriver.cameraOk and "ok" or "failed"),
+    ProneDriver.lastEnd and (" | last stand: " .. ProneDriver.lastEnd.reason) or ""))
+  local drop, dropChanged = ImGui.SliderFloat("Prone eye drop (m)", prone.config.eyeDrop, 0.0,
+    1.6, "%.2f")
+  if dropChanged then prone.config.eyeDrop = drop end
+  if ProneDriver.lastError then
+    ImGui.Text(string.format("Prone problem: %s", ProneDriver.lastError))
+  end
+
   -- C2SD-T8: bullet-time controls and live status.
   local bt = BulletTimeDriver.rules
   local btChanged
@@ -228,7 +257,7 @@ registerForEvent("onDraw", function()
   if MeterDriver.lastError then
     ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end
-  ImGui.TextWrapped("Dive, bullet-time and landing detection -- prone pose and get-up not implemented yet.")
+  ImGui.TextWrapped("Dive, bullet-time, landing and prone shooting -- get-up not implemented yet.")
 
   ImGui.End()
 end)
