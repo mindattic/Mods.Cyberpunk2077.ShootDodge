@@ -243,3 +243,65 @@ underneath is proven — that's a follow-up ticket once C2SD-T14 lands, not part
 - **TweakXL** — not needed: the loadout grant (C2SD-T4) gives vanilla TweakDB records as they are.
 - **WolvenKit + REDmod**, if/when the animation follow-up is picked up: extracting the player
   skeleton, authoring the dive/prone `.animgraph` states, packaging as a REDmod archive.
+
+## Akimbo / dual wielding (research, C2SD-T28)
+
+Question: Max Payne dual-wields Berettas; can ShootDodge support real akimbo pistols?
+Researched 2026-11-01 (web search plus secondary articles; the Nexus Mods pages returned HTTP 403 to
+automated fetches, so mod details below come from search snippets and guides and are marked
+unverified where the mod page itself was not read).
+
+### Finding 1: the base game now has dual wielding (Update 2.5)
+
+- Update 2.5 (released 2026-10-22 on PC, PS5, Xbox Series X|S) added the **Double Trouble** perk in
+  the Cool tree: real dual wielding, free, Phantom Liberty not required. Sources:
+  [TheFPSReview](https://www.thefpsreview.com/?p=156171),
+  [TweakTown](https://tweaktown.com/news/114231/cyberpunk-2077-patch-2-5-adds-dual-wield-pistols-edgerunners-2-quests-and-cross-platform-mods),
+  [Of Zen and Computing guide](https://www.ofzenandcomputing.com/how-to-dual-wield-pistols-in-cyberpunk-2077/).
+- Per the guide: needs Cool 9 and Double Trouble rank 1; only Power pistols and Power revolvers
+  qualify (Tech and Smart pistols can be equipped but do not qualify; no SMGs, rifles or melee);
+  a secondary weapon slot appears in the inventory; both guns fire on the same input; each gun does
+  37.5% less damage while dual wielded; rank 2 replaces Quick Melee with the Heywood Hurricane
+  (auto-fires both guns for one second). Exact controls and Deadeye/Focus interaction were not
+  confirmed by the sources. Guides written before 2.5 (and old Steam threads) correctly say vanilla
+  had none; they are out of date.
+
+### Finding 2: third-party dual-wield mods
+
+None of these could be opened (Nexus 403), so license, exact last-update date and issues are not
+verified; check each page before relying on it.
+
+| Mod | Link | Type | Notes (from guides/search) |
+| --- | --- | --- | --- |
+| Independent Pistol Controls (Dual Wielding) | https://www.nexusmods.com/cyberpunk2077/mods/35649 | Real: left click fires left gun, right click fires right gun (and controller equivalent); builds on the native 2.5 feature | Author states it works with 2.5; changes bindings |
+| Expanded Dual Wielding (Independent Triggers / CET Menu) | https://www.nexusmods.com/cyberpunk2077/mods/35626 | Real: pairs guns with guns or melee; allowed set selectable (power pistols and revolvers, all handguns, all guns) | Uses Native Settings UI menu; CET likely needed (unconfirmed) |
+| Dual Wield Any Weapon | https://www.nexusmods.com/cyberpunk2077/mods/35631 | Removes the weapon-category restriction | Requirements unknown |
+| Real Dual Wielding | https://www.nexusmods.com/cyberpunk2077/mods/34669 | Older mod, separate aiming | Pre-2.5 mods can conflict with the official slot |
+| Dual-wield mod (id 17006) | https://www.nexusmods.com/cyberpunk2077/mods/17006 | Pre-2.5 era | A forum poster said it looked like it needed an update; treat as outdated |
+
+Mod ids 356xx are recent (2.5 era); the dual wielding they add depends on, or conflicts with, the
+native slot. Compatibility with ShootDodge has not been tested.
+
+### What building akimbo from scratch would take
+
+Not needed now that the engine feature exists, but for the record: a second weapon slot and
+equip logic, a dual-pistol animgraph (idle, aim, fire, reload, and the dive/prone poses
+ShootDodge would need to blend with), per-hand fire input, and weapon-handling changes. That is
+WolvenKit/animgraph work of the same size as the existing "animation fidelity" open question, and
+Update 2.5 did the base of it for us. Sources for the tooling layer: the
+[RED4ext/Codeware/redscript framework notes](https://wiki.redmodding.org/cyberpunk-2077-modding/for-mod-creators-theory/core-mods-explained).
+
+### Recommendation
+
+Support it, but through the **native 2.5 Double Trouble perk, not a third-party mod**. No new
+optional dependency.
+
+1. Do not require any mod. Do not pursue building akimbo ourselves.
+2. Optional later integration, small: the loadout grant (C2SD-T4) could grant a second Power
+   pistol and note that V needs Cool 9 plus Double Trouble to wield both; ShootDodge's slow-mo
+   dilation and weapon-exemption code (C2SD-T24) should be checked to confirm it exempts both
+   held pistols, not just the active weapon.
+3. Mention in the Nexus page that Independent Pistol Controls (35649) is a suggested companion,
+   once someone has tested it alongside ShootDodge.
+4. Before any of this, verify in game on 2.5+: does ShootDodge's hold-weapon logic behave with two
+   pistols equipped? That belongs in a follow-up ticket, not here (research only).
