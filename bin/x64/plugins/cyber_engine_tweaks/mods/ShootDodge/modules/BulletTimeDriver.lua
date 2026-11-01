@@ -18,7 +18,8 @@
 -- C2SD-T9: while the world is slowed, V's weapon (and, opt-in, all of V) is exempted from the
 -- dilation so aim and fire stay responsive (rules in modules/AimFireExemption.lua). The exemption
 -- is synced right after the world dilation every time, so it comes and goes the same frame, and
--- Clear() drops it unconditionally too.
+-- Clear() drops it unconditionally too. C2SD-T30: while dual wielding (2.5 Double Trouble) both
+-- held guns are exempted, and both are dropped on landing, a swap of either hand, and Clear().
 
 local BulletTime = require("modules/BulletTime")
 local AimFireExemption = require("modules/AimFireExemption")
@@ -28,7 +29,9 @@ local REASON = "ShootDodgeBulletTime"
 local BulletTimeDriver = {
   rules = BulletTime.new(),
   exemption = AimFireExemption.new(), -- C2SD-T9
-  exemptWeapon = nil, -- C2SD-T9: the weapon entity currently exempted (to unset it after a swap)
+  -- C2SD-T9 / C2SD-T30: key -> weapon entity currently exempted (to unset it after a swap); two
+  -- entries while dual wielding.
+  exemptWeapons = {},
   paused = false,
   lastError = nil,
   meter = nil, -- C2SD-T15: the BulletTimeMeter, set by init.lua
@@ -66,18 +69,31 @@ local function unsetDilation()
   return setDilation(1.0)
 end
 
--- C2SD-T9: the weapon in V's hands and a stable key for it, or nil when unarmed/unknown.
-local function equippedWeapon()
-  local ok, weapon, key = pcall(function()
+-- C2SD-T9 / C2SD-T30: the weapons in V's hands as a list of { entity, key }, empty when
+-- unarmed/unknown. The right hand first, then the left: with Double Trouble (2.5) the off-hand gun
+-- sits in AttachmentSlots.WeaponLeft, which ScriptedPuppet.GetWeaponLeft reads (cast to
+-- WeaponObject, so a quick-throw grenade held there is not a weapon and is skipped).
+local function heldWeapons()
+  local list = {}
+  local ok = pcall(function()
     local player = Game.GetPlayer()
-    if player == nil then return nil end
-    local w = ScriptedPuppet.GetWeaponRight(player)
-    if w == nil then w = GameObject.GetActiveWeapon(player) end
-    if w == nil then return nil end
-    return w, tostring(w:GetEntityID().hash)
+    if player == nil then return end
+    local right = ScriptedPuppet.GetWeaponRight(player)
+    if right == nil then right = GameObject.GetActiveWeapon(player) end
+    local leftOk, left = pcall(function() return ScriptedPuppet.GetWeaponLeft(player) end)
+    for _, w in ipairs({ right, leftOk and left or false }) do
+      if w then
+        local key = tostring(w:GetEntityID().hash)
+        local seen = false
+        for _, e in ipairs(list) do
+          if e.key == key then seen = true end
+        end
+        if not seen then list[#list + 1] = { entity = w, key = key } end
+      end
+    end
   end)
-  if ok then return weapon, key end
-  return nil, nil
+  if ok then return list end
+  return {}
 end
 
 -- C2SD-T9: give one entity its own time scale that ignores the world's dilation.
@@ -121,19 +137,24 @@ end
 -- C2SD-T9: carry out what the exemption rules want for this frame.
 local function syncExemption()
   local exemption = BulletTimeDriver.exemption
-  local weapon, key = nil, nil
+  local tracked = BulletTimeDriver.exemptWeapons
+  local keys, byKey = {}, {}
   if BulletTimeDriver.rules.applied ~= nil and exemption.config.exemptWeapon then
-    weapon, key = equippedWeapon()
+    for _, held in ipairs(heldWeapons()) do
+      keys[#keys + 1] = held.key
+      byKey[held.key] = held.entity
+    end
   end
-  local actions = exemption:Step({ slowed = BulletTimeDriver.rules.applied, weaponKey = key })
+  local actions = exemption:Step({ slowed = BulletTimeDriver.rules.applied, weaponKeys = keys })
   for _, action in ipairs(actions) do
     local ok
     if action.op == "unsetWeapon" then
-      ok = unexemptEntity(BulletTimeDriver.exemptWeapon)
-      BulletTimeDriver.exemptWeapon = nil
+      ok = unexemptEntity(tracked[action.key])
+      tracked[action.key] = nil
     elseif action.op == "setWeapon" then
+      local weapon = byKey[action.key]
       ok = weapon ~= nil and exemptEntity(weapon, action.factor)
-      BulletTimeDriver.exemptWeapon = ok and weapon or nil
+      tracked[action.key] = ok and weapon or nil
     elseif action.op == "setPlayer" then
       ok = exemptPlayer(action.factor)
     elseif action.op == "unsetPlayer" then
@@ -149,16 +170,16 @@ end
 -- A weapon's is not (it would ignore later game slow-mo), hence the held-weapon unset below.
 local function clearExemption()
   local exemption = BulletTimeDriver.exemption
-  local tracked = BulletTimeDriver.exemptWeapon
-  unexemptEntity(tracked)
-  BulletTimeDriver.exemptWeapon = nil
+  local tracked = BulletTimeDriver.exemptWeapons
+  for _, entity in pairs(tracked) do unexemptEntity(entity) end
   -- C2SD-T24: a CET reload mid-slow-mo leaves the old module's weapon exemption on (a fresh module
-  -- tracks nothing), so also unset whatever weapon V holds now.
-  local held = equippedWeapon()
-  if held ~= nil and held ~= tracked then unexemptEntity(held) end
+  -- tracks nothing), so also unset whatever weapons V holds now (C2SD-T30: both hands).
+  for _, held in ipairs(heldWeapons()) do
+    if tracked[held.key] == nil then unexemptEntity(held.entity) end
+  end
+  BulletTimeDriver.exemptWeapons = {}
   if exemption.player then unexemptPlayer() end
-  exemption.weaponKey = nil
-  exemption.player = false
+  exemption:Forget()
 end
 
 -- Unconditionally remove this mod's dilation.

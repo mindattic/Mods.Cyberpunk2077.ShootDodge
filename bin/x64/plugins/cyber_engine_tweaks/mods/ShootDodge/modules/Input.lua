@@ -65,12 +65,10 @@ local function enumName(enumType, value)
   return nil
 end
 
--- gamedataItemType name of the weapon in V's hands right now, or nil when unarmed/unknown.
-local function equippedWeaponType(player)
+-- gamedataItemType name of one weapon object, or nil when unknown.
+local function weaponType(weapon)
+  if weapon == nil then return nil end
   local ok, name = pcall(function()
-    local weapon = ScriptedPuppet.GetWeaponRight(player)
-    if weapon == nil then weapon = GameObject.GetActiveWeapon(player) end
-    if weapon == nil then return nil end
     local itemID = weapon:GetItemID()
     local t = enumName("gamedataItemType", RPGManager.GetItemType(itemID))
     if t then return t end
@@ -81,12 +79,38 @@ local function equippedWeaponType(player)
   return nil
 end
 
+local function entityKey(entity)
+  local ok, key = pcall(function() return tostring(entity:GetEntityID().hash) end)
+  if ok then return key end
+  return nil
+end
+
+-- gamedataItemType names of the weapons in V's hands right now: the main (right-hand) weapon and,
+-- C2SD-T30, the off-hand gun the 2.5 Double Trouble perk puts in AttachmentSlots.WeaponLeft
+-- (ScriptedPuppet.GetWeaponLeft, nil when V holds one weapon). Either is nil when absent/unknown.
+local function equippedWeaponTypes(player)
+  local ok, right, left = pcall(function()
+    local main = ScriptedPuppet.GetWeaponRight(player)
+    if main == nil then main = GameObject.GetActiveWeapon(player) end
+    local leftOk, off = pcall(function() return ScriptedPuppet.GetWeaponLeft(player) end)
+    if not leftOk then off = nil end
+    -- GetActiveWeapon falls back to the left slot: the same gun is not a pair.
+    if main ~= nil and off ~= nil and entityKey(main) == entityKey(off) then off = nil end
+    return main, off
+  end)
+  if not ok then return nil, nil end
+  return weaponType(right), weaponType(left)
+end
+
 -- C2SD-T13: result of the last weapon check ({ allowed = bool, label = string }).
 Input.weapon = nil
 
--- Reads the equipped weapon live (no caching), so a weapon swap applies to the next combo.
+-- Reads the equipped weapon(s) live (no caching), so a weapon swap applies to the next combo.
+-- C2SD-T30: while dual wielding both guns must pass the gate (WeaponGate.ClassifyPair).
 function Input.WeaponStatus(player)
-  local allowed, label = WeaponGate.Classify(player ~= nil and equippedWeaponType(player) or nil)
+  local right, left = nil, nil
+  if player ~= nil then right, left = equippedWeaponTypes(player) end
+  local allowed, label = WeaponGate.ClassifyPair(right, left)
   Input.weapon = { allowed = allowed, label = label }
   return allowed, label
 end

@@ -72,7 +72,7 @@ Payne contact disappears from the phone with it.
 
 ### The Shootdodge
 
-1. Equip a pistol, revolver or SMG (see below).
+1. Equip a pistol, revolver or SMG, or two pistols with Double Trouble (see below).
 2. Hold aim (right mouse button or the left trigger) for at least 0.15 s.
 3. Hold a movement direction (forward, back, strafe left or right, or a diagonal) for at least 0.05 s.
 4. Press jump. With all three, V launches.
@@ -104,6 +104,21 @@ Pistols, revolvers and SMGs arm the combo. Rifles, shotguns, LMGs and HMGs, snip
 rifles, melee weapons, fists, cyberware arms and having nothing equipped all block it. The weapon is
 checked at the instant you press jump, so swapping weapons takes effect on the very next jump. The
 overlay's last-jump line says "weapon not allowed" when this was the reason.
+
+**Dual wielding.** With the base game's **Double Trouble** perk (Cool tree, Update 2.5) V holds a gun
+in each hand, and the Shootdodge works with both: both guns must be allowed (Double Trouble only pairs
+power pistols and power revolvers, so any pair it gives you is), and both fire at normal speed during
+the slow-mo. If the off-hand gun is not allowed, the combo is refused with "weapon not allowed
+(off-hand ...)". Single-weapon play is unchanged.
+
+### Dual pistols, the Max Payne way (recommended)
+
+Max Payne's signature is twin pistols. For the full look, take **Double Trouble** in the Cool tree
+(Cool 9, one perk point; free, no Phantom Liberty needed) and equip the two granted Lexingtons, one in
+the primary weapon slot and one in the secondary slot that the perk adds to the inventory. Then
+Shootdodge as usual: both guns fire on the shoot input at full cadence while the world crawls.
+[Independent Pistol Controls](https://www.nexusmods.com/cyberpunk2077/mods/35649) (left gun on left
+click, right gun on right click) is optional and **untested with ShootDodge**.
 
 ### Bullet-time meter (the hourglass)
 
@@ -147,12 +162,13 @@ vanilla items:
 
 It works for male and female V (every piece has both body appearances). Nothing is equipped for you:
 open the inventory and equip the pieces. The Lexington is a power pistol, so it passes the weapon
-restriction.
+restriction, and it carries the game's `DualWield` tag, so with Double Trouble the two Lexingtons
+pair up as twin pistols (see [Dual pistols](#dual-pistols-the-max-payne-way-recommended)).
 
 - It only grants once per save. A quest fact in the save records that, so reloading, restarting CET
   or selling a piece never re-grants it. If an item failed to arrive, the fact is left unset and the
   overlay says which, and **Check loadout now** (or the next load) gives only what is missing.
-- Limits: Cyberpunk has **no tie slot**, so there is no tie, and no dual-wielding, so "twin" means
+- Limits: Cyberpunk has **no tie slot**, so there is no tie. Without Double Trouble, "twin" means
   one Lexington in hand and one on the weapon wheel. The coat colour is a best match; see
   [`docs/DESIGN.md`](docs/DESIGN.md) for the research and the runners-up.
 
@@ -187,7 +203,7 @@ open; the hourglass HUD does not depend on it. Settings are not saved between se
 | Prone eye drop (m) | 1.30 (0 to 1.6) | How far the first-person camera drops while prone. |
 | Bullet-time | on | World slow-mo on (dive and Bullet Time mode). Off means the dive still happens at normal speed. |
 | Time scale | 0.20 (0.05 to 1.00) | World speed during slow-mo. |
-| Weapon at normal speed (fire rate) | on | Keeps V's weapon's fire cycle at normal speed during slow-mo. |
+| Weapon at normal speed (fire rate) | on | Keeps V's weapon's fire cycle (both guns while dual wielding) at normal speed during slow-mo. |
 | All of V at normal speed (pad look; fall not slowed) | off | Also exempts V, which fixes slow gamepad turning but speeds V's fall arc back up. |
 | Start/Stop bullet-time mode | | Toggles Bullet Time mode (same as the hotkey). |
 | Refill meter / Empty meter | | Test buttons for the hourglass. |
@@ -205,7 +221,8 @@ open; the hourglass HUD does not depend on it. Settings are not saved between se
 Read-outs: the current state (`NONE`, `DIVING`, `AIRBORNE`, `PRONE`, `GETUP`) with time in state, the
 last state change and last refused one, combo status and the reason the last jump was not a combo, the
 locked dive direction and air time, the landing log (one line per dive, movement held or not), prone
-and get-up status, world time (and whether the game is paused), which entities are exempted, the exact
+and get-up status, world time (and whether the game is paused), how many weapons (2 while dual
+wielding) are exempted and whether V is, the exact
 meter value, mode, tint and kills counted, polish status, and the loadout result. Problems show as
 "... problem:" lines. The mod also prints state changes, combos, landings and get-ups to the CET
 console.
@@ -227,7 +244,8 @@ If the game or CET dies mid-dive, the next load puts your music volume back.
 - Max Payne 2's extra slowdown for a yellow hourglass is not implemented; the tint is only visual.
 - Drain, refill and kill amounts are estimates (MP2's real numbers are not published) and are the
   values to tune after in-game testing; see `BulletTimeMeter.defaults`.
-- No tie, no true dual-wielding (see the loadout).
+- No tie (see the loadout). Dual wielding needs the game's Double Trouble perk; it has not yet been
+  checked in game with ShootDodge (see `docs/TESTING.md`).
 - Settings are per session. Only the hourglass level and the loadout flag are saved (in the save file).
 
 ## Building and packaging

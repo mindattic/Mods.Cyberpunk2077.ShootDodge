@@ -18,7 +18,8 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
    `[ShootDodge] loaded`, `state X -> Y`, `combo detected`, `landing #N`, `get-up ...`. Lines ending in
    `error` or the overlay's "... problem:" lines are failures.
 5. Have on hand: a pistol (the loadout's Lexington is fine), a revolver or SMG if you have one, a rifle or
-   shotgun, a sniper rifle, and melee or fists.
+   shotgun, a sniper rifle, and melee or fists. For section P (dual wielding), a V with Cool 9 and the
+   **Double Trouble** perk (game 2.5 or later) and the loadout's two Lexingtons.
 
 Abbreviations: **combo** = aim held + jump + a movement direction. **Overlay** = the ShootDodge window.
 
@@ -144,14 +145,14 @@ Expected: the camera turns at normal speed.
 Expected: all slowed.
 
 **F4. Weapon swap.** Swap between two allowed weapons during the dive.
-Expected: the new weapon fires at full cadence too (the overlay "Exempt now: weapon yes").
+Expected: the new weapon fires at full cadence too (the overlay "Exempt now: weapons 1").
 
 **F5. Gamepad.** On a pad, dive and turn.
 Expected (known limitation): turning is slow. Tick "All of V at normal speed" and it turns at normal speed,
 but V's fall arc is faster.
 
 **F6. Exemption clears.** Land.
-Expected: the overlay says "Exempt now: weapon no | V no"; the weapon fires normally.
+Expected: the overlay says "Exempt now: weapons 0 | V no"; the weapon fires normally.
 
 ## G. Landing (C2SD-T10)
 
@@ -428,6 +429,45 @@ problem: phone route missing ...`. Put Phone Extension back afterwards.
 The overlay's **Re-send to phone** button (under **Texts from Max Payne**) pops the notification
 again for retesting O2-O4 without a new save; it does not change the save's fact.
 
+## P. Dual wielding with Double Trouble (C2SD-T30)
+
+Needs game 2.5 or later and a V with Cool 9 and the **Double Trouble** perk (Cool tree). Equip one
+Lexington in the primary weapon slot and the other in the secondary slot the perk adds, and draw them
+so V holds one in each hand. Keep the overlay open.
+
+**P1. Lexingtons qualify.** Open the inventory with the perk bought.
+Expected: the second Lexington can go in the secondary (dual-wield) slot; drawn, V holds both.
+
+**P2. The combo arms.** With both guns drawn, do the combo.
+Expected: it triggers and V leaps (the combo's detected count rises by 1).
+
+**P3. Both guns at full cadence.** Dive and fire continuously.
+Expected: both guns fire at the same cadence as out of the dive while the world is slowed; the overlay
+reads "Exempt now: weapons 2".
+
+**P4. Clears on landing.** Land.
+Expected: "Exempt now: weapons 0 | V no", and the world and both guns are back at normal speed.
+
+**P5. Clears on weapon swap.** Dive with both guns, then swap to a single weapon (or holster) mid-dive.
+Expected: the count follows what is held (1, or 0 when holstered), and on landing it reads 0. Swap back
+to the pair in a later dive and it reads 2 again.
+
+**P6. Clears on a CET reload.** Dive with both guns and reload CET mid-dive, then trigger a game slow-mo
+(Kerenzikov or Sandevistan) after landing.
+Expected: both guns slow with the world under the game's own slow-mo (neither was left exempted).
+
+**P7. Off-hand not allowed.** (Only if a mod such as Dual Wield Any Weapon lets you pair a pistol with
+a non-allowed gun.) Hold the pair and do the combo.
+Expected: no trigger; "Last jump not a combo: weapon not allowed (off-hand ...)".
+
+**P8. Single weapon unchanged.** Unequip the secondary gun and repeat B2, F1 and F6.
+Expected: exactly as before ("Exempt now: weapons 1" during the dive).
+
+**P9. Independent Pistol Controls (optional, untested).** If you use
+[Independent Pistol Controls](https://www.nexusmods.com/cyberpunk2077/mods/35649), note whether the
+combo still detects aim and whether each gun fires at full cadence in the dive.
+Expected: note the result only; it is not a requirement.
+
 ## Results
 
 | Case | Pass / Fail | Notes |
@@ -538,3 +578,12 @@ again for retesting O2-O4 without a new save; it does not change the save's fact
 | O6 |  |  |
 | O7 |  |  |
 | O8 |  |  |
+| P1 |  |  |
+| P2 |  |  |
+| P3 |  |  |
+| P4 |  |  |
+| P5 |  |  |
+| P6 |  |  |
+| P7 |  |  |
+| P8 |  |  |
+| P9 |  |  |

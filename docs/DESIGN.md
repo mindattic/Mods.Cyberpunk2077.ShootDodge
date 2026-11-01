@@ -53,8 +53,9 @@ with `Loadout.bodyOverrides` for a per-body swap; both are empty today because n
 | Feet | `Items.FormalShoes_01_basic_01` | Black dress shoes. | `FormalShoes_02_basic_01`, `FormalShoes_03_basic_01`. |
 
 Female V gets the same five records, all with female meshes; no piece needed a female-specific
-substitute. CP77 has no dual-wielding, so the "twin pistols" are two separate Lexingtons in the
-inventory (one in hand, one on the wheel), not a two-handed pose.
+substitute. The "twin pistols" are two separate Lexingtons in the inventory. Without the 2.5 Double
+Trouble perk that means one in hand and one on the wheel; with it, they pair up as real dual pistols
+(C2SD-T30: the Lexington inherits the `DualWield` tag, see "Dual-wield support" below).
 
 Caveat: this checkout has no tool to render a garment, so each pick is by item family (the long
 coat, formal shirt, formal trousers, formal shoes) and its `basic_01` variant. The in-game check
@@ -111,6 +112,7 @@ exemption to the new weapon. Mouse look is a per-frame displacement, so it isn't
 first place. An opt-in overlay toggle also exempts all of V (Sandevistan's "local player zero"
 lever), which restores gamepad turn rate too but speeds V's fall arc back up, so it is off by
 default. The exemption is synced right after the world dilation and dropped with it, same frame.
+With Double Trouble both held guns are exempted (C2SD-T30, below).
 
 ### Bullet-time meter (C2SD-T15)
 
@@ -418,3 +420,62 @@ optional dependency.
    once someone has tested it alongside ShootDodge.
 4. Before any of this, verify in game on 2.5+: does ShootDodge's hold-weapon logic behave with two
    pistols equipped? That belongs in a follow-up ticket, not here (research only).
+
+## Dual-wield support (C2SD-T30)
+
+### How the game represents the off-hand weapon (research)
+
+Read from the 2.5 decompiled game scripts and TweakDB sources, not guessed. Sources:
+[CDPR-Modding-Documentation/Cyberpunk-Scripts](https://github.com/CDPR-Modding-Documentation/Cyberpunk-Scripts)
+(script dump, last pushed 2026-10-31, after 2.5's release; it has the 2.5 dual-wield code) and
+[CDPR-Modding-Documentation/Cyberpunk-Tweaks](https://github.com/CDPR-Modding-Documentation/Cyberpunk-Tweaks)
+(TweakDB `.tweak` sources). Paths below are inside those repos.
+
+- **Two hand slots, two entities.** The main gun sits in `AttachmentSlots.WeaponRight`, the off-hand
+  gun in `AttachmentSlots.WeaponLeft`; each is its own `WeaponObject` entity.
+  `ScriptedPuppet.GetWeaponRight(obj)` / `GetWeaponLeft(obj)` read them
+  (`TransactionSystem.GetItemInSlot(obj, slot) as WeaponObject`; `cyberpunk/puppet/scriptedPuppet.script`),
+  and `ScriptedPuppet.GetActiveWeapons(obj)` returns both. `GetActiveWeapon` returns the right one,
+  falling back to the left only when the right slot is empty. `WeaponObject.IsLeftHandWeapon()` is
+  `GetAttachedSlotID() == T"AttachmentSlots.WeaponLeft"` (`cyberpunk/items/weapon.script`). The game's
+  own code treats the pair this way everywhere: `ReloadWeaponEffector` reloads `GetWeaponRight` then
+  `GetWeaponLeft` (`core/gameplay/effectors/reloadWeaponEffector.script`), the shoot state machine has
+  a `WeaponLeft` instance with its own `LastSecondaryShotTime` (`cyberpunk/player/psm/weaponTransitions.script`),
+  and the equip anim feature sets `dualWield` when both slots hold an item (`cyberpunk/player/psm/equipment.script`).
+- **The same left slot holds other things.** Quick-throw grenades, the mine dispenser and some
+  cyberware use `AttachmentSlots.WeaponLeft` too (`combatGadgetTransitions.script`,
+  `mineDispenserTransitions.script`). The `as WeaponObject` cast in `GetWeaponLeft` filters out a
+  grenade (not a `WeaponObject`).
+- **Upper-body state.** While dual wielding the player state machine's `UpperBody` blackboard value is
+  `gamePSMUpperBodyStates.DualWield` (`cyberpunk/player/psm/upperBodyTransitions.script`).
+- **Which guns qualify.** `gameItemData.CanDualWield(owner)` (`core/data/itemData.script`) is: the item
+  has the `DualWield` tag **and** V bought `gamedataNewPerkType.Cool_Central_Milestone_2`, whose
+  record (`new_perks/cool_new_perks.tweak`) is commented "Double Trouble". A `QuestPreventDualWield`
+  tag adds a quest-fact check (the Lexington Toygun and the Nova carry it).
+- **The Lexington qualifies.** `Base_Power_Handgun : Base_Handgun` has tags `"DualWield", "PowerWeapon"`
+  (`items/weapons/ranged/bases/base_handgun.tweak`); the chain is `Preset_Lexington_Default :
+  Preset_Base_Lexington : Base_Lexington : Base_Power_Handgun`, and both Lexington records only append
+  tags (`tags +=`), so `Items.Preset_Lexington_Default` (the loadout's twin pistols, C2SD-T4) inherits
+  `DualWield` and has no `QuestPreventDualWield`. **The grant needs no change.** (TweakDB also has
+  `Preset_*_Left_Hand` records tagged `Left_Hand`, `HideInUI`, `IgnoreInventory`; they derive from
+  `Preset_Base_Lexington`, so they share its handgun base.) Revolvers carry `DualWield` too (`base_revolver.tweak`).
+
+### What ShootDodge does with it
+
+- **Slow-mo exemption** (`AimFireExemption.lua`, `BulletTimeDriver.lua`). The rules track a set of
+  exempted weapon keys instead of one. The driver reads both hand slots every sync (right first, then
+  `GetWeaponLeft`, same entity counted once) and exempts each held gun with its own individual time
+  dilation; a swap of either hand unsets only that hand's old gun. Landing, pause, death, disable and
+  `Clear()` (shutdown, CET reload at init) unset every tracked gun **and** both guns V holds now
+  (the C2SD-T24 clean-up, extended to the left hand). With one weapon this is the old single-key
+  behaviour. The overlay shows "Exempt now: weapons N".
+- **Weapon gate** (`WeaponGate.ClassifyPair`, `Input.lua`). The jump-press check reads both slots. One
+  weapon: exactly `Classify` as before. Two: both must be on the allow-list (pistol, revolver, SMG); a
+  bad main gun refuses with its type, a bad off-hand gun refuses with "weapon not allowed (off-hand
+  <type>)". Vanilla Double Trouble only pairs power pistols and revolvers, so the off-hand refusal
+  only shows with mods that widen the pairing (Dual Wield Any Weapon, Expanded Dual Wielding).
+- **Docs** recommend Double Trouble for the Max Payne twin-pistol look; Independent Pistol Controls
+  (Nexus 35649) is optional and untested with ShootDodge.
+
+**Still to verify in game** (TESTING.md section P): the combo arms with the pair, both guns fire at
+normal cadence in slow-mo, and the exemptions clear on landing, on a weapon swap and on a CET reload.

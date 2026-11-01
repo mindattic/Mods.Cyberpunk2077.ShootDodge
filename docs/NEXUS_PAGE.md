@@ -49,6 +49,8 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
   - The Shootdodge: aim + jump + a movement direction leaps V in that direction, locked in the air.
   - Slow-mo with full-speed aim and fire; lands prone and keeps shooting; a move key stands V back up.
   - Pistols, revolvers and SMGs only.
+  - Dual pistols with the game's Double Trouble perk (Update 2.5): both guns arm the combo and fire
+    at full speed in the slow-mo.
   - Max Payne 2's bullet-time hourglass with a bindable Bullet Time mode, kill refill and a HUD.
   - Camera FOV pull-back, whoosh and music duck.
   - The Max Payne 2 outfit and twin Lexington pistols, once per save.
@@ -121,7 +123,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 
 [size=5][b]How it works[/b][/size]
 [list=1]
-[*]Equip a pistol, revolver or SMG.
+[*]Equip a pistol, revolver or SMG, or two pistols with the Double Trouble perk.
 [*]Hold aim, hold a movement direction, press jump.
 [*]V leaps that way. The direction is locked for the whole dive, but the camera and aim stay free.
 [*]The world drops to 0.2x speed while your mouse look and your gun's fire rate stay at normal speed.
@@ -136,9 +138,10 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][b]Aim and fire stay fast:[/b] slow world, normal fire rate and mouse look. Bullets, enemies and V's own fall arc stay slowed for contrast.
 [*][b]Prone and get-up:[/b] free-aim and fire 360 degrees from the floor, no timer. A fresh movement press stands V up with a short scramble.
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
+[*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (bind it in the CET Bindings tab) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
-[*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington pistols, a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
+[*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
 [*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
 [*][b]Debug overlay:[/b] every number is a slider or tick in the CET overlay: slow-mo factor, FOV, music, prone height and more.
 [*][b]Safe:[/b] slow-mo, FOV and music always return to normal on landing, death, pause or disabling the mod.
@@ -148,7 +151,8 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [size=5][b]Known limitations[/b][/size]
 [list]
 [*]Prone is camera-only: V's body and hitbox stay standing, because Cyberpunk has no prone stance.
-[*]There is no dive animation (first person shows no body), and no tie or true dual-wielding, which the game lacks.
+[*]There is no dive animation (first person shows no body), and no tie, which the game lacks.
+[*]Dual wielding comes from the game's Double Trouble perk and has not yet been checked in game with ShootDodge.
 [*]Ambience low-pass audio events are blank by default, so only the music volume is ducked.
 [*]A gamepad's turn speed follows slow-mo unless you tick "All of V at normal speed" in the overlay, which also speeds up V's fall arc.
 [/list]

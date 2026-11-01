@@ -318,8 +318,9 @@ registerForEvent("onDraw", function()
     ex.config.exemptWeapon)
   ex.config.exemptPlayer = ImGui.Checkbox("All of V at normal speed (pad look; fall not slowed)",
     ex.config.exemptPlayer)
-  ImGui.Text(string.format("Exempt now: weapon %s | V %s",
-    ex.weaponKey and "yes" or "no", ex.player and "yes" or "no"))
+  -- C2SD-T30: weapons counts both hands while dual wielding (Double Trouble).
+  ImGui.Text(string.format("Exempt now: weapons %d | V %s",
+    ex:WeaponCount(), ex.player and "yes" or "no"))
 
   -- C2SD-T15: the hourglass, exact values.
   local meter = MeterDriver.meter
