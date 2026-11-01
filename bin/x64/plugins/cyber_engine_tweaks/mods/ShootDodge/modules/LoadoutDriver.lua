@@ -75,13 +75,27 @@ function LoadoutDriver.Check()
       error("no TweakDB record " .. entry.record)
     end
   end
+  local failed = {}
   for _, entry in ipairs(plan) do
-    Game.AddToInventory(entry.record, entry.count)
-    print(string.format("[ShootDodge] loadout: +%d %s (%s)", entry.count, entry.record,
-      entry.label))
+    local okAdd, added = pcall(Game.AddToInventory, entry.record, entry.count)
+    if okAdd and added ~= false and added ~= nil then
+      print(string.format("[ShootDodge] loadout: +%d %s (%s)", entry.count, entry.record,
+        entry.label))
+    else
+      failed[#failed + 1] = entry.label .. " (" .. entry.record .. ")"
+      print(string.format("[ShootDodge] loadout: FAILED +%d %s (%s)", entry.count,
+        entry.record, entry.label))
+    end
+  end
+  if #plan > 0 then LoadoutDriver.grants = LoadoutDriver.grants + 1 end
+  if #failed > 0 then
+    -- Leave the save fact unset so "Check loadout now" retries (shortfall-only, no duplicates).
+    LoadoutDriver.lastResult = string.format("INCOMPLETE, not marked granted; failed to add: %s (%s V)",
+      table.concat(failed, ", "), LoadoutDriver.body)
+    LoadoutDriver.done = true
+    return true
   end
   if not granted then qs:SetFactStr(Loadout.FACT, 1) end
-  if #plan > 0 then LoadoutDriver.grants = LoadoutDriver.grants + 1 end
   LoadoutDriver.lastResult = string.format("%s (%s V)", why, LoadoutDriver.body)
   LoadoutDriver.done = true
   return true
