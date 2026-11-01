@@ -146,7 +146,9 @@ function Dive:Update(deltaTime, grounded, vz)
     if self.groundedFrames > 0 then self.grazes = self.grazes + 1 end
     self.groundedFrames = 0
     self.touchdownAt = nil
-  elseif self.leftGround and self.airTime >= cfg.minAirSec then
+  elseif self.leftGround then
+    -- C2SD-T20: no minimum airtime gate here; a short hop (low ceiling, step) must still land.
+    -- Grazes are rejected by the rise-speed check and the landConfirmFrames run below.
     if vz ~= nil and vz > cfg.maxLandingRiseSpeed then
       -- Touching something while the arc is still going up: not a landing.
       if self.groundedFrames > 0 then self.grazes = self.grazes + 1 end
