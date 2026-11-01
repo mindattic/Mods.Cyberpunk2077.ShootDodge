@@ -2,14 +2,25 @@
 -- Skeleton only -- no mechanics are implemented yet. See docs/DESIGN.md in the repo root for the
 -- planned states and build order (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
+local Input = require("modules/Input")
+local StateMachine = require("modules/StateMachine")
+
 local ShootDodge = {
   enabled = false,
-  state = "NONE", -- "NONE" | "DIVING" | "AIRBORNE" | "PRONE" | "GETUP"
+  -- C2SD-T6: the one centralized state (NONE | DIVING | AIRBORNE | PRONE | GETUP). Every
+  -- transition is defined in modules/StateMachine.lua; read it with ShootDodge.machine.state.
+  machine = StateMachine.new(),
 }
 
-local Input = require("modules/Input")
-
 registerForEvent("onInit", function()
+  ShootDodge.machine:Reset("load")
+  ShootDodge.machine:AddListener(function(from, to, event, reason)
+    print(string.format("[ShootDodge] state %s -> %s (%s%s)", from, to, event,
+      reason and (": " .. reason) or ""))
+  end)
+  -- A new combo can't start while a Shootdodge is already in progress.
+  Input.isBlocked = function() return ShootDodge.machine:IsActive() end
+
   -- C2SD-T5: detect the Shootdodge combo (aim held + jump + move). Detection only: a trigger is
   -- recorded and shown in the overlay, but nothing is wired to a state transition yet (C2SD-T6).
   ShootDodge.combo = Input.Install()
@@ -23,13 +34,26 @@ end)
 
 registerForEvent("onShutdown", function()
   Input.Reset()
+  ShootDodge.machine:Reset("shutdown")
 end)
 
 registerForEvent("onUpdate", function(deltaTime)
   Input.Update(deltaTime)
-  if not ShootDodge.enabled then return end
-  -- TODO: input detection / state machine / dive / bullet-time / landing branch go here,
-  -- in the order laid out in docs/DESIGN.md and the ticket log.
+  local machine = ShootDodge.machine
+  local ok, err = pcall(function()
+    machine:Update(deltaTime)
+    if not ShootDodge.enabled then
+      if machine:IsActive() then machine:Reset("mod disabled") end
+      return
+    end
+    -- TODO: dive / bullet-time / landing branch drive the machine here (C2SD-T7 onward), in the
+    -- order laid out in docs/DESIGN.md and the ticket log. Until then nothing fires a transition,
+    -- so the state stays NONE.
+  end)
+  if not ok then
+    print("[ShootDodge] update error: " .. tostring(err))
+    machine:Reset("update error")
+  end
 end)
 
 registerForEvent("onDraw", function()
@@ -41,7 +65,19 @@ registerForEvent("onDraw", function()
   local changed
   changed, ShootDodge.enabled = ImGui.Checkbox("Enabled", ShootDodge.enabled)
   if changed and ShootDodge.combo then ShootDodge.combo:SetEnabled(ShootDodge.enabled) end
-  ImGui.Text("State: " .. ShootDodge.state)
+
+  local machine = ShootDodge.machine
+  ImGui.Text(string.format("State: %s (%.2fs)", machine.state, machine:TimeInState()))
+  local last = machine.lastTransition
+  if last then
+    ImGui.Text(string.format("Last change: %s -> %s (%s%s)", last.from, last.to, last.event,
+      last.reason and (": " .. last.reason) or ""))
+  end
+  if machine.lastRejected then
+    ImGui.Text(string.format("Refused: %s from %s", machine.lastRejected.event,
+      machine.lastRejected.from))
+  end
+
   local combo = ShootDodge.combo
   if combo then
     ImGui.Text(string.format("Combo: aim %s | move %.2f | detected %d",
