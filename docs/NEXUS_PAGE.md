@@ -18,7 +18,7 @@ checklist with expected results. At minimum these must pass:
       aim and fire stay at normal speed while the world is slow.
 - [ ] G1-G5, H1-H9 (male and female V): one landing per dive with the right held flag, prone shooting
       360 degrees, no timer, get up by a move key or by holding through the landing.
-- [ ] I1-I18: the hourglass HUD, the bindable Bullet Time mode (bound to Mouse 4 or 5, not V), drain, passive and kill refill, and
+- [ ] I1-I18: the hourglass HUD, the bindable Bullet Time mode (Numpad Enter recommended, never V), drain, passive and kill refill, and
       save persistence.
 - [ ] J1-J4: only pistols, revolvers and SMGs arm the combo, and swaps apply at once.
 - [ ] K1-K9: FOV, whoosh and music duck start and revert on both exit paths, each toggleable.
@@ -139,7 +139,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][b]Prone and get-up:[/b] free-aim and fire 360 degrees from the floor, no timer. A fresh movement press stands V up with a short scramble.
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
-[*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (bind it in the CET Bindings tab: Mouse 4 is recommended, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
+[*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (bind it in the CET Bindings tab: Numpad Enter is recommended, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
 [*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
@@ -170,7 +170,7 @@ Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Phone Extension is opt
 [list=1]
 [*][b]Vortex:[/b] Mod Manager Download. It installs and deploys on its own, no prompts. [b]Manual:[/b] extract the zip into your Cyberpunk 2077 folder (it contains [i]bin[/i] and [i]r6[/i]).
 [*]Start the game, open the CET overlay, and tick [b]Enabled[/b] in the ShootDodge window. It starts off each session.
-[*]To use Bullet Time mode, bind it in the CET overlay's Bindings tab. CET cannot ship a default key. Recommended: Mouse 4 (thumb button), or Mouse 5. Do not use V, it summons your vehicle.
+[*]To use Bullet Time mode, bind it in the CET overlay's Bindings tab. CET cannot ship a default key. Recommended: Numpad Enter (no numpad? rebind to another free key). Do not use V, it summons your vehicle.
 [*]Check your phone a few seconds in. Max has something to say.
 [/list]
 Uninstall in Vortex, or delete [i]bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge[/i] and [i]r6/scripts/ShootDodge[/i].

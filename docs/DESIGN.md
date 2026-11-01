@@ -484,18 +484,20 @@ normal cadence in slow-mo, and the exemptions clear on landing, on a weapon swap
 
 V (where the user first bound it) is the base game's vehicle summon, so it is wrong for the toggle.
 
-- **Recommended: Mouse 4** (thumb side button). Max Payne used a mouse button for bullet time, a
-  thumb button is reachable mid-fight without leaving WASD or the aim hand, and the base game's
-  default PC layout is keyboard keys plus LMB (fire), RMB (aim) and MMB (grenade/gadget); no source
-  found assigns the thumb buttons. **Alternative: Mouse 5.**
-- **Caveat, honestly:** no Cyberpunk 2077 install exists on this machine (checked D:\Games), so
-  `r6/config/inputUserMappings.xml` and `inputContexts.xml` could not be read. "Unused" rests on the
-  published control lists and Steam community threads below, which cover Mouse 3 but not Mouse 4/5
-  explicitly. Confirm in the game's Controls menu (Mouse 4 should show nothing assigned) and on
-  foot, in a vehicle, in menus, in photo mode and with Double Trouble dual wield.
-- **Default key: not possible.** The CET wiki states mods cannot define default hotkeys; the
-  player binds each one in the Bindings tab. `registerInput` / `registerHotkey` take no key
-  argument, so the binding stays user-set and the docs and Max's text recommend Mouse 4.
+- **Chosen by the user: Numpad Enter.** Alternative (keyboards without a numpad): Mouse 4, the thumb
+  side button, which no source found assigns.
+- **Default key: not possible from a mod.** The CET wiki states mods cannot define default
+  hotkeys; the player binds each one in the Bindings tab. `registerInput` / `registerHotkey` take
+  no key argument. CET's Lua sandbox also keeps a mod's file access to its own folder, so seeding
+  CET's `bindings.json` is not available either, and Lua has no raw key poll outside the overlay.
+  Reading the key through the game would need a new input action in `r6/input` XML plus an input
+  loader dependency, which is out of scope here. So the binding stays user-set; docs and Max's text
+  recommend Numpad Enter and say it can be rebound in the Bindings tab.
+- **Is Numpad Enter unused? Not verified.** No Cyberpunk 2077 install exists on this machine
+  (checked D:\Games), so `r6/config/inputUserMappings.xml` and `inputContexts.xml` could not be
+  read. The published control lists below do not show Numpad Enter assigned, but menus accept
+  Enter for confirm and the game may treat Numpad Enter the same, so check in game (Controls menu,
+  on foot, in a vehicle, in menus, photo mode, dual wield).
 - Sources: https://wiki.redmodding.org/cyber-engine-tweaks/cet-functions/hotkeys ,
   https://wiki.redmodding.org/cyber-engine-tweaks/console/bindings ,
   https://www.magicgameworld.com/?p=125476 (PC keyboard controls) ,

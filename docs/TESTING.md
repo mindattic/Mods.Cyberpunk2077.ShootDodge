@@ -220,7 +220,7 @@ while paused.
 **I2. HUD toggle.** In the overlay, untick Hourglass HUD.
 Expected: the hourglass hides; tick it and it returns.
 
-**I3. Bind the hotkey.** CET overlay, Bindings, bind "Bullet-time mode (Max Payne 2, toggle)" to **Mouse 4** (alternative Mouse 5).
+**I3. Bind the hotkey.** CET overlay, Bindings, bind "Bullet-time mode (Max Payne 2, toggle)" to **Numpad Enter** (no numpad: another free key).
 Do not use V: it summons the vehicle. Confirm the key does nothing else in the base game.
 Expected: the binding is listed under ShootDodge and can be bound.
 
