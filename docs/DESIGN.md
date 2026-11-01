@@ -292,7 +292,7 @@ the CET-to-redscript bridge through `Game.GetScriptableSystemsContainer():Get(..
   HUD phone controller initialises. The contact is hidden until its thread has texts, appears only
   in the Messages tab (not callable), and opening it marks the thread read by setting the save's fact
   to 2.
-- `modules/IntroMessage.lua` (pure Lua) holds the sender, the 14 texts, the quote list with sources,
+- `modules/IntroMessage.lua` (pure Lua) holds the sender, the 17 texts, the quote list with sources,
   and `Plan(fact)`: fact unset = send and notify; 1 = sent but unread; 2 = read.
 - `modules/IntroMessageDriver.lua` (CET glue): once per session, 8 s after V appears, unpaused, and
   once the phone reports ready, it fills the thread every session (redscript system state is not

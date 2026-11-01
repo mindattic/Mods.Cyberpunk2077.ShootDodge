@@ -105,6 +105,19 @@ IntroMessage.messages = {
   "Open the Cyber Engine Tweaks overlay, find the ShootDodge window, tick Enabled. Put a pistol, "
     .. "a revolver or an SMG in your hand. Nothing else. A rifle is an anchor, and anchors don't "
     .. "fly.",
+  "Here's the part nobody tells you, so I will. The overlay is Cyber Engine Tweaks. Its key is "
+    .. "whatever you picked the first night CET started, and if you never picked, it's the "
+    .. "tilde, the squiggle under Escape. Press it and a pane of cold glass drops over the city. "
+    .. "That's where the machinery lives.",
+  "Find the window marked ShootDodge. Tick Enabled. I mean it. Until that box is checked "
+    .. "nothing happens, you jump like a civilian and eat the floor like one too. It starts off "
+    .. "every session, a bad habit of this town. And the debug window only shows while the "
+    .. "overlay is open. Close the glass and it's gone. The mod keeps working in the dark.",
+  "Bullet Time has its own switch. Open the Bindings tab in that same overlay and find "
+    .. "ShootDodge. It ships unbound, because CET won't let a mod pick your keys. I'd give it "
+    .. "Numpad Enter. No numpad, or want another key? Click the binding, press the key you "
+    .. "want, done. Never V. V "
+    .. "already summons your ride and the city has enough cars trying to kill you.",
   "Aim. Hold a direction. Jump. Throw the rules out the window, odds are you'll go that way too. "
     .. "You leave the ground sideways, like a bad decision with a head start. Gravity swears it "
     .. "will take you at the usual speed. Logic was such a liar.",
@@ -118,8 +131,7 @@ IntroMessage.messages = {
   "Get up fast. The genius of the hole: no matter how long you spend climbing out, you can "
     .. "still fall back down in an instant.",
   "I don't know about angels, but it's fear that gives men wings. Mine come with an hourglass. "
-    .. "Bind Bullet Time in the overlay's Bindings tab, to Numpad Enter (rebind it if your keyboard has no numpad). Never V, "
-    .. "V already calls your ride. Press it and the city crawls while the "
+    .. "Bullet Time, once you bind it (Numpad Enter, say), is the answer. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
   "I felt the rise of that old familiar feeling. I hated it. I welcomed it. Death is "
