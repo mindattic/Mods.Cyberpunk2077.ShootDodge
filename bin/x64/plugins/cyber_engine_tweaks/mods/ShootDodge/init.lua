@@ -205,7 +205,12 @@ registerForEvent("onUpdate", function(deltaTime)
 end)
 
 -- C2SD-T18: the debug window draws only while the CET overlay is open.
+-- C2SD-T33: seed from the live state, since a "Reload all mods" with the overlay open never fires onOverlayOpen.
 local overlayOpen = false
+do
+  local okVis, vis = pcall(function() return CET and CET.IsOverlayVisible and CET.IsOverlayVisible() end)
+  if okVis and vis then overlayOpen = true end
+end
 registerForEvent("onOverlayOpen", function() overlayOpen = true end)
 registerForEvent("onOverlayClose", function() overlayOpen = false end)
 
