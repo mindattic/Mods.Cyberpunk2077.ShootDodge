@@ -14,7 +14,10 @@
 --   * jump was released before this press (holding jump never re-fires);
 --   * at least `cooldownSec` has passed since the last trigger (no double dives);
 --   * the context allows it: `blocked` is false (menus, vehicles, scenes, an active dive) and
---     the player is grounded.
+--     the player is grounded;
+--   * the equipped weapon is on the allow-list (pistol, revolver, SMG -- C2SD-T13, see
+--     modules/WeaponGate.lua). The weapon is read at the jump press itself, so a swap takes
+--     effect on the very next combo.
 --
 -- Nothing here starts a dive: a trigger only records the combo and notifies listeners. The state
 -- machine (C2SD-T6) and the dive itself (C2SD-T7) decide what a trigger does.
@@ -35,6 +38,7 @@ ComboDetector.Reject = {
   disabled = "disabled",
   blocked = "blocked",
   airborne = "airborne",
+  weapon = "weapon not allowed",
   noAim = "aim not held",
   aimTooShort = "aim held too briefly",
   noMove = "no movement direction",
@@ -117,7 +121,8 @@ function ComboDetector:OnMove(x, y, now)
 end
 
 -- Returns the trigger table when the combo fires, else nil (with the reason in lastReject).
--- context: { blocked = bool, grounded = bool }; a missing field means "not blocked" / "grounded".
+-- context: { blocked = bool, grounded = bool, weaponAllowed = bool, weapon = label }; a missing
+-- field means "not blocked" / "grounded" / "weapon allowed".
 function ComboDetector:OnJump(pressed, now, context)
   if not pressed then
     self.jumpHeld = false
@@ -140,6 +145,9 @@ function ComboDetector:Evaluate(now, context)
     reason = R.blocked
   elseif context.grounded == false then
     reason = R.airborne
+  elseif context.weaponAllowed == false then
+    reason = R.weapon
+    if context.weapon then reason = reason .. " (" .. context.weapon .. ")" end
   elseif not self.aimHeld then
     reason = R.noAim
   elseif now - self.aimSince < cfg.minAimHoldSec then

@@ -9,6 +9,7 @@
 -- times and cooldown use one time base.
 
 local ComboDetector = require("modules/ComboDetector")
+local WeaponGate = require("modules/WeaponGate")
 
 local Input = {
   clock = 0,
@@ -55,12 +56,50 @@ local function isInVehicle(player)
   return ok and vehicle ~= nil
 end
 
+local function enumName(enumType, value)
+  if value == nil then return nil end
+  local ok, name = pcall(function() return value.value end)
+  if ok and type(name) == "string" and name ~= "" then return name end
+  ok, name = pcall(function() return EnumValueToString(enumType, EnumInt(value)) end)
+  if ok and type(name) == "string" and name ~= "" then return name end
+  return nil
+end
+
+-- gamedataItemType name of the weapon in V's hands right now, or nil when unarmed/unknown.
+local function equippedWeaponType(player)
+  local ok, name = pcall(function()
+    local weapon = ScriptedPuppet.GetWeaponRight(player)
+    if weapon == nil then weapon = GameObject.GetActiveWeapon(player) end
+    if weapon == nil then return nil end
+    local itemID = weapon:GetItemID()
+    local t = enumName("gamedataItemType", RPGManager.GetItemType(itemID))
+    if t then return t end
+    local record = TweakDBInterface.GetItemRecord(ItemID.GetTDBID(itemID))
+    return enumName("gamedataItemType", record:ItemType():Type())
+  end)
+  if ok then return name end
+  return nil
+end
+
+-- C2SD-T13: result of the last weapon check ({ allowed = bool, label = string }).
+Input.weapon = nil
+
+-- Reads the equipped weapon live (no caching), so a weapon swap applies to the next combo.
+function Input.WeaponStatus(player)
+  local allowed, label = WeaponGate.Classify(player ~= nil and equippedWeaponType(player) or nil)
+  Input.weapon = { allowed = allowed, label = label }
+  return allowed, label
+end
+
 -- The combo context at the instant jump is pressed.
 function Input.Context(player)
   local blocked = player == nil or isInVehicle(player) or Input.isBlocked()
+  local weaponAllowed, weapon = Input.WeaponStatus(player)
   return {
     blocked = blocked,
     grounded = player ~= nil and isGrounded(player) or false,
+    weaponAllowed = weaponAllowed,
+    weapon = weapon,
   }
 end
 
