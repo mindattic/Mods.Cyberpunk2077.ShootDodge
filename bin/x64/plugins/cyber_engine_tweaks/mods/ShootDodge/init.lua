@@ -31,7 +31,7 @@ local ShootDodge = {
 }
 
 -- C2SD-T15: Max Payne 2's Bullet Time mode, toggled by a CET binding (Bindings tab; unbound by
--- default). It drains the hourglass; the shootdodge does not. CET only accepts this at load time.
+-- default; CET gives mods no way to ship a default key, docs recommend Mouse 4, never V). It drains the hourglass; the shootdodge does not. CET only accepts this at load time.
 registerInput("ShootDodgeBulletTimeMode", "Bullet-time mode (Max Payne 2, toggle)", function(down)
   if not down then return end
   local ok, err = pcall(MeterDriver.ToggleMode, ShootDodge.enabled, ShootDodge.machine)

@@ -118,7 +118,8 @@ IntroMessage.messages = {
   "Get up fast. The genius of the hole: no matter how long you spend climbing out, you can "
     .. "still fall back down in an instant.",
   "I don't know about angels, but it's fear that gives men wings. Mine come with an hourglass. "
-    .. "Bind Bullet Time in the overlay's Bindings tab. Press it and the city crawls while the "
+    .. "Bind Bullet Time in the overlay's Bindings tab, to Mouse 4, the thumb button. Never V, "
+    .. "V already calls your ride. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
   "I felt the rise of that old familiar feeling. I hated it. I welcomed it. Death is "

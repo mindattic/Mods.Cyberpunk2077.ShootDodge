@@ -479,3 +479,25 @@ Read from the 2.5 decompiled game scripts and TweakDB sources, not guessed. Sour
 
 **Still to verify in game** (TESTING.md section P): the combo arms with the pair, both guns fire at
 normal cadence in slow-mo, and the exemptions clear on landing, on a weapon swap and on a CET reload.
+
+## Bullet Time hotkey (C2SD-T36)
+
+V (where the user first bound it) is the base game's vehicle summon, so it is wrong for the toggle.
+
+- **Recommended: Mouse 4** (thumb side button). Max Payne used a mouse button for bullet time, a
+  thumb button is reachable mid-fight without leaving WASD or the aim hand, and the base game's
+  default PC layout is keyboard keys plus LMB (fire), RMB (aim) and MMB (grenade/gadget); no source
+  found assigns the thumb buttons. **Alternative: Mouse 5.**
+- **Caveat, honestly:** no Cyberpunk 2077 install exists on this machine (checked D:\Games), so
+  `r6/config/inputUserMappings.xml` and `inputContexts.xml` could not be read. "Unused" rests on the
+  published control lists and Steam community threads below, which cover Mouse 3 but not Mouse 4/5
+  explicitly. Confirm in the game's Controls menu (Mouse 4 should show nothing assigned) and on
+  foot, in a vehicle, in menus, in photo mode and with Double Trouble dual wield.
+- **Default key: not possible.** The CET wiki states mods cannot define default hotkeys; the
+  player binds each one in the Bindings tab. `registerInput` / `registerHotkey` take no key
+  argument, so the binding stays user-set and the docs and Max's text recommend Mouse 4.
+- Sources: https://wiki.redmodding.org/cyber-engine-tweaks/cet-functions/hotkeys ,
+  https://wiki.redmodding.org/cyber-engine-tweaks/console/bindings ,
+  https://www.magicgameworld.com/?p=125476 (PC keyboard controls) ,
+  https://www.gosunoob.com/cyberpunk-2077/rebind-controls-change-keybinds/ ,
+  https://steamcommunity.com/app/1091500/discussions/0/5876659925420076318

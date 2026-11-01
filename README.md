@@ -142,6 +142,10 @@ The hourglass follows *Max Payne 2*:
 
 **Binding the Bullet Time hotkey.** It is unbound by default. Open the CET overlay, go to the
 **Bindings** tab, find **ShootDodge** and bind **Bullet-time mode (Max Payne 2, toggle)** to a key.
+CET gives mods no way to ship a default key, so this one is yours to set. **Recommended: Mouse 4**
+(the thumb side button), as Max Payne used a mouse button for bullet time; the alternative is
+**Mouse 5**. **Do not bind it to V**: V is the vehicle summon in the base game. See
+[`docs/DESIGN.md`](docs/DESIGN.md) for how the key was chosen.
 Pressing it starts the mode, pressing it again stops it. The overlay's **Start/Stop bullet-time
 mode** button does the same. Like the dive's slow-mo, the mode refuses to start when the
 **Bullet-time** tick is off or the **Time scale** slider is at 1.00, since there would be no slow-mo
