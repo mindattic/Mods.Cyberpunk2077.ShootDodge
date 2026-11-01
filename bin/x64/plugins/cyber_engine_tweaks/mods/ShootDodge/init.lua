@@ -2,7 +2,8 @@
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
 -- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), landing detection
 -- (C2SD-T10), prone shooting from the ground (C2SD-T11), the get-up from prone (C2SD-T12), plus
--- the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
+-- the Max Payne 2 bullet-time hourglass (C2SD-T15) and the dive's camera + audio polish
+-- (C2SD-T14: FOV pull-back, whoosh, music/ambience muffle). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
@@ -12,6 +13,7 @@ local ProneDriver = require("modules/ProneDriver")
 local GetUpDriver = require("modules/GetUpDriver")
 local BulletTimeDriver = require("modules/BulletTimeDriver")
 local MeterDriver = require("modules/BulletTimeMeterDriver")
+local DivePolishDriver = require("modules/DivePolishDriver")
 
 local ShootDodge = {
   enabled = false,
@@ -47,6 +49,12 @@ registerForEvent("onInit", function()
   end)
   ShootDodge.machine:AddListener(function()
     BulletTimeDriver.Sync(ShootDodge.machine, ShootDodge.enabled)
+  end)
+  -- C2SD-T14: put back a music duck a crash/reload left behind, then whoosh once on dive entry.
+  -- The FOV pull-back and the music/ambience muffle follow DIVING/AIRBORNE in onUpdate.
+  DivePolishDriver.Install()
+  ShootDodge.machine:AddListener(function(from, to)
+    DivePolishDriver.OnStateChange(from, to, ShootDodge.machine.clock)
   end)
   -- A new combo can't start while a Shootdodge is already in progress.
   Input.isBlocked = function() return ShootDodge.machine:IsActive() end
@@ -113,6 +121,7 @@ registerForEvent("onShutdown", function()
   GetUpDriver.Cancel()
   ShootDodge.machine:Reset("shutdown")
   BulletTimeDriver.Clear()
+  pcall(DivePolishDriver.Cancel)
 end)
 
 registerForEvent("onUpdate", function(deltaTime)
@@ -161,6 +170,14 @@ registerForEvent("onUpdate", function(deltaTime)
   if not syncOk then
     print("[ShootDodge] bullet-time error: " .. tostring(syncErr))
     pcall(BulletTimeDriver.Clear)
+  end
+  -- C2SD-T14: FOV pull-back and music/ambience muffle follow the state every frame, enabled or
+  -- not, on real time, so landing (either path), abort, pause and mod disable all revert them.
+  local polishOk, polishErr = pcall(DivePolishDriver.Update, machine, ShootDodge.enabled,
+    deltaTime or 0, BulletTimeDriver.paused)
+  if not polishOk then
+    print("[ShootDodge] dive polish error: " .. tostring(polishErr))
+    pcall(DivePolishDriver.Cancel)
   end
 end)
 
@@ -294,7 +311,38 @@ registerForEvent("onDraw", function()
   if MeterDriver.lastError then
     ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end
-  ImGui.TextWrapped("Dive, bullet-time, landing, prone shooting and get-up.")
+  -- C2SD-T14: camera + audio polish, each effect switchable on its own.
+  local polish = DivePolishDriver.rules
+  local pcfg = polish.config
+  pcfg.fovEnabled = ImGui.Checkbox("FOV pull-back", pcfg.fovEnabled)
+  local pull, pullChanged = ImGui.SliderFloat("Pull-back (deg)", pcfg.fovPullBack, 0.0,
+    pcfg.maxPullBack, "%.1f")
+  if pullChanged then pcfg.fovPullBack = polish:ClampPullBack(pull) end
+  pcfg.whooshEnabled = ImGui.Checkbox("Whoosh on dive", pcfg.whooshEnabled)
+  local sounds = DivePolishDriver.sounds
+  local whooshName, whooshChanged = ImGui.InputText("Whoosh event", sounds.whoosh, 128)
+  if whooshChanged then sounds.whoosh = whooshName end
+  ImGui.SameLine()
+  if ImGui.Button("Play") then DivePolishDriver.PlayWhoosh(machine.clock) end
+  pcfg.audioEnabled = ImGui.Checkbox("Muffle music/ambience", pcfg.audioEnabled)
+  local keep, keepChanged = ImGui.SliderFloat("Music kept", pcfg.musicKeep, 0.0, 1.0, "%.2f")
+  if keepChanged then pcfg.musicKeep = polish.ClampKeep(keep) end
+  local onName, onChanged = ImGui.InputText("Low-pass on event", sounds.lowPassOn, 128)
+  if onChanged then sounds.lowPassOn = onName end
+  local offName, offChanged = ImGui.InputText("Low-pass off event", sounds.lowPassOff, 128)
+  if offChanged then sounds.lowPassOff = offName end
+  ImGui.Text(string.format("Polish: FOV %s | music %s | whooshes %d%s",
+    DivePolishDriver.appliedFov and string.format("%.1f (+%.1f)", DivePolishDriver.appliedFov,
+      polish.fov) or "normal",
+    DivePolishDriver.musicOriginal and string.format("ducked %d -> %d",
+      DivePolishDriver.musicOriginal, DivePolishDriver.musicDucked or 0) or "normal",
+    polish.whooshCount,
+    DivePolishDriver.lastWhoosh and string.format(" | last at %.2fs: %s",
+      DivePolishDriver.lastWhoosh.time, DivePolishDriver.lastWhoosh.event) or ""))
+  if DivePolishDriver.lastError then
+    ImGui.Text(string.format("Polish problem: %s", DivePolishDriver.lastError))
+  end
+  ImGui.TextWrapped("Dive, bullet-time, landing, prone shooting, get-up and dive polish.")
 
   ImGui.End()
 end)

@@ -151,6 +151,20 @@ FOV pull-back, a one-shot whoosh on dive entry, and a music/ambience low-pass fo
 `DIVING`/`AIRBORNE`, all independently toggleable in the debug overlay so each can be verified on
 its own. Done last, once the full dive -> prone and dive -> get-up loops already work.
 
+Built as `modules/DivePolish.lua` (pure rules) + `modules/DivePolishDriver.lua` (CET glue):
+- **FOV pull-back** — V's first-person camera FOV widens by a configurable amount (12 deg by
+  default, overlay slider) while `DIVING`/`AIRBORNE`, eased in over 0.15 s on real time and back
+  out over 0.25 s once the dive ends by any path (landing -> prone, abort, mod disable). The FOV the
+  camera had before is put back exactly; the camera never leaves first person.
+- **Whoosh** — one game sound event on V on `NONE -> DIVING` (the only way into `DIVING`), so once
+  per dive. The event name is editable in the overlay, with a Play button to audition it.
+- **Music/ambience muffle** — the music volume setting is ducked to a configurable fraction of the
+  player's own value, plus an optional on/off pair of audio events (editable in the overlay) for a
+  low-pass mix, for the duration of `DIVING`/`AIRBORNE`. Pause and death restore it like they drop
+  bullet-time. Because the music volume is a user setting, the original is also written to
+  `polish_restore.txt` in the mod folder while ducked, and the next load puts it back if a crash or
+  CET reload interrupted the dive.
+
 ## Open question: animation fidelity
 
 CP77 has no native prone-and-shoot pose. The ticket order above deliberately defers that: C2SD-T7
