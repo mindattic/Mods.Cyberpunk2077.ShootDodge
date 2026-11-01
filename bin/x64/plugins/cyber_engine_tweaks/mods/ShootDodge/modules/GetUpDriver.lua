@@ -10,7 +10,7 @@
 -- when the scramble completes, then it fires GETUP -> NONE (recover).
 --
 -- PRONE itself is owned and driven by the prone-and-shoot mechanic (C2SD-T11, ProneDriver): V stays
--- down with no timer, and ProneDriver fires PRONE -> GETUP on a fresh move/jump press. This driver
+-- down with no timer, and ProneDriver fires PRONE -> GETUP on a fresh move press. This driver
 -- adds the case ProneDriver leaves to it (movement held at impact: up right after the impact beat,
 -- no fresh press) and, however GETUP was entered, runs the scramble and the recovery, so the two
 -- never race. The eye rises back to standing height over the scramble (init.lua matches
@@ -92,7 +92,7 @@ local function startGetUp(machine, cause)
   return true
 end
 
--- ProneDriver.onStandRequest (C2SD-T11 hands PRONE over on a fresh move/jump press). Returns what
+-- ProneDriver.onStandRequest (C2SD-T11 hands PRONE over on a fresh move press). Returns what
 -- machine:Fire would, so ProneDriver keeps re-asking if the state machine refused.
 function GetUpDriver.OnStandRequest(machine, reason)
   if not machine:Is("PRONE") then return false, nil end

@@ -184,7 +184,7 @@ aborts to `NONE`. The overlay and the CET log show one landing event per dive wi
 
 - `PRONE` (C2SD-T11, `modules/Prone.lua` + `modules/ProneDriver.lua`): free-aim/fire from the
   ground, first person, no timer. The prone driver owns `PRONE` and drives the state machine every
-  frame, so the driver timeout never stands V up; it ends only on a *fresh* movement or jump press
+  frame, so the driver timeout never stands V up; it ends only on a *fresh* movement press (jump does not count: it would also run the game's real jump, C2SD-T26)
   (an input still held from the dive must be released once first, and none counts in the first
   0.25 s after impact), which `ProneDriver.onStandRequest` hands to the get-up as `PRONE -> GETUP`.
   Aiming and firing are left entirely to the game, so V shoots in any direction from the ground.
@@ -193,7 +193,7 @@ aborts to `NONE`. The overlay and the CET log show one landing event per dive wi
   0.2 s when `PRONE` ends any way (get-up, abort, disable, reload). V's body and collision stay
   standing until the animation follow-up below. Knocked off a ledge while prone aborts to `NONE`.
 - Get-up (C2SD-T12, `modules/GetUp.lua` + `modules/GetUpDriver.lua`): `PRONE -> GETUP -> NONE`.
-  Two ways in: the prone driver's fresh move/jump press, handed over through
+  Two ways in: the prone driver's fresh move press, handed over through
   `ProneDriver.onStandRequest` (pointed at `GetUpDriver.OnStandRequest`, so there is one stand-press
   watcher), or movement held through the landing (`DiveDriver.lastLanding.moveHeld`), which stands V
   up automatically once the 0.25 s impact beat has played: V hits the ground first, no fresh press

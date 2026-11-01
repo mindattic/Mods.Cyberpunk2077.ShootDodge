@@ -5,7 +5,7 @@
 --
 -- As in Max Payne 2, V lands and stays down: free to aim and fire in any direction, for as long as
 -- the player likes. Nothing here ends PRONE on a timer. Only a stand input does: a *fresh* press
--- of a movement direction or jump, i.e. one that starts while V is already lying down. An input
+-- of a movement direction (never jump, C2SD-T26), i.e. one that starts while V is already lying down. An input
 -- still held from the dive (through the landing) does not count until it has been released once,
 -- so V always hits the ground first; the get-up right after impact with movement held is C2SD-T12's
 -- call (it reads DiveDriver.lastLanding.moveHeld).
@@ -91,9 +91,9 @@ function Prone:Update(deltaTime, moveHeld, jumpHeld, grounded)
   if self.standRequest == nil and self.elapsed >= cfg.minProneSec then
     if moveHeld and self.moveArmed then
       self.standRequest = Prone.End.move
-    elseif jumpHeld and self.jumpArmed then
-      self.standRequest = Prone.End.jump
     end
+    -- Jump never stands V up: the press is observed, not consumed, so the game would also run
+    -- its real jump (C2SD-T26). Only movement counts.
   end
   if not moveHeld then self.moveArmed = true end
   if not jumpHeld then self.jumpArmed = true end

@@ -6,7 +6,7 @@
 -- firing entirely to the game, so V free-aims and shoots in any direction, 360 degrees, from the
 -- ground. The camera never leaves first person.
 --
--- PRONE ends only on a stand input (modules/Prone.lua: a fresh movement or jump press), which is
+-- PRONE ends only on a stand input (modules/Prone.lua: a fresh movement press), which is
 -- handed to `ProneDriver.onStandRequest`. By default that fires PRONE -> GETUP; the get-up itself
 -- (C2SD-T12) owns GETUP from there. V knocked off a ledge while prone aborts to NONE. Leaving PRONE
 -- any way at all (abort, reset, mod disable) eases the camera back to standing height.

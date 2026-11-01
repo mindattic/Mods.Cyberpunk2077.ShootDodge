@@ -85,7 +85,7 @@ registerForEvent("onInit", function()
     return ShootDodge.combo ~= nil and ShootDodge.combo.jumpHeld == true
   end
   ShootDodge.machine:AddListener(ProneDriver.OnStateChange)
-  -- C2SD-T12: PRONE -> GETUP -> NONE. ProneDriver's stand press (fresh move/jump) is handed to the
+  -- C2SD-T12: PRONE -> GETUP -> NONE. ProneDriver's stand press (fresh move) is handed to the
   -- get-up through its hook; the get-up also starts right after impact when movement was held
   -- through the landing, then runs a short scramble (push in the held direction, speed capped)
   -- before normal control returns. The eye rises back up over that same scramble, not a snap.
@@ -263,7 +263,7 @@ registerForEvent("onDraw", function()
     ImGui.Text(string.format("Get-up: scrambling %.0f%%", getUp:Progress() * 100))
   elseif getUp.watching then
     ImGui.Text(getUp.heldAtImpact and "Get-up: movement held at impact, rising after the beat"
-      or "Get-up: waiting for a fresh move/jump press")
+      or "Get-up: waiting for a fresh move press")
   end
   ImGui.Text(string.format("Get-ups: %d%s", GetUpDriver.getUpCount,
     GetUpDriver.lastStart and string.format(" | last at %.2fs: %s", GetUpDriver.lastStart.time,
