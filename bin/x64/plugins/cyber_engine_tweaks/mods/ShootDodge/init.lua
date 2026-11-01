@@ -164,10 +164,14 @@ registerForEvent("onUpdate", function(deltaTime)
       DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
     end
     -- C2SD-T11: PRONE (and the camera easing back up after it), on real time.
-    ProneDriver.Update(machine, deltaTime or 0)
-    -- C2SD-T12: the get-up (after ProneDriver, so a stand press it hands over starts the scramble
-    -- this same frame), on real time like PRONE.
-    GetUpDriver.Update(machine, deltaTime or 0)
+    -- C2SD-T31: skipped while paused so the held-at-impact beat and get-up scramble do not advance;
+    -- the machine keep-alive is safe because machine:Update gets 0 above.
+    if not gamePaused then
+      ProneDriver.Update(machine, deltaTime or 0)
+      -- C2SD-T12: the get-up (after ProneDriver, so a stand press it hands over starts the scramble
+      -- this same frame), on real time like PRONE.
+      GetUpDriver.Update(machine, deltaTime or 0)
+    end
   end)
   if not ok then
     print("[ShootDodge] update error: " .. tostring(err))
