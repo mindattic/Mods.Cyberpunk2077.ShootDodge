@@ -608,3 +608,33 @@ https://gist.github.com/gemakie/fbc84e7c17bbd89f37492f4caaa10230 (an `inputUserM
 `<mapping name=... type="Button"><button id="IK_Enter" />`, Enter's vanilla uses) ,
 https://github.com/Nexus-Mods/game-cyberpunk2077 (`src/installers.layouts.ts`,
 `src/installer.config.xml.ts`, `src/installer.multitype.ts`).
+
+## Bullet Time default key moved to Mouse 4 (C2SD-T39)
+
+C2SD-T37 put the default on `IK_Enter`, but the game has one key code for main Enter and Numpad Enter,
+and on foot Enter is also the dialogue confirm, so picking a dialogue option toggled Bullet Time. The
+sections above that say Numpad Enter / `IK_Enter` are superseded by this one.
+
+- **Chosen default: `IK_Mouse4`** (EInputKey 193, RED4ext.SDK `EInputKey.hpp`), the thumb side button.
+  **Alternative: `IK_Mouse5`** (194), the other thumb button. `r6/input/ShootDodge.xml` maps the
+  `ShootDodgeBulletTime` action to `IK_Mouse4`; the CET binding stays as the rebind and the
+  fallback without Input Loader, debounced as before.
+- **Verified from the user's install** (read only): `D:\Games\Steam\steamapps\common\Cyberpunk 20776\config\inputUserMappings.xml`
+  (102 KB, vanilla, no ShootDodge or other mod entries). Every `<button id="IK_...">` in it was
+  listed. `inputContexts.xml` only names actions and mappings (it has no `IK_` keys), so the key list
+  comes from the mappings file, which covers on foot, combat, vehicle, menus, photo mode, braindance,
+  scanner and dialogue. `IK_Mouse4` and `IK_Mouse5` (and every other `IK_Mouse*`, `IK_Unknown*`)
+  appear nowhere in it.
+- **Keyboard and mouse keys vanilla binds** (by the file): mouse `LeftMouse`, `RightMouse`,
+  `MiddleMouse`, `MouseWheelUp/Down`, `MouseX/Y/Z`; letters `A B C D E F G H I J K L M N O P Q R S T
+  U V W X Y Z`; digits `0-9`; `Space`, `Tab`, `Enter`, `Escape`, `Backspace`, `CapsLock`, `Home`,
+  `Equals`, `Minus`, `Up/Down/Left/Right`, `LShift`, `RShift`, `LControl`, `RControl`, `Alt`, `F1`,
+  `F3`, `F4`, `F5`, `F9`, `CAPTURE`. Also gamepad (`IK_Pad_*`, `IK_PS4_*`, `IK_PAD_LR_THUMB`, gyro,
+  `IK_Jcms*`) and touch (`IK_Touch_*`) keys, which a keyboard or mouse never produces.
+- **Not bound by vanilla, so free**: `Mouse4..8`, `Insert`, `Delete`, `End`, `PageUp/PageDown`,
+  `Pause`, `ScrollLock`, `NumPad0-9` and the numpad operators, `F2`, `F6-F8`, `F10-F12`, `Tilde`
+  (CET overlay key by default), among others.
+- **Why not the others.** Numpad keys and `End`/`Delete`/`PageUp` are far from the left hand and the
+  mouse; `Insert` is the user's CET overlay key; `Tilde` and `F10`/`F11`/`F12` are CET or Windows
+  uses; Mouse 4 sits under the thumb mid-fight with no other job. Mice without side buttons bind
+  another free key in CET's Bindings tab.

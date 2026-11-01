@@ -30,7 +30,7 @@ local ShootDodge = {
   machine = StateMachine.new(),
 }
 
--- C2SD-T37: Bullet Time mode's key routes. The default, Numpad Enter, is a game input action
+-- C2SD-T37: Bullet Time mode's key routes. The default, Mouse 4, is a game input action
 -- (r6/input/ShootDodge.xml through Input Loader, read by BulletTimeKeyDriver.Update); the CET
 -- binding below is the rebind/fallback. Both are debounced so one press toggles once.
 local BulletTimeKeyDriver = require("modules/BulletTimeKeyDriver")
@@ -148,7 +148,7 @@ end)
 
 registerForEvent("onUpdate", function(deltaTime)
   Input.Update(deltaTime)
-  -- C2SD-T37: Numpad Enter presses from the game input action (Input Loader), debounced.
+  -- C2SD-T37: Mouse 4 presses from the game input action (Input Loader), debounced.
   local keyOk, keyErr = pcall(BulletTimeKeyDriver.Update, deltaTime)
   if not keyOk then BulletTimeKeyDriver.lastError = "update: " .. tostring(keyErr) end
   -- C2SD-T4: grant the loadout once per save (independent of the enabled toggle).
@@ -362,7 +362,7 @@ registerForEvent("onDraw", function()
     MeterDriver.Persist(true)
   end
   MeterDriver.hud.visible = ImGui.Checkbox("Hourglass HUD", MeterDriver.hud.visible)
-  -- C2SD-T37: the Numpad Enter route (Input Loader) and the last key press of either route.
+  -- C2SD-T37: the Mouse 4 route (Input Loader) and the last key press of either route.
   ImGui.Text(string.format("Bullet Time key: %s | last: %s", BulletTimeKeyDriver.Status(),
     BulletTimeKeyDriver.lastResult))
   if BulletTimeKeyDriver.lastError then

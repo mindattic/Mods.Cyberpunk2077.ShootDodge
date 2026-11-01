@@ -7,7 +7,7 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
 ## Setup
 
 1. Install Cyber Engine Tweaks and redscript (Phone Extension too, for the text cases; it may go in before or after ShootDodge;
-   RED4ext + Input Loader too, for the Numpad Enter default key, cases I3-I3d), then ShootDodge: the release zip
+   RED4ext + Input Loader too, for the Mouse 4 default key, cases I3-I3d), then ShootDodge: the release zip
    through Vortex (section N) or extracted into the game folder, or from the repo copy
    `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/`, `r6/scripts/ShootDodge/` and `r6/input/` into the game's
    matching folders (see the README).
@@ -222,33 +222,31 @@ while paused.
 Expected: the hourglass hides; tick it and it returns.
 
 **I3. The hotkey.** With Input Loader installed (and RED4ext), leave the CET binding
-"Bullet-time mode (Max Payne 2, toggle)" **unbound**. The I4/I5 "hotkey" is **Numpad Enter**. Do not
-use V for the CET binding: it summons the vehicle. Confirm Numpad Enter does nothing else on foot.
+"Bullet-time mode (Max Payne 2, toggle)" **unbound**. The I4/I5 "hotkey" is **Mouse 4**. Do not
+use V for the CET binding: it summons the vehicle. Confirm Mouse 4 does nothing else on foot.
 Expected: the binding is listed under ShootDodge and can be bound; the overlay line "Bullet Time key"
 says "game key route: listening".
 
-**I3a. Numpad Enter with no binding (C2SD-T37).** Input Loader installed, CET binding unbound, Enabled
-ticked, on foot. Press Numpad Enter.
+**I3a. Mouse 4 with no binding (C2SD-T37, C2SD-T39).** Input Loader installed, CET binding unbound, Enabled
+ticked, on foot. Press Mouse 4.
 Expected: Bullet Time mode starts; press again, it stops. `red4ext/logs/input_loader.log` lists
 `ShootDodge.xml` with no error; the overlay's "Bullet Time key" line counts the presses and says
-"game press ... toggled". Main Enter does the same (the game has one key code for both). In a
-vehicle and in menus, Numpad Enter does not toggle.
+"game press ... toggled". Main and Numpad Enter do nothing now. In a
+vehicle and in menus, Mouse 4 does not toggle.
 
-**I3b. Once per press (C2SD-T37).** Also bind Numpad Enter in the CET Bindings tab. Press it once,
+**I3b. Once per press (C2SD-T37).** Also bind Mouse 4 in the CET Bindings tab. Press it once,
 then several times at a normal pace.
 Expected: each press toggles exactly once (the overlay shows "... ignored (same press as ...)" for the
 second route); the mode never flips on and straight back off.
 
 **I3c. No Input Loader (C2SD-T37).** Remove Input Loader (or its `r6/input/ShootDodge.xml` effect:
-disable the plugin), start the game, bind the CET binding to Numpad Enter.
+disable the plugin), start the game, bind the CET binding to Mouse 4.
 Expected: no error at startup; the overlay says "0 presses (none = Input Loader missing?)" and
-Numpad Enter toggles the mode through the CET binding alone, once per press. Unbind it again: Numpad
-Enter does nothing.
+Mouse 4 toggles the mode through the CET binding alone, once per press. Unbind it again: Mouse 4 does nothing.
 
-**I3d. Dialogue Enter (C2SD-T37, note only).** On foot with Input Loader, pick a dialogue choice with
-Enter.
-Expected: note whether Bullet Time also toggles (known side effect: Enter is also the dialogue confirm
-key; pick choices with F or the mouse instead).
+**I3d. Dialogue Enter (C2SD-T39).** On foot with Input Loader, pick a dialogue choice with
+Enter, then press main and Mouse 4 in normal play.
+Expected: Bullet Time does not toggle (the default is Mouse 4, which no vanilla context uses).
 
 **I4. Mode on.** Press the hotkey in normal play with Enabled ticked.
 Expected: the world slows to the time scale; aim and fire stay fast; the hourglass sand drains from the
