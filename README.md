@@ -5,8 +5,9 @@ press a movement direction: V leaps that way, time slows while your aim and fire
 V lands prone and keeps shooting from the floor, and a movement key gets V back on their feet. It
 also has Max Payne 2's bullet-time hourglass and grants the matching outfit and twin pistols.
 
-Everything is Lua for [Cyber Engine Tweaks](https://github.com/maximegmd/CyberEngineTweaks). No
-archive files, no new meshes, no animation edits.
+Everything is Lua for [Cyber Engine Tweaks](https://github.com/maximegmd/CyberEngineTweaks), plus one
+small redscript file that puts a text thread from Max Payne himself in V's phone. No archive files,
+no new meshes, no animation edits.
 
 ## Status
 
@@ -19,25 +20,52 @@ not published. Design notes and the Max Payne 2 research live in [`docs/DESIGN.m
 ## Requirements
 
 - Cyberpunk 2077 (PC).
-- [Cyber Engine Tweaks](https://github.com/maximegmd/CyberEngineTweaks) (CET). That is the only
-  dependency. The code uses no TweakXL records, Codeware or RED4ext: the loadout gives vanilla
-  items by their existing TweakDB IDs.
+- [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) (CET): the whole mod.
+- [redscript](https://www.nexusmods.com/cyberpunk2077/mods/1511): compiles the phone contact
+  (`r6/scripts/ShootDodge/ShootDodgePhone.reds`).
+- [Phone Extension](https://www.nexusmods.com/cyberpunk2077/mods/24949) (by r457 and gh057): the
+  framework that lets that contact text V in the phone's Messages app. It is itself four redscript
+  files and needs nothing but redscript.
+
+That is all. The code uses no TweakXL records, ArchiveXL, Codeware or RED4ext: the loadout gives
+vanilla items by their existing TweakDB IDs. Because the `.reds` file imports Phone Extension,
+**install Phone Extension before ShootDodge**: without it redscript refuses to compile the script
+cache (its error names `ShootDodgePhone.reds`), which affects every redscript mod, not just this one.
 
 ## Install
 
-1. Install Cyber Engine Tweaks and start the game once so CET creates its folders.
-2. Copy the `ShootDodge` folder from `bin/x64/plugins/cyber_engine_tweaks/mods/` in this repo into the
-   same path in your game folder, so that
-   `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` exists.
-3. Start the game. The CET console and log should show `[ShootDodge] loaded`.
-4. Open the CET overlay (its key is set in CET's first-run screen), find the **ShootDodge** window and
+### With Vortex
+
+1. Install Cyber Engine Tweaks, redscript and Phone Extension (Vortex lists them as requirements on
+   the Nexus page).
+2. Download `ShootDodge-<version>.zip` with **Mod Manager Download**, or drag the zip into Vortex's
+   Mods page (**Install From File**). Enable and deploy it.
+3. Vortex's Cyberpunk 2077 extension recognises the zip on its own (a CET mod plus a redscript mod in
+   their standard folders), so there is no manual-install or "fallback installer" prompt.
+
+### By hand
+
+1. Install the three requirements and start the game once so CET creates its folders.
+2. Extract `ShootDodge-<version>.zip` into the game folder (the one with `bin` and `r6`), so that
+   `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` and
+   `<game>/r6/scripts/ShootDodge/ShootDodgePhone.reds` exist. From a clone of this repo, copy those
+   two folders to the same paths instead.
+
+### First run
+
+1. Start the game. The CET console and log should show `[ShootDodge] loaded`.
+2. Open the CET overlay (its key is set in CET's first-run screen), find the **ShootDodge** window and
    tick **Enabled**. The mod starts disabled every session and does not remember the tick.
+3. A few seconds into your first session on each save, Max Payne texts V (see
+   [Text from Max Payne](#text-from-max-payne)).
 
 ## Uninstall
 
-Delete `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/`. Nothing else is touched. The
-loadout items already in your inventory stay (sell or drop them). Two quest facts stay in your
-saves (`shootdodge_mp2_loadout` and `shootdodge_bt_meter`); they are inert without the mod.
+Remove the mod in Vortex, or delete `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` and
+`<game>/r6/scripts/ShootDodge/`. Nothing else is touched. The loadout items already in your inventory
+stay (sell or drop them). Three quest facts stay in your saves (`shootdodge_mp2_loadout`,
+`shootdodge_bt_meter` and `shootdodge_intro_message`); they are inert without the mod, and the Max
+Payne contact disappears from the phone with it.
 
 ## How to use it
 
@@ -127,6 +155,26 @@ restriction.
   one Lexington in hand and one on the weapon wheel. The coat colour is a best match; see
   [`docs/DESIGN.md`](docs/DESIGN.md) for the research and the runners-up.
 
+### Text from Max Payne
+
+Once per save, about 8 seconds after V first appears (after the loadout), V's phone buzzes with a
+real SMS: a new contact, **Max Payne**, in the phone's Messages app like any other contact. The
+thread is a string of texts in Max's own over-the-top noir narration that explains how to
+Shootdodge (aim, direction, jump, the slow-mo, landing prone, shooting or getting up, binding the
+Bullet Time hotkey and the hourglass), woven around 25 genuine lines from *Max Payne* and *Max Payne
+2*, each checked word for word against its source (the list is in
+[`docs/DESIGN.md`](docs/DESIGN.md#in-game-text-message-c2sd-t27)).
+
+- The contact uses the phone's existing "unknown" avatar; no new art.
+- The notification pops only once per save: a quest fact (`shootdodge_intro_message`) records it, so
+  reloading, restarting CET or loading an older save of the same playthrough never sends it again. The
+  thread stays in the phone to re-read, and opening it marks it read in the save.
+- The overlay shows the result ("sent", "already sent for this save", ...) and keeps the whole thread
+  under **Texts from Max Payne**, with a **Re-send to phone** button for testing (it pops the
+  notification again without touching the save's fact).
+- There is no on-screen fallback. If redscript or Phone Extension is missing, no text arrives and the
+  overlay shows "Intro message problem: phone route missing ...".
+
 ### The debug overlay
 
 Open the CET overlay and find the **ShootDodge** window. It only draws while the CET overlay is
@@ -151,6 +199,7 @@ open; the hourglass HUD does not depend on it. Settings are not saved between se
 | Music kept | 0.35 (0 to 1) | Fraction of your music volume kept while diving. |
 | Low-pass on event / Low-pass off event | empty | Optional audio event names for a low-pass on and off. Blank by default, so only the volume duck happens. |
 | Check loadout now | | Re-checks the loadout and gives anything missing. |
+| Re-send to phone | | Under **Texts from Max Payne**: re-pops the text notification (testing; the save's fact is unchanged). |
 
 Read-outs: the current state (`NONE`, `DIVING`, `AIRBORNE`, `PRONE`, `GETUP`) with time in state, the
 last state change and last refused one, combo status and the reason the last jump was not a combo, the
@@ -182,16 +231,27 @@ If the game or CET dies mid-dive, the next load puts your music volume back.
 
 ## Building and packaging
 
-There is no build step: the mod is plain Lua. To release, zip the `bin` folder so the archive has this
-layout (this is what Nexus users extract into the game folder):
+There is no compile step: the mod is plain Lua plus one `.reds` file that redscript compiles at game
+start. To build the release zip, run from the repo root:
+
+```
+powershell -ExecutionPolicy Bypass -File tools/package.ps1
+```
+
+It writes `dist/ShootDodge-<version>.zip`, with the version read from `version` in `init.lua`
+(override with `-Version x.y.z`). The zip is rooted at the game folder:
 
 ```
 bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua
 bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/modules/*.lua
+r6/scripts/ShootDodge/ShootDodgePhone.reds
 ```
 
-Name it `ShootDodge-<version>.zip`. A quick syntax check of each file is `luac -p <file>`. Do not ship
-`polish_restore.txt` or any other runtime file.
+Only git-tracked `.lua` and `.reds` files under those two folders go in (git-add a new file before
+building), so docs, dev files and runtime state like `polish_restore.txt` or CET's `db.sqlite3` never
+ship. The script checks the result (forward-slash entry names, every entry under one of the two
+folders, `init.lua` directly in the mod folder) and prints the file list. `dist/` and the runtime
+files are in `.gitignore`. A quick syntax check of each Lua file is `luac -p <file>`.
 
 ## Testing
 
@@ -203,5 +263,8 @@ matters), with a Results table.
 - `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua`: wires everything and draws the overlay.
 - `.../modules/`: the pure rules modules (`StateMachine`, `ComboDetector`, `Dive`, `Prone`, `GetUp`,
   `BulletTime`, `BulletTimeMeter`, `DivePolish`, `WeaponGate`, `AimFireExemption`, `Loadout`) and the
-  CET glue next to each (`*Driver.lua`, `Input.lua`).
+  CET glue next to each (`*Driver.lua`, `Input.lua`). `IntroMessage` holds Max Payne's text thread.
+- `r6/scripts/ShootDodge/ShootDodgePhone.reds`: the "Max Payne" phone contact (redscript, through
+  Phone Extension), filled and triggered by `IntroMessageDriver.lua`.
+- `tools/package.ps1`: builds the Vortex-ready release zip into `dist/`.
 - `docs/`: design notes, Nexus page, testing checklist and the ticket log.

@@ -6,8 +6,10 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
 
 ## Setup
 
-1. Install: copy `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` into the game's matching
-   folder (see the README).
+1. Install Cyber Engine Tweaks, redscript and Phone Extension, then ShootDodge: the release zip
+   through Vortex (section N) or extracted into the game folder, or from the repo copy
+   `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` and `r6/scripts/ShootDodge/` into the game's
+   matching folders (see the README).
 2. Start the game with Cyber Engine Tweaks installed. Load a save in an area with room to move and a few
    enemies (or a training dummy).
 3. Open the CET overlay and find the **ShootDodge** window. Tick **Enabled** (it starts off every session).
@@ -354,6 +356,78 @@ Expected: no stuck slow-mo, no stuck camera, no console errors, and the hourglas
 then load.
 Expected: on load State is `NONE`, the world is at normal speed and the camera at standing height.
 
+## N. Vortex install (C2SD-T27)
+
+Build the zip first: `powershell -ExecutionPolicy Bypass -File tools/package.ps1` (it prints the
+entries). Use a Vortex profile with Cyber Engine Tweaks, redscript and Phone Extension already
+installed, and no copy of ShootDodge in the game folder.
+
+**N1. Zip layout.** Open `dist/ShootDodge-<version>.zip`.
+Expected: only `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua`, its `modules/*.lua`
+and `r6/scripts/ShootDodge/ShootDodgePhone.reds`. No docs, no `polish_restore.txt`, no `db.sqlite3`,
+no logs.
+
+**N2. Install From File.** In Vortex's Mods page, **Install From File** and pick the zip.
+Expected: it installs with no "manual install", "fallback installer" or "install as-is" prompt. Vortex's
+log (Settings > Vortex > open the log, or `%APPDATA%\Vortex\vortex.log`) has a `MultiType` line
+for this mod.
+
+**N3. Deploy.** Enable the mod and deploy.
+Expected: `<game>/bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` and
+`<game>/r6/scripts/ShootDodge/ShootDodgePhone.reds` exist (as Vortex links), and nothing landed
+anywhere else (no stray `bin` or `ShootDodge` folder at the game root).
+
+**N4. It runs.** Start the game.
+Expected: no redscript compile error at startup, and cases A1 and O1 pass.
+
+**N5. Uninstall.** Disable and remove the mod in Vortex, then deploy.
+Expected: both files are gone from the game folder, and the game starts with no redscript error.
+
+## O. Text from Max Payne (C2SD-T27)
+
+Needs redscript and Phone Extension (setup step 1). The text does not depend on the **Enabled** tick.
+
+**O1. First text.** Load a save that never had the mod (or start a new game). Wait about 10 seconds
+after V appears, unpaused.
+Expected: the phone's "new message" notification pops with the sender **Max Payne** and the line
+"The sun went down with practiced bravado." The overlay line reads `Text from Max Payne: sent`, and
+the console shows `[ShootDodge] text from Max Payne sent to V's phone`.
+
+**O2. A real phone text.** Open the phone (or use the notification's action) and go to Messages.
+Expected: a **Max Payne** contact with an unread badge and the generic "unknown" avatar. Opening it
+shows a thread of 14 texts from Max Payne, in his first person, ending with "The dead never check
+their messages." No popup or on-screen banner text is used anywhere.
+
+**O3. Content.** Read the thread.
+Expected: it covers aim + direction + jump, pistol/revolver/SMG only, the slow-mo with aim and fire at
+full speed, landing prone and shooting or moving/jumping to get up, holding the direction through the
+landing, and binding Bullet Time in the overlay's Bindings tab with the hourglass (drains while on,
+refills on its own and with kills, a shootdodge costs nothing).
+
+**O4. Read state.** Close and reopen the phone's Messages.
+Expected: the unread badge is gone after opening the thread once.
+
+**O5. Never re-sent.** Save, reload that save, restart the game, and reload CET (overlay's Reload all
+mods) in game.
+Expected: no notification ever again on that save. The Max Payne thread is still in Messages (read),
+and the overlay says `already sent for this save (read)`.
+
+**O6. Unread survives a reload.** On a fresh save, let the text arrive, don't open it, save and
+reload.
+Expected: no new notification, and the thread is still there with its unread badge; the overlay says
+`already sent for this save (unread)`.
+
+**O7. Another save.** Load a different save that never had the mod.
+Expected: the text arrives once for that save, as in O1.
+
+**O8. Missing framework.** Remove Phone Extension (and ShootDodge's `.reds`, or redscript will refuse
+to compile) and load a save.
+Expected: no text, no on-screen substitute, and the overlay shows `Intro message problem: phone route
+missing ...`. Put both back afterwards.
+
+The overlay's **Re-send to phone** button (under **Texts from Max Payne**) pops the notification
+again for retesting O2-O4 without a new save; it does not change the save's fact.
+
 ## Results
 
 | Case | Pass / Fail | Notes |
@@ -451,3 +525,16 @@ Expected: on load State is `NONE`, the world is at normal speed and the camera a
 | L7 |  |  |
 | M1 |  |  |
 | M2 |  |  |
+| N1 |  |  |
+| N2 |  |  |
+| N3 |  |  |
+| N4 |  |  |
+| N5 |  |  |
+| O1 |  |  |
+| O2 |  |  |
+| O3 |  |  |
+| O4 |  |  |
+| O5 |  |  |
+| O6 |  |  |
+| O7 |  |  |
+| O8 |  |  |

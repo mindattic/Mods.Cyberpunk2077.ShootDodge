@@ -24,6 +24,9 @@ checklist with expected results. At minimum these must pass:
 - [ ] K1-K9: FOV, whoosh and music duck start and revert on both exit paths, each toggleable.
 - [ ] L1-L7 (male and female V): the loadout is granted once, equips and renders, never duplicates.
 - [ ] M1-M2: a combat run and save/load in each state leave nothing stuck.
+- [ ] N1-N5: the release zip installs through Vortex's "Install From File" with no manual-install
+      prompt, deploys to both folders, and uninstalls cleanly.
+- [ ] O1-O8: the text from Max Payne arrives in the phone's Messages app once per save and never again.
 - [ ] Take the in-game screenshots listed under Images and put their links in the description.
 
 ## Mod name
@@ -32,8 +35,13 @@ ShootDodge (Max Payne 2 Shootdodge)
 
 ## Version
 
-1.0.0 (upload `ShootDodge-1.0.0.zip`, packaged as described in the README's "Building and packaging":
-the `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` tree, with `init.lua` and `modules/`)
+1.0.0. Upload `dist/ShootDodge-1.0.0.zip`, built by `tools/package.ps1` (see the README's "Building
+and packaging"; the version comes from `version` in `init.lua`). It is rooted at the game folder and
+holds `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` (`init.lua` and `modules/`) and
+`r6/scripts/ShootDodge/ShootDodgePhone.reds`, nothing else.
+
+On the Files tab: category **Main files**, name "ShootDodge", version 1.0.0, and leave Vortex
+installation on (the default). Vortex's Cyberpunk 2077 extension installs this layout on its own.
 
 ## Changelog
 
@@ -44,6 +52,9 @@ the `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` tree, with `init.lua`
   - Max Payne 2's bullet-time hourglass with a bindable Bullet Time mode, kill refill and a HUD.
   - Camera FOV pull-back, whoosh and music duck.
   - The Max Payne 2 outfit and twin Lexington pistols, once per save.
+  - A once-per-save text thread from Max Payne himself in V's phone, explaining the mod in his
+    noir voice with genuine Max Payne quotes.
+  - A Vortex-ready zip.
   - A debug overlay with every setting.
 
 ## Category
@@ -52,7 +63,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Hold aim, press a direction and jump: V leaps, time slows but your aim and fire stay fast, V lands prone and keeps shooting, then a move key gets V up. Pistols, revolvers, SMGs. Includes the bullet-time hourglass and Max's outfit and twin pistols. Cyber Engine Tweaks only.
+Max Payne 2's Shootdodge in first person. Hold aim, press a direction and jump: V leaps, time slows but your aim and fire stay fast, V lands prone and keeps shooting, then a move key gets V up. Pistols, revolvers, SMGs. Bullet-time hourglass, Max's outfit, and Max texts you. Needs CET, redscript, Phone Extension.
 
 ## Tags
 
@@ -60,15 +71,26 @@ Gameplay, Combat, Slow Motion, Bullet Time, Animation, Weapons, Cyber Engine Twe
 
 ## Requirements
 
-- Cyberpunk 2077 (PC)
-- [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107)
-- No other mods required: no TweakXL, Codeware or RED4ext.
+Add each of these on the upload form's Requirements tab ("Nexus requirements"), so Vortex offers to
+install them and the page lists them:
+
+| Requirement | Link | Note for the requirement |
+|---|---|---|
+| Cyber Engine Tweaks | https://www.nexusmods.com/cyberpunk2077/mods/107 | Runs the whole mod. |
+| redscript | https://www.nexusmods.com/cyberpunk2077/mods/1511 | Compiles the Max Payne phone contact. |
+| Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Lets Max Payne text V in the Messages app. |
+
+Plus Cyberpunk 2077 (PC). Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Phone Extension
+itself needs only redscript.
 
 ## Install
 
-Extract the zip into the game folder so that
-`bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` exists. In game, open the CET overlay and
-tick **Enabled** in the ShootDodge window (it starts off every session).
+**Vortex:** click **Mod Manager Download** (or drag the zip into Vortex). It installs and deploys with
+no prompts. **By hand:** extract the zip into the game folder so that
+`bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/init.lua` and
+`r6/scripts/ShootDodge/ShootDodgePhone.reds` exist. Either way, install the three requirements first.
+In game, open the CET overlay and tick **Enabled** in the ShootDodge window (it starts off every
+session).
 
 ## AI disclosure
 
@@ -117,6 +139,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (bind it in the CET Bindings tab) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington pistols, a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
+[*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
 [*][b]Debug overlay:[/b] every number is a slider or tick in the CET overlay: slow-mo factor, FOV, music, prone height and more.
 [*][b]Safe:[/b] slow-mo, FOV and music always return to normal on landing, death, pause or disabling the mod.
 [/list]
@@ -133,21 +156,27 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [size=5][b]Requirements[/b][/size]
 [list]
 [*]Cyberpunk 2077 (PC)
-[*][url=https://www.nexusmods.com/cyberpunk2077/mods/107]Cyber Engine Tweaks[/url]. Nothing else: no TweakXL, Codeware or RED4ext.
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/107]Cyber Engine Tweaks[/url]
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/1511]redscript[/url]
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/24949]Phone Extension[/url] (for Max Payne's text)
 [/list]
+Nothing else: no TweakXL, ArchiveXL, Codeware or RED4ext. Install Phone Extension before this mod: without it redscript can't compile the phone contact.
 
 [size=5][b]Install[/b][/size]
 [list=1]
-[*]Extract the zip into your Cyberpunk 2077 folder.
+[*][b]Vortex:[/b] Mod Manager Download. It installs and deploys on its own, no prompts. [b]Manual:[/b] extract the zip into your Cyberpunk 2077 folder (it contains [i]bin[/i] and [i]r6[/i]).
 [*]Start the game, open the CET overlay, and tick [b]Enabled[/b] in the ShootDodge window. It starts off each session.
 [*]To use Bullet Time mode, bind it in the CET overlay's Bindings tab.
+[*]Check your phone a few seconds in. Max has something to say.
 [/list]
-Uninstall by deleting [i]bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge[/i].
+Uninstall in Vortex, or delete [i]bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge[/i] and [i]r6/scripts/ShootDodge[/i].
 
 [size=5][b]Shout outs[/b][/size]
 [list]
 [*][b]Remedy Entertainment[/b] and [b]Max Payne 2: The Fall of Max Payne[/b] for the move this recreates.
 [*][b]CD PROJEKT RED[/b] for Cyberpunk 2077, and the Cyber Engine Tweaks team for making this possible.
+[*][b]r457 and gh057[/b] for the Phone Extension framework.
+[*]Max Payne's lines are quoted from Remedy's games (written by Sam Lake); every quote is listed with its source in the mod's design notes.
 [*]Code written with an AI model (Claude).
 [/list]
 

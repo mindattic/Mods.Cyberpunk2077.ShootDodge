@@ -17,8 +17,13 @@ local MeterDriver = require("modules/BulletTimeMeterDriver")
 local DivePolishDriver = require("modules/DivePolishDriver")
 -- C2SD-T4: Max Payne 2's outfit + twin pistols, vanilla items, granted once per save.
 local LoadoutDriver = require("modules/LoadoutDriver")
+-- C2SD-T27: the once-per-save phone text thread from Max Payne (needs redscript + Phone Extension).
+local IntroMessage = require("modules/IntroMessage")
+local IntroMessageDriver = require("modules/IntroMessageDriver")
 
 local ShootDodge = {
+  -- C2SD-T27: release version; tools/package.ps1 names dist/ShootDodge-<version>.zip from it.
+  version = "1.0.0",
   enabled = false,
   -- C2SD-T6: the one centralized state (NONE | DIVING | AIRBORNE | PRONE | GETUP). Every
   -- transition is defined in modules/StateMachine.lua; read it with ShootDodge.machine.state.
@@ -61,6 +66,8 @@ registerForEvent("onInit", function()
   end)
   -- C2SD-T4: the loadout grant runs from onUpdate once V exists; this hooks the session end.
   LoadoutDriver.Install()
+  -- C2SD-T27: the phone text runs from onUpdate once V exists; this hooks the session end.
+  IntroMessageDriver.Install()
   -- A new combo can't start while a Shootdodge is already in progress.
   Input.isBlocked = function() return ShootDodge.machine:IsActive() end
 
@@ -134,6 +141,9 @@ registerForEvent("onUpdate", function(deltaTime)
   -- C2SD-T4: grant the loadout once per save (independent of the enabled toggle).
   local loadoutOk, loadoutErr = pcall(LoadoutDriver.Update, deltaTime)
   if not loadoutOk then LoadoutDriver.lastError = "update: " .. tostring(loadoutErr) end
+  -- C2SD-T27: send the phone text once per save (independent of the enabled toggle).
+  local introOk, introErr = pcall(IntroMessageDriver.Update, deltaTime, BulletTimeDriver.paused)
+  if not introOk then IntroMessageDriver.lastError = "update: " .. tostring(introErr) end
   local machine = ShootDodge.machine
   local ok, err = pcall(function()
     -- C2SD-T19: a paused game must not age the dive or the machine's keep-alive (pause flag from
@@ -370,6 +380,18 @@ registerForEvent("onDraw", function()
   end
   if LoadoutDriver.lastError then
     ImGui.Text(string.format("Loadout problem: %s", LoadoutDriver.lastError))
+  end
+  -- C2SD-T27: the phone text thread from Max Payne, kept here to re-read or re-send (testing).
+  ImGui.Text(string.format("Text from %s: %s", IntroMessage.sender, IntroMessageDriver.lastResult))
+  if ImGui.CollapsingHeader("Texts from " .. IntroMessage.sender) then
+    ImGui.TextWrapped(IntroMessage.FullText())
+    if ImGui.Button("Re-send to phone") then
+      local ok, err = pcall(IntroMessageDriver.Resend)
+      if not ok then IntroMessageDriver.lastError = "re-send: " .. tostring(err) end
+    end
+  end
+  if IntroMessageDriver.lastError then
+    ImGui.Text(string.format("Intro message problem: %s", IntroMessageDriver.lastError))
   end
   ImGui.TextWrapped("Dive, bullet-time, landing, prone shooting, get-up and dive polish.")
 

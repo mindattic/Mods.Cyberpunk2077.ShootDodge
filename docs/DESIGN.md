@@ -229,6 +229,113 @@ Built as `modules/DivePolish.lua` (pure rules) + `modules/DivePolishDriver.lua` 
   `polish_restore.txt` in the mod folder while ducked, and the next load puts it back if a crash or
   CET reload interrupted the dive.
 
+## Release packaging and Vortex (C2SD-T27)
+
+**How Vortex recognises the zip.** Vortex's Cyberpunk 2077 support is the
+[Nexus-Mods/game-cyberpunk2077](https://github.com/Nexus-Mods/game-cyberpunk2077) extension (read at
+commit `0ddc3e8`). It tries a list of installers in order (`src/installers.ts`) and uses the first
+whose test matches the archive's file tree:
+
+- `src/installer.cet.ts`: a CET mod is canonical when a directory directly under
+  `bin/x64/plugins/cyber_engine_tweaks/mods/` holds `init.lua` (`findCanonicalCetDirs`,
+  `CET_MOD_CANONICAL_PATH_PREFIX` and `CET_MOD_CANONICAL_INIT_FILE` in `src/installers.layouts.ts`).
+- `src/installer.redscript.ts`: a redscript mod is canonical when `.reds` files sit in a named
+  folder under `r6/scripts/` (`RedscriptLayout.Canon`, `REDS_MOD_CANONICAL_PATH_PREFIX`).
+- `src/installer.multitype.ts`: when an archive has more than one recognised type (here canonical CET
+  plus canonical redscript), `testForMultiTypeMod` matches and `installMultiTypeMod` installs each
+  part in its canonical place. MultiType comes before the single-type CET and redscript installers
+  in the list, and none of these prompt; only the fallback installer asks the user, and it is never
+  reached by a canonical layout.
+
+So the release zip is rooted at the game folder with exactly
+`bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/{init.lua,modules/*.lua}` and
+`r6/scripts/ShootDodge/ShootDodgePhone.reds`. `tools/package.ps1` builds it from git-tracked files
+only (so no docs, dev files or runtime state such as `polish_restore.txt`), writes forward-slash entry
+names (Windows PowerShell's `Compress-Archive` writes backslashes), and checks the layout before it
+reports success. The same zip is a manual install: extract into the game folder.
+
+**What was verified here and what wasn't.** The zip was built and its entry list checked against the
+layout rules above by reading the extension's source. Vortex itself was not run in this environment,
+so the actual "Install From File" + deploy is TESTING.md section N.
+
+**Requirements** (declared on the Nexus page so Vortex offers them): Cyber Engine Tweaks (everything),
+redscript (the phone contact) and Phone Extension (the Messages integration). Phone Extension is four
+`.reds` files (`r6/scripts/PhoneExtension/PhoneExtension.{Classes,DataStructures,Overrides,System}.reds`)
+and depends on nothing but redscript. Nothing in the code uses TweakXL, ArchiveXL, Codeware or RED4ext.
+
+## In-game text message (C2SD-T27)
+
+**Goal.** Once per save, Max Payne himself texts V: a real SMS thread in the phone's Messages app from
+a contact named "Max Payne", explaining how to Shootdodge in his first-person, over-the-top noir
+narration, built around genuine quotes. No on-screen popup, no fallback.
+
+**Why redscript and Phone Extension.** CET alone can't add a phone contact or message: vanilla texts
+are journal entries authored in WolvenKit (`.journal` plus a quest phase to send them). The
+[Phone Extension framework](https://www.nexusmods.com/cyberpunk2077/mods/24949) (r457 and gh057)
+wraps the phone's contact list, messenger and notification code so a redscript `PhoneEventsListener`
+can be a contact with its own thread (`GetContactData`, `ShowDialog` with `PushMessageCustom`) and
+pop the HUD SMS notification (`PhoneExtensionSystem.NotifyNewMessageCustom`). The same pattern, and
+the CET-to-redscript bridge through `Game.GetScriptableSystemsContainer():Get(...)`, is used by
+[Y4rd13/david-sandevistan-plus](https://github.com/Y4rd13/david-sandevistan-plus)
+(`DSPViktorPhone.reds`, `DSPViktorBridge.reds`).
+
+**How it works.**
+
+- `r6/scripts/ShootDodge/ShootDodgePhone.reds`: `ShootDodgePhoneSystem` (a `ScriptableSystem`) owns
+  the contact (`ShootDodgeMaxPayneContact`, hash 271027001, avatar `PhoneAvatars.Avatar_Unknown`, an
+  existing in-game image) and the thread. It registers the contact with Phone Extension whenever the
+  HUD phone controller initialises. The contact is hidden until its thread has texts, appears only
+  in the Messages tab (not callable), and opening it marks the thread read by setting the save's fact
+  to 2.
+- `modules/IntroMessage.lua` (pure Lua) holds the sender, the 14 texts, the quote list with sources,
+  and `Plan(fact)`: fact unset = send and notify; 1 = sent but unread; 2 = read.
+- `modules/IntroMessageDriver.lua` (CET glue): once per session, 8 s after V appears, unpaused, and
+  once the phone reports ready, it fills the thread every session (redscript system state is not
+  saved, so the texts are restored like any other SMS history), and only when the fact is unset does
+  it pop the notification and write fact = 1. A reload, CET restart or new session on the same save
+  never notifies again. If the redscript system isn't there, the overlay reports "phone route
+  missing" and nothing else is shown.
+
+**Quotes.** Every quote is word for word from Wikiquote's page source (wikitext), checked by script
+against the raw text with only wiki markup (links, bold) removed:
+[Max Payne](https://en.wikiquote.org/w/index.php?title=Max_Payne&action=raw) (revision 3707106) and
+[Max Payne 2: The Fall of Max Payne](https://en.wikiquote.org/w/index.php?title=Max_Payne_2:_The_Fall_of_Max_Payne&action=raw)
+(revision 3707107). The MP2 page lists Max's narration without chapters, so those are cited to the
+game only. Each is used whole, unchanged; everything else in the thread is original writing in Max's
+voice and is never presented as a quote. `IntroMessage.quotes` holds the same list, and
+`IntroMessage.MissingQuotes()` confirms each appears verbatim in the thread.
+
+| # | Quote | Source |
+|---|---|---|
+| 1 | The sun went down with practiced bravado. | *Max Payne* (2001), Part I, Prologue |
+| 2 | But dreams have a nasty habit of going bad when you're not looking. | *Max Payne*, Part I, Prologue |
+| 3 | The nightmare was always the same. | *Max Payne*, Part II, Prologue |
+| 4 | Somewhere the baby was crying. | *Max Payne*, Part II, Prologue |
+| 5 | The devil was in the drug. I knew. I had met him. | *Max Payne*, Part III, Ch. 8 "Pain and Suffering" |
+| 6 | I hadn't slept in a million years. | *Max Payne*, Part III, Ch. 4 "Backstabbing Bastard" |
+| 7 | I lied to myself that it was over. I was still alive, my loved ones were still dead. It wasn't over. | *Max Payne 2: The Fall of Max Payne* (2003), Max |
+| 8 | Throw the rules out the window, odds are you'll go that way too. | *Max Payne 2*, Max |
+| 9 | Logic was such a liar. | *Max Payne 2*, Max |
+| 10 | When you're looking down the barrel of a gun, time slows down. Your whole life flashes by, heartbreak and scars. | *Max Payne 2*, Max |
+| 11 | This hadn't been my first fall in the night, still just a prelude to the real deal, still a long way to the bottom. | *Max Payne 2*, Max |
+| 12 | The genius of the hole: no matter how long you spend climbing out, you can still fall back down in an instant. | *Max Payne 2*, Max |
+| 13 | I don't know about angels, but it's fear that gives men wings. | *Max Payne*, Part I, Ch. 6 "Fear That Gives Men Wings" |
+| 14 | I felt the rise of that old familiar feeling. I hated it. I welcomed it. | *Max Payne 2*, Max |
+| 15 | Death is inevitable. Our fear of it makes us play safe, blocks out emotion. It's a losing game. Without passion you are already dead. | *Max Payne 2*, Max |
+| 16 | Firing a gun is a binary choice. Either you pull the trigger or you don't. | *Max Payne 2*, Max |
+| 17 | In a nightmare, every choice you make is a wrong one. | *Max Payne 2*, Max |
+| 18 | Bad things happened in the night, on the streets of that other city. | *Max Payne*, Part III, Ch. 4 "Backstabbing Bastard" |
+| 19 | None of us was a saint. | *Max Payne*, Part II, Ch. 2 "An Offer You Can't Refuse" |
+| 20 | There were only personal apocalypses. Nothing is a cliché when it's happening to you. | *Max Payne*, Part I, Ch. 9 "An Empire of Evil" |
+| 21 | Closing your eyes forces you to look at the darkness inside. | *Max Payne 2*, Max |
+| 22 | Your past is like pieces of a broken mirror. You try to pick them up, but you only end up cutting yourself. | *Max Payne 2*, Max |
+| 23 | Like always, the dead had all the answers I was missing. | *Max Payne 2*, Max |
+| 24 | I didn't deserve to walk away. There are no happy endings. | *Max Payne 2*, Max |
+| 25 | I had a dream of my wife. She was dead. But it was all right. | *Max Payne 2*, Max (final narration) |
+
+Several (1, 2, 3, 4, 5, 9, 10, 17, 18, 20, 21, 23) are whole sentences taken out of a longer
+Wikiquote entry, cut only at sentence boundaries; nothing inside a sentence was removed or changed.
+
 ## Open question: animation fidelity
 
 CP77 has no native prone-and-shoot pose. The ticket order above deliberately defers that: C2SD-T7
@@ -241,6 +348,8 @@ underneath is proven — that's a follow-up ticket once C2SD-T14 lands, not part
 
 - **Cyber Engine Tweaks (CET)** — input hooks, the state machine, time dilation calls, the ImGui
   debug overlay. Everything in the ticket log above is CET Lua only.
+- **redscript + Phone Extension** — only for Max Payne's phone text (C2SD-T27,
+  `r6/scripts/ShootDodge/ShootDodgePhone.reds`); everything else stays CET Lua.
 - **TweakXL** — not needed: the loadout grant (C2SD-T4) gives vanilla TweakDB records as they are.
 - **WolvenKit + REDmod**, if/when the animation follow-up is picked up: extracting the player
   skeleton, authoring the dive/prone `.animgraph` states, packaging as a REDmod archive.
