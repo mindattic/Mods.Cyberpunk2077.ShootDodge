@@ -6,8 +6,71 @@ slows but aiming and firing stay sharp, then either stay prone shooting or scram
 ## Mechanics, in build order (matches the ticket log)
 
 ### Loadout (C2SD-T4)
-Grant twin pistols and a trench coat on mod load, via TweakXL reskins of existing archetypes.
-Independent of everything else below — no gameplay dependency, just inventory setup.
+Max Payne's Max Payne 2 outfit and twin pistols, rebuilt from Cyberpunk 2077's own items, granted
+to male or female V once per save. Independent of the gameplay below: inventory setup only.
+
+**Research: what Max wears and carries in Max Payne 2.** Findings, with sources:
+
+- **Character model.** MP2's Max was remodelled on actor Timothy Gibbs (Sam Lake modelled MP1's)
+  ([Wikipedia, MP2][wp2]; [TV Tropes, Max Payne trivia][tvt]).
+- **Outfit.** Back on the NYPD, Max wears "a relatively smart office suit" and "still has his
+  trademark leather trench coat" over it ([Giant Bomb, Max Payne][gbmax]). That is the break
+  from MP1, where, undercover, he wore street clothes: leather jacket, white T-shirt, black
+  trousers (Max Payne Wiki, *Max Payne*). Piece by piece:
+  - *Coat*: long leather trench, black, worn open, reaching past the knee (the sourced "leather
+    trench coat"; the colour, length and open wear are from the game's model and cover art).
+  - *Shirt and tie*: a dress shirt under the coat, the "office suit" of the source. A tie is
+    implied by the suit; no source found describes it, so treat the tie as unconfirmed.
+  - *Trousers*: dark suit trousers. *Shoes*: black dress shoes. No source describes either beyond
+    "office suit"; both follow from it.
+- **Weapons.** Max starts MP2 with a 9 mm pistol ([Wikipedia][wp2]) and can dual-wield it; MP2's
+  9 mm is a Beretta 92FS ([IMFDB, Max Payne 2][imfdb]; Max Payne Wiki, *Beretta*). MP2 kept MP1's
+  dual Berettas and Ingrams and added dual Desert Eagles (Max Payne Wiki, *Dual-wielding*). The
+  twin Berettas are the signature: they are the pair he holds from the first level on, so the
+  ticket's Beretta 92 premise is confirmed.
+
+[tvt]: https://tvtropes.org/pmwiki/pmwiki.php/Trivia/MaxPayne
+[gbmax]: https://www.giantbomb.com/max-payne/3005-697/
+[imfdb]: https://www.imfdb.org/wiki/Max_Payne_2
+
+(The Max Payne Wiki pages are on maxpayne.fandom.com; IMFDB, Giant Bomb and Fandom refused
+automated fetches during this research, so their wording above comes from search-result extracts.)
+
+**Choices, slot by slot.** Only vanilla TweakDB records: no meshes, textures, `.archive` art, and
+no TweakXL records either (none was needed, so the loadout has no TweakXL dependency). Every record
+below was checked against the game's own `r6/cache/tweakdb.bin` (base and `_ep1`), and every
+garment there carries both a `&Female` and a `&Male` appearance, so the same record renders with
+the right body-gender mesh on either V. The list lives in `modules/Loadout.lua` (`Loadout.items`),
+with `Loadout.bodyOverrides` for a per-body swap; both are empty today because no piece needed one.
+
+| Slot | Pick | Why | Runners-up |
+|---|---|---|---|
+| Weapons (x2) | `Items.Preset_Lexington_Default` (Militech M-10AF Lexington) | The Beretta 92FS is the M9, the US military's service sidearm; Militech is the NUSA's military supplier and the Lexington its standard-issue, full-size semi-auto power pistol, black like Max's. A power pistol (`Wea_Handgun`), so it passes the C2SD-T13 gate. | `Items.Preset_Unity_Default` (Constitutional Arms Unity, also a full-size semi-auto); `Items.Preset_Lexington_Military` (same gun, military finish). The Liberty is a heavier hand cannon, closer to MP2's other pair, the Desert Eagles. |
+| Outer torso | `Items.Coat_01_basic_01` | The long coat family (`t2_coat_01`), the nearest CP77 has to a knee-length leather trench; `basic_01` is its plain first variant (colour to confirm in game, see the caveat). | `Coat_01_old_01..03` / `_rich_01..03` (same cut, other finishes), `Coat_03_basic_01` (long corporate coat, the Steel Dragons coat's family), `Coat_04_basic_01`. A `FormalJacket_*` (the suit jacket) can't be worn with it: CP77 puts both in the one outer-torso slot, and the coat is the signature piece. |
+| Inner torso | `Items.FormalShirt_01_basic_01` | Collared dress shirt, the "office suit" shirt. | `FormalShirt_01_old_*/rich_*` colour variants, `FormalShirt_02_basic_01`. |
+| Tie | none | CP77 has no tie slot; a tie only exists baked into a shirt mesh. No match chosen; if the in-game check finds a tie on a `FormalShirt_02` variant, swap it in the inner-torso row. | `FormalShirt_02_*`. |
+| Legs | `Items.FormalPants_01_basic_01` | Suit trousers. | `FormalPants_02_basic_01`, `FormalPants_03_basic_01`. |
+| Feet | `Items.FormalShoes_01_basic_01` | Black dress shoes. | `FormalShoes_02_basic_01`, `FormalShoes_03_basic_01`. |
+
+Female V gets the same five records, all with female meshes; no piece needed a female-specific
+substitute. CP77 has no dual-wielding, so the "twin pistols" are two separate Lexingtons in the
+inventory (one in hand, one on the wheel), not a two-handed pose.
+
+Caveat: this checkout has no tool to render a garment, so each pick is by item family (the long
+coat, formal shirt, formal trousers, formal shoes) and its `basic_01` variant. The in-game check
+below is where the colour variant is confirmed; if a `basic_01` isn't the darkest, swap the
+variant suffix in `Loadout.items` to the runner-up that is.
+
+**Granting (`modules/LoadoutDriver.lua`).** Once per session (a loaded save, a new game, or CET
+reloaded in game), 1.5 s after V exists, the driver reads the save's quest fact
+`shootdodge_mp2_loadout`. Unset: it counts what V already holds of each record, gives only the
+shortfall (`Game.AddToInventory`, which mints a separate weapon per pistol), and writes the fact
+into the save. Set: nothing. So reloading the save or restarting CET never re-grants, and a piece
+the player later sells stays sold. The overlay shows the last result and the body type read, with
+a "Check loadout now" button. Nothing is auto-equipped: V equips the pieces from the inventory.
+
+**Still to verify in game** (not possible from this checkout): on a male and a female V, all
+six items arrive, equip, and render; reloading the save adds nothing.
 
 ### Input detection (C2SD-T5)
 A CET input listener watches for aim (ADS) held + jump + a movement direction, all within one
@@ -177,7 +240,6 @@ underneath is proven — that's a follow-up ticket once C2SD-T14 lands, not part
 
 - **Cyber Engine Tweaks (CET)** — input hooks, the state machine, time dilation calls, the ImGui
   debug overlay. Everything in the ticket log above is CET Lua only.
-- **TweakXL** — the loadout grant (C2SD-T4): reskins existing weapon/garment TweakDB records
-  rather than shipping new meshes.
+- **TweakXL** — not needed: the loadout grant (C2SD-T4) gives vanilla TweakDB records as they are.
 - **WolvenKit + REDmod**, if/when the animation follow-up is picked up: extracting the player
   skeleton, authoring the dive/prone `.animgraph` states, packaging as a REDmod archive.

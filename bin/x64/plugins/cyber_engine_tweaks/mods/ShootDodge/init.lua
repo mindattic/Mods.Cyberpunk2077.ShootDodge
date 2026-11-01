@@ -3,7 +3,8 @@
 -- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), landing detection
 -- (C2SD-T10), prone shooting from the ground (C2SD-T11), the get-up from prone (C2SD-T12), plus
 -- the Max Payne 2 bullet-time hourglass (C2SD-T15) and the dive's camera + audio polish
--- (C2SD-T14: FOV pull-back, whoosh, music/ambience muffle). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T14: FOV pull-back, whoosh, music/ambience muffle) and the Max Payne 2 outfit + twin
+-- pistols granted once per save (C2SD-T4). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
@@ -14,6 +15,8 @@ local GetUpDriver = require("modules/GetUpDriver")
 local BulletTimeDriver = require("modules/BulletTimeDriver")
 local MeterDriver = require("modules/BulletTimeMeterDriver")
 local DivePolishDriver = require("modules/DivePolishDriver")
+-- C2SD-T4: Max Payne 2's outfit + twin pistols, vanilla items, granted once per save.
+local LoadoutDriver = require("modules/LoadoutDriver")
 
 local ShootDodge = {
   enabled = false,
@@ -56,6 +59,8 @@ registerForEvent("onInit", function()
   ShootDodge.machine:AddListener(function(from, to)
     DivePolishDriver.OnStateChange(from, to, ShootDodge.machine.clock)
   end)
+  -- C2SD-T4: the loadout grant runs from onUpdate once V exists; this hooks the session end.
+  LoadoutDriver.Install()
   -- A new combo can't start while a Shootdodge is already in progress.
   Input.isBlocked = function() return ShootDodge.machine:IsActive() end
 
@@ -126,6 +131,9 @@ end)
 
 registerForEvent("onUpdate", function(deltaTime)
   Input.Update(deltaTime)
+  -- C2SD-T4: grant the loadout once per save (independent of the enabled toggle).
+  local loadoutOk, loadoutErr = pcall(LoadoutDriver.Update, deltaTime)
+  if not loadoutOk then LoadoutDriver.lastError = "update: " .. tostring(loadoutErr) end
   local machine = ShootDodge.machine
   local ok, err = pcall(function()
     machine:Update(deltaTime)
@@ -341,6 +349,16 @@ registerForEvent("onDraw", function()
       DivePolishDriver.lastWhoosh.time, DivePolishDriver.lastWhoosh.event) or ""))
   if DivePolishDriver.lastError then
     ImGui.Text(string.format("Polish problem: %s", DivePolishDriver.lastError))
+  end
+  -- C2SD-T4: the Max Payne 2 loadout.
+  ImGui.Text(string.format("Loadout: %s | grants this run %d", LoadoutDriver.lastResult,
+    LoadoutDriver.grants))
+  if ImGui.Button("Check loadout now") then
+    local ok, err = pcall(LoadoutDriver.Check)
+    if not ok then LoadoutDriver.lastError = "grant: " .. tostring(err) end
+  end
+  if LoadoutDriver.lastError then
+    ImGui.Text(string.format("Loadout problem: %s", LoadoutDriver.lastError))
   end
   ImGui.TextWrapped("Dive, bullet-time, landing, prone shooting, get-up and dive polish.")
 
