@@ -160,11 +160,20 @@ end
 -- Call from onUpdate with its deltaTime.
 function Input.Update(deltaTime)
   Input.clock = Input.clock + (deltaTime or 0)
+  -- C2SD-T21: session start (the player reappearing after none: main menu -> load, same signal
+  -- MeterDriver/LoadoutDriver use) drops held aim / stale move axes from the previous session.
+  local hasPlayer = Game ~= nil and Game.GetPlayer() ~= nil
+  if hasPlayer and not Input.hadPlayer then Input.Reset() end
+  Input.hadPlayer = hasPlayer
 end
 
 -- Forget held inputs (on game load / session end), so a stale "aim held" can't carry over.
 function Input.Reset()
-  if Input.detector then Input.detector:Reset() end
+  local d = Input.detector
+  if not d then return end
+  local enabled = d.enabled
+  d:Reset()
+  if enabled ~= nil then d.enabled = enabled end -- Reset() re-enables; keep the user's toggle
 end
 
 return Input
