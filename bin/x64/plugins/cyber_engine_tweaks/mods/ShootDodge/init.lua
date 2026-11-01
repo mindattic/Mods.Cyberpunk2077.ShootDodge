@@ -1,6 +1,6 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
--- (C2SD-T5..T8), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
@@ -171,6 +171,15 @@ registerForEvent("onDraw", function()
   if BulletTimeDriver.lastError then
     ImGui.Text(string.format("Bullet-time problem: %s", BulletTimeDriver.lastError))
   end
+
+  -- C2SD-T9: aim/fire stay at normal speed while the world is slowed.
+  local ex = BulletTimeDriver.exemption
+  ex.config.exemptWeapon = ImGui.Checkbox("Weapon at normal speed (fire rate)",
+    ex.config.exemptWeapon)
+  ex.config.exemptPlayer = ImGui.Checkbox("All of V at normal speed (pad look; fall not slowed)",
+    ex.config.exemptPlayer)
+  ImGui.Text(string.format("Exempt now: weapon %s | V %s",
+    ex.weaponKey and "yes" or "no", ex.player and "yes" or "no"))
 
   -- C2SD-T15: the hourglass, exact values.
   local meter = MeterDriver.meter

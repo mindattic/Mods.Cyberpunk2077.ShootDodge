@@ -38,6 +38,16 @@ else is slow. Dilation must unconditionally clear when the state leaves `DIVING`
 (including a mid-dive pause-menu open) — a stuck slow-mo is the one failure mode that must never
 happen.
 
+**How the exemption works (C2SD-T9, `modules/AimFireExemption.lua`).** The time system has no
+camera-only or trigger-only exemption; dilation is per entity. So while this mod's dilation is
+applied (dive or Bullet Time mode), the weapon in V's hands gets an individual time dilation of
+1.0 that ignores the global one: its fire cycle and shoot-input cadence run at normal speed while
+enemies, projectiles, the environment and V's own fall arc stay slowed. A weapon swap moves the
+exemption to the new weapon. Mouse look is a per-frame displacement, so it isn't slowed in the
+first place. An opt-in overlay toggle also exempts all of V (Sandevistan's "local player zero"
+lever), which restores gamepad turn rate too but speeds V's fall arc back up, so it is off by
+default. The exemption is synced right after the world dilation and dropped with it, same frame.
+
 ### Bullet-time meter (C2SD-T15)
 
 **Research: how Max Payne 2's hourglass behaves.** Findings, with sources:
