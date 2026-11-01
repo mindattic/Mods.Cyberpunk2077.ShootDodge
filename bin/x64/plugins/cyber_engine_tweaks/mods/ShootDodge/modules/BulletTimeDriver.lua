@@ -23,6 +23,7 @@ local BulletTimeDriver = {
   rules = BulletTime.new(),
   paused = false,
   lastError = nil,
+  meter = nil, -- C2SD-T15: the BulletTimeMeter, set by init.lua
 }
 
 local function timeSystem()
@@ -69,10 +70,17 @@ function BulletTimeDriver.Sync(machine, enabled)
   local rules = BulletTimeDriver.rules
   local paused = isPaused()
   BulletTimeDriver.paused = paused
+  -- C2SD-T15: the bullet-time meter grants (or, if so configured, refuses) the dive's slow-mo and
+  -- owns Max Payne 2's Bullet Time mode. An empty meter ends the mode, which unsets the dilation
+  -- here the same frame.
+  local meter = BulletTimeDriver.meter
+  local mode = enabled and meter ~= nil and meter.mode or false
   local ctx = {
     state = enabled and machine.state or "NONE",
     paused = paused,
-    dead = BulletTime.slowStates[machine.state] and isDead() or false,
+    dead = (BulletTime.slowStates[machine.state] or mode) and isDead() or false,
+    diveSlow = meter == nil or meter:DiveSlowAllowed(),
+    mode = mode,
   }
   local action, factor = rules:Step(ctx)
   if action == "set" then

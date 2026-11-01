@@ -1,12 +1,13 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
--- (C2SD-T5..T8). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T5..T8), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
 local StateMachine = require("modules/StateMachine")
 local DiveDriver = require("modules/DiveDriver")
 local BulletTimeDriver = require("modules/BulletTimeDriver")
+local MeterDriver = require("modules/BulletTimeMeterDriver")
 
 local ShootDodge = {
   enabled = false,
@@ -15,9 +16,20 @@ local ShootDodge = {
   machine = StateMachine.new(),
 }
 
+-- C2SD-T15: Max Payne 2's Bullet Time mode, toggled by a CET binding (Bindings tab; unbound by
+-- default). It drains the hourglass; the shootdodge does not. CET only accepts this at load time.
+registerInput("ShootDodgeBulletTimeMode", "Bullet-time mode (Max Payne 2, toggle)", function(down)
+  if not down then return end
+  local ok, err = pcall(MeterDriver.ToggleMode, ShootDodge.enabled, ShootDodge.machine)
+  if not ok then print("[ShootDodge] bullet-time mode error: " .. tostring(err)) end
+end)
+
 registerForEvent("onInit", function()
   -- C2SD-T8: a CET reload mid-dive must not leave the old session's slow-mo behind.
   BulletTimeDriver.Clear()
+  -- C2SD-T15: the hourglass (kills refill it, saved with the game) gates Bullet Time mode.
+  BulletTimeDriver.meter = MeterDriver.meter
+  MeterDriver.Install()
   ShootDodge.machine:Reset("load")
   ShootDodge.machine:AddListener(function(from, to, event, reason)
     print(string.format("[ShootDodge] state %s -> %s (%s%s)", from, to, event,
@@ -25,6 +37,10 @@ registerForEvent("onInit", function()
   end)
   -- C2SD-T8: bullet-time follows the state the instant it changes (on as DIVING starts, off the
   -- same frame it leaves DIVING/AIRBORNE), not a frame later.
+  -- C2SD-T15: a shootdodge ends Bullet Time mode and costs no meter (MP2), before the sync below.
+  ShootDodge.machine:AddListener(function(_, to)
+    if to == "DIVING" then MeterDriver.meter:OnDiveStart() end
+  end)
   ShootDodge.machine:AddListener(function()
     BulletTimeDriver.Sync(ShootDodge.machine, ShootDodge.enabled)
   end)
@@ -76,6 +92,17 @@ registerForEvent("onUpdate", function(deltaTime)
     DiveDriver.Cancel()
     machine:Reset("update error")
   end
+  -- C2SD-T15: drain (Bullet Time mode) or refill (passive) the hourglass on real time, before the
+  -- sync below, so a meter that just ran dry drops the dilation this same frame.
+  local meterOk, meterErr = pcall(MeterDriver.Update, deltaTime, {
+    enabled = ShootDodge.enabled,
+    paused = BulletTimeDriver.paused,
+    diving = machine.state == "DIVING" or machine.state == "AIRBORNE",
+  })
+  if not meterOk then
+    print("[ShootDodge] bullet-time meter error: " .. tostring(meterErr))
+    pcall(function() MeterDriver.meter:EndMode("error") end)
+  end
   -- C2SD-T8: every frame, enabled or not and even after an error, bring the world's time
   -- dilation in line with the state (and pause/death), so slow-mo can never get stuck on.
   local syncOk, syncErr = pcall(BulletTimeDriver.Sync, machine, ShootDodge.enabled)
@@ -86,6 +113,10 @@ registerForEvent("onUpdate", function(deltaTime)
 end)
 
 registerForEvent("onDraw", function()
+  -- C2SD-T15: the in-game hourglass HUD, drawn whether or not the CET overlay is open.
+  local hudOk, hudErr = pcall(MeterDriver.DrawHud, BulletTimeDriver.paused)
+  if not hudOk then MeterDriver.lastError = "hud: " .. tostring(hudErr) end
+
   if not ImGui.Begin("ShootDodge") then
     ImGui.End()
     return
@@ -139,6 +170,35 @@ registerForEvent("onDraw", function()
     BulletTimeDriver.paused and " | game paused" or ""))
   if BulletTimeDriver.lastError then
     ImGui.Text(string.format("Bullet-time problem: %s", BulletTimeDriver.lastError))
+  end
+
+  -- C2SD-T15: the hourglass, exact values.
+  local meter = MeterDriver.meter
+  ImGui.Text(string.format("Meter: %.3f / %.3f (%.1f%%) | mode %s | yellow %.2f",
+    meter.level, meter.config.max, meter:Fraction() * 100, meter.mode and "ON" or "off",
+    meter.yellow))
+  ImGui.Text(string.format("Kills counted: %d%s | loaded from: %s", meter.kills,
+    meter.lastRefill and string.format(" (last +%.3f)", meter.lastRefill.amount) or "",
+    MeterDriver.restoredFrom or "-"))
+  if meter.lastModeEnd then
+    ImGui.Text(string.format("Bullet-time mode last ended: %s", meter.lastModeEnd))
+  end
+  if ImGui.Button(meter.mode and "Stop bullet-time mode" or "Start bullet-time mode") then
+    MeterDriver.ToggleMode(ShootDodge.enabled, machine)
+  end
+  ImGui.SameLine()
+  if ImGui.Button("Refill meter") then
+    meter:SetLevel(meter.config.max)
+    MeterDriver.Persist(true)
+  end
+  ImGui.SameLine()
+  if ImGui.Button("Empty meter") then
+    meter:SetLevel(0)
+    MeterDriver.Persist(true)
+  end
+  MeterDriver.hud.visible = ImGui.Checkbox("Hourglass HUD", MeterDriver.hud.visible)
+  if MeterDriver.lastError then
+    ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end
   ImGui.TextWrapped("Dive and bullet-time only -- landing not implemented yet.")
 

@@ -38,6 +38,63 @@ else is slow. Dilation must unconditionally clear when the state leaves `DIVING`
 (including a mid-dive pause-menu open) — a stuck slow-mo is the one failure mode that must never
 happen.
 
+### Bullet-time meter (C2SD-T15)
+
+**Research: how Max Payne 2's hourglass behaves.** Findings, with sources:
+
+- **What drains it.** Only Bullet Time *mode* (the manual slow-mo toggle) drains it, continuously
+  while active, "until it is either empty or the player disables bullet time mode"; when it's
+  empty "you'll find yourself back in real time". Sources: [Wikipedia, MP2 Gameplay][wp2];
+  [GamesFirst review][gf].
+- **Whether a shootdodge costs meter.** It does not. "Although bullet time is activated while Max
+  or Mona is in mid-air, this will not deplete the bullet time meter" ([Wikipedia][wp2]);
+  "performing a shootdodge does not drain the meter this time around" ([Gaming Past Time
+  review][gpt]); "there is no limit to the number of times you can make this move"
+  ([GamesFirst][gf]). This is a change from Max Payne 1, where diving used the meter.
+- **What a shootdodge does with an empty meter.** Since the dive never touches the meter and has
+  no use limit, it is a full slow-motion dive whatever the hourglass shows. (No source states the
+  empty case in so many words; it follows from the two points above.) Starting a shootdodge
+  during Bullet Time mode takes Max out of the mode (Max Payne Wiki, *Shootdodge*).
+- **How it refills.** Two ways: passive regeneration whenever the mode is not in use ("the meter
+  will eventually increase when not in use", [Wikipedia][wp2]; "Bullet Time will also regenerate
+  slowly during gameplay", Rockstar Support), and kills ("can be replenished quickly by killing
+  enemies", [Wikipedia][wp2]; "the bullet time meter fills up automatically, as well as getting
+  bumped up a certain amount when you kill enemies", [hermiene.net][hn]). Capped at a full
+  hourglass. MP1, by contrast, refilled only from kills ([hermiene.net][hn]).
+- **The yellow hourglass.** Kills turn the sand yellow, which fades back toward white over time
+  ("the more enemies you kill, the more yellow the bullet time meter gets, while constantly going
+  towards white again", [hermiene.net][hn]); a yellower hourglass also slows time further in the
+  mode. The tint is implemented; the extra slowdown tier is not (no ticket asks for it yet).
+- **Rates.** MP2's internal drain/regen/kill amounts are not published in any source found. The
+  values in `BulletTimeMeter.defaults` are estimates (full hourglass ~10 s of mode, empty -> full
+  ~80 s passive, +15% per kill) and are the numbers to tune after the in-game check.
+
+[wp2]: https://en.wikipedia.org/wiki/Max_Payne_2:_The_Fall_of_Max_Payne
+[gf]: https://gamesfirst.com/articles/2003/max-payne-ii-the-fall-of-max-payne/
+[gpt]: https://gamingpastime.com/max-payne-2-pc-review/
+[hn]: https://hermiene.net/archive/2003/12/11
+
+**Consequence for this mod.** The ticket's working title says "the dive drains" the meter, but MP2
+says it doesn't, and the ticket asks to match MP2 on every point. So, as in MP2, the meter is
+drained by a **Bullet Time mode** (a CET binding, "Bullet-time mode (Max Payne 2, toggle)", unbound
+by default, plus a button in the overlay) that slows the world with the same dilation as the dive
+(C2SD-T8), and the shootdodge stays free and always slowed. The mode can't start mid-dive or with
+less than 2% sand, ends when the meter runs dry (the dilation is unset that same frame, see
+`BulletTimeDriver.Sync`), on death, on mod disable, on a session end, and when a shootdodge starts.
+`diveCost`, `diveDrainPerSec` and `diveNeedsMeter` in the same config table can make the dive pay
+(an emptied meter then drops the world to normal speed mid-dive, cleanly), but default to MP2's
+zero.
+
+**Implementation.** `modules/BulletTimeMeter.lua` is the pure economy, with every rate and amount
+in its one `defaults` table. `modules/BulletTimeMeterDriver.lua` wires it in:
+- kills come from the game's own `NPCPuppet:OnDeath` event, counted when the death's instigator is
+  the player, once per NPC;
+- the level persists across save/load in a quest fact (`shootdodge_bt_meter`, stored inside the
+  save file), restored at each session start; a save made before the mod starts full;
+- an hourglass HUD in the lower left, always visible in game (hidden only in menus/pause), with the
+  sand draining from the top bulb as the level drops and tinted yellow by kills; the debug overlay
+  shows the exact level, mode, tint and kill count, plus refill/empty buttons for testing.
+
 ### Landing branch (C2SD-T10, C2SD-T11, C2SD-T12)
 A ground-contact check fires once per dive and reads whether movement is held at that instant:
 - Held -> `AIRBORNE -> GETUP -> NONE` (scramble-up transition, full control back only once it

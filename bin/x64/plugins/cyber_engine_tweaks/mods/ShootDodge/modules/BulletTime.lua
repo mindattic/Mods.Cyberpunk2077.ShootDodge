@@ -3,6 +3,9 @@
 -- Pure Lua, no CET or game API (the CET glue is modules/BulletTimeDriver.lua), so the rules can be
 -- exercised outside the game.
 --
+-- C2SD-T15: Max Payne 2's Bullet Time mode (the meter's manual toggle) slows the world the same
+-- way, and the meter can veto the dive's slow-mo (it doesn't by default, matching MP2).
+--
 -- The world is slowed only while the state machine is in DIVING or AIRBORNE, the game is not
 -- paused (pause menu, other menus) and V is alive. The moment any of those stops being true the
 -- wanted factor is nil, which means "no dilation": the driver unsets it that same frame. Leaving
@@ -48,11 +51,15 @@ function BulletTime:SetFactor(factor)
 end
 
 -- The factor that should be active right now, or nil for normal time.
--- ctx = { state = <machine state>, paused = bool, dead = bool }
+-- ctx = { state = <machine state>, paused = bool, dead = bool,
+--         diveSlow = bool (C2SD-T15: the meter grants the dive's slow-mo; nil = granted),
+--         mode = bool (C2SD-T15: Max Payne 2's Bullet Time mode is on) }
 function BulletTime:Wanted(ctx)
   local cfg = self.config
   if not cfg.enabled then return nil end
-  if ctx == nil or not BulletTime.slowStates[ctx.state] then return nil end
+  if ctx == nil then return nil end
+  local diving = BulletTime.slowStates[ctx.state] and ctx.diveSlow ~= false
+  if not diving and not ctx.mode then return nil end
   if ctx.paused or ctx.dead then return nil end
   if cfg.factor >= 1.0 then return nil end
   return cfg.factor
