@@ -136,7 +136,10 @@ registerForEvent("onUpdate", function(deltaTime)
   if not loadoutOk then LoadoutDriver.lastError = "update: " .. tostring(loadoutErr) end
   local machine = ShootDodge.machine
   local ok, err = pcall(function()
-    machine:Update(deltaTime)
+    -- C2SD-T19: a paused game must not age the dive or the machine's keep-alive (pause flag from
+    -- BulletTimeDriver's own IsGamePaused check, as of the last Sync).
+    local gamePaused = BulletTimeDriver.paused == true
+    machine:Update(gamePaused and 0 or deltaTime)
     if not ShootDodge.enabled then
       DiveDriver.Cancel()
       ProneDriver.Cancel()
@@ -147,7 +150,9 @@ registerForEvent("onUpdate", function(deltaTime)
     -- C2SD-T7: the dive drives DIVING (direction lock, lift-off/landing check). Its timers and
     -- velocity estimate run on game time, so they keep working while bullet-time slows V too.
     -- C2SD-T10: it also drives AIRBORNE and fires the landing (-> PRONE) on ground contact.
-    DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
+    if not gamePaused then
+      DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
+    end
     -- C2SD-T11: PRONE (and the camera easing back up after it), on real time.
     ProneDriver.Update(machine, deltaTime or 0)
     -- C2SD-T12: the get-up (after ProneDriver, so a stand press it hands over starts the scramble
