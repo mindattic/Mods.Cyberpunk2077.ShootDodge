@@ -16,9 +16,9 @@
 -- the ground it fires DIVING -> AIRBORNE (launch); the frame the landing is confirmed (see
 -- Dive:Update, which rejects grazes) it fires land -> PRONE, always, whatever input is held, and
 -- records one landing event with whether a movement input was held at impact (`lastLanding`, for
--- the get-up in C2SD-T12). PRONE itself is driven by C2SD-T11; until then the state machine's
--- driver timeout returns it to NONE. A dive that never lifts off or hits the time cap is not a
--- landing and still aborts to NONE.
+-- the get-up in C2SD-T12, modules/GetUpDriver.lua). PRONE itself is driven by ProneDriver
+-- (C2SD-T11), with no timer, until the get-up takes over. A dive that never lifts off or hits the
+-- time cap is not a landing and still aborts to NONE.
 
 local Dive = require("modules/Dive")
 

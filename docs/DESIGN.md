@@ -129,8 +129,17 @@ aborts to `NONE`. The overlay and the CET log show one landing event per dive wi
   (1.3 m, eye ~0.4 m off the floor; tunable in the overlay), eased down over 0.12 s and back up over
   0.2 s when `PRONE` ends any way (get-up, abort, disable, reload). V's body and collision stay
   standing until the animation follow-up below. Knocked off a ledge while prone aborts to `NONE`.
-- Get-up (C2SD-T12): `PRONE -> GETUP -> NONE` on a movement input, immediately after impact when
-  movement was already held at the landing.
+- Get-up (C2SD-T12, `modules/GetUp.lua` + `modules/GetUpDriver.lua`): `PRONE -> GETUP -> NONE`.
+  Two ways in: the prone driver's fresh move/jump press, handed over through
+  `ProneDriver.onStandRequest` (pointed at `GetUpDriver.OnStandRequest`, so there is one stand-press
+  watcher), or movement held through the landing (`DiveDriver.lastLanding.moveHeld`), which stands V
+  up automatically once the 0.25 s impact beat has played: V hits the ground first, no fresh press
+  needed. Without either, V stays prone and keeps shooting; there is no timer. `GETUP` is a short
+  scramble, not a snap to idle: a small push (2 m/s) in the held movement direction (camera
+  relative, like the dive), V's horizontal speed held under 2.5 m/s, and the eye easing back up from
+  the floor over the same 0.7 s (init.lua sets the prone driver's raise time to the scramble's
+  duration). Full normal movement returns only when it completes and fires `recover -> NONE`. However
+  `GETUP` is entered, the get-up driver runs it; the camera stays first person throughout.
 
 ### Weapon restriction (C2SD-T13)
 The input check (C2SD-T5) also reads the equipped weapon type. Pistols, revolvers, and small SMGs

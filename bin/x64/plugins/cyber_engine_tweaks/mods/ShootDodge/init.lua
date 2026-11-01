@@ -1,13 +1,15 @@
 -- ShootDodge: Max Payne 2 style Shootdodge (dive, bullet-time, prone/get-up) for Cyberpunk 2077.
 -- Implemented so far: combo detection, the state machine, the dive trigger and bullet-time
 -- (C2SD-T5..T8), aim/fire kept at normal speed during slow-mo (C2SD-T9), landing detection
--- (C2SD-T10), prone shooting from the ground (C2SD-T11), plus the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
+-- (C2SD-T10), prone shooting from the ground (C2SD-T11), the get-up from prone (C2SD-T12), plus
+-- the Max Payne 2 bullet-time hourglass (C2SD-T15). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
 local Input = require("modules/Input")
 local StateMachine = require("modules/StateMachine")
 local DiveDriver = require("modules/DiveDriver")
 local ProneDriver = require("modules/ProneDriver")
+local GetUpDriver = require("modules/GetUpDriver")
 local BulletTimeDriver = require("modules/BulletTimeDriver")
 local MeterDriver = require("modules/BulletTimeMeterDriver")
 
@@ -70,6 +72,21 @@ registerForEvent("onInit", function()
     return ShootDodge.combo ~= nil and ShootDodge.combo.jumpHeld == true
   end
   ShootDodge.machine:AddListener(ProneDriver.OnStateChange)
+  -- C2SD-T12: PRONE -> GETUP -> NONE. ProneDriver's stand press (fresh move/jump) is handed to the
+  -- get-up through its hook; the get-up also starts right after impact when movement was held
+  -- through the landing, then runs a short scramble (push in the held direction, speed capped)
+  -- before normal control returns. The eye rises back up over that same scramble, not a snap.
+  ProneDriver.onStandRequest = GetUpDriver.OnStandRequest
+  GetUpDriver.moveAxes = function()
+    local combo = ShootDodge.combo
+    if combo == nil then return 0, 0 end
+    return combo.moveX, combo.moveY
+  end
+  GetUpDriver.lastLanding = function() return DiveDriver.lastLanding end
+  ProneDriver.prone.config.raiseSec = GetUpDriver.rules.config.durationSec
+  GetUpDriver.AddListener(function(phase, cause)
+    print(string.format("[ShootDodge] get-up %s%s", phase, cause and (" (" .. cause .. ")") or ""))
+  end)
   DiveDriver.AddLandingListener(function(landing)
     print(string.format("[ShootDodge] landing #%d at %.2fs: movement %s (%.2f), air %.2fs, grazes %d",
       landing.index, landing.time, landing.moveHeld and "held" or "not held", landing.moveMagnitude,
@@ -86,13 +103,14 @@ registerForEvent("onInit", function()
       ShootDodge.machine:Reset("dive start error")
     end
   end)
-  print("[ShootDodge] loaded (dive trigger, bullet-time and landing detection active)")
+  print("[ShootDodge] loaded (dive trigger, bullet-time, landing, prone and get-up active)")
 end)
 
 registerForEvent("onShutdown", function()
   Input.Reset()
   DiveDriver.Cancel()
   ProneDriver.Cancel()
+  GetUpDriver.Cancel()
   ShootDodge.machine:Reset("shutdown")
   BulletTimeDriver.Clear()
 end)
@@ -105,6 +123,7 @@ registerForEvent("onUpdate", function(deltaTime)
     if not ShootDodge.enabled then
       DiveDriver.Cancel()
       ProneDriver.Cancel()
+      GetUpDriver.Cancel()
       if machine:IsActive() then machine:Reset("mod disabled") end
       return
     end
@@ -114,11 +133,15 @@ registerForEvent("onUpdate", function(deltaTime)
     DiveDriver.Update(machine, (deltaTime or 0) * BulletTimeDriver.TimeScale())
     -- C2SD-T11: PRONE (and the camera easing back up after it), on real time.
     ProneDriver.Update(machine, deltaTime or 0)
+    -- C2SD-T12: the get-up (after ProneDriver, so a stand press it hands over starts the scramble
+    -- this same frame), on real time like PRONE.
+    GetUpDriver.Update(machine, deltaTime or 0)
   end)
   if not ok then
     print("[ShootDodge] update error: " .. tostring(err))
     DiveDriver.Cancel()
     pcall(ProneDriver.Cancel)
+    pcall(GetUpDriver.Cancel)
     machine:Reset("update error")
   end
   -- C2SD-T15: drain (Bullet Time mode) or refill (passive) the hourglass on real time, before the
@@ -204,6 +227,20 @@ registerForEvent("onDraw", function()
   if ProneDriver.lastError then
     ImGui.Text(string.format("Prone problem: %s", ProneDriver.lastError))
   end
+  -- C2SD-T12: the get-up from prone.
+  local getUp = GetUpDriver.rules
+  if getUp.active then
+    ImGui.Text(string.format("Get-up: scrambling %.0f%%", getUp:Progress() * 100))
+  elseif getUp.watching then
+    ImGui.Text(getUp.heldAtImpact and "Get-up: movement held at impact, rising after the beat"
+      or "Get-up: waiting for a fresh move/jump press")
+  end
+  ImGui.Text(string.format("Get-ups: %d%s", GetUpDriver.getUpCount,
+    GetUpDriver.lastStart and string.format(" | last at %.2fs: %s", GetUpDriver.lastStart.time,
+      GetUpDriver.lastStart.cause) or ""))
+  if GetUpDriver.lastError then
+    ImGui.Text(string.format("Get-up problem: %s", GetUpDriver.lastError))
+  end
 
   -- C2SD-T8: bullet-time controls and live status.
   local bt = BulletTimeDriver.rules
@@ -257,7 +294,7 @@ registerForEvent("onDraw", function()
   if MeterDriver.lastError then
     ImGui.Text(string.format("Meter problem: %s", MeterDriver.lastError))
   end
-  ImGui.TextWrapped("Dive, bullet-time, landing and prone shooting -- get-up not implemented yet.")
+  ImGui.TextWrapped("Dive, bullet-time, landing, prone shooting and get-up.")
 
   ImGui.End()
 end)
