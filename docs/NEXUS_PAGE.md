@@ -65,7 +65,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Hold aim, press a direction and jump: V leaps, time slows but your aim and fire stay fast, V lands prone and keeps shooting, then a move key gets V up. Pistols, revolvers, SMGs. Bullet-time hourglass, Max's outfit, and Max texts you. Needs CET and redscript; Phone Extension is optional (Max's text only).
+Max Payne 2's Shootdodge in first person. Aim, hold a direction, jump: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension optional.
 
 ## Tags
 
