@@ -146,10 +146,16 @@ end
 -- C2SD-T9: drop every exemption this session set. The player one is only unset when we set it,
 -- so this never touches another effect's (Sandevistan's) player dilation. One left behind by a CET
 -- reload is harmless: it is "normal speed, ignore the world", and the world is back to normal too.
+-- A weapon's is not (it would ignore later game slow-mo), hence the held-weapon unset below.
 local function clearExemption()
   local exemption = BulletTimeDriver.exemption
-  unexemptEntity(BulletTimeDriver.exemptWeapon)
+  local tracked = BulletTimeDriver.exemptWeapon
+  unexemptEntity(tracked)
   BulletTimeDriver.exemptWeapon = nil
+  -- C2SD-T24: a CET reload mid-slow-mo leaves the old module's weapon exemption on (a fresh module
+  -- tracks nothing), so also unset whatever weapon V holds now.
+  local held = equippedWeapon()
+  if held ~= nil and held ~= tracked then unexemptEntity(held) end
   if exemption.player then unexemptPlayer() end
   exemption.weaponKey = nil
   exemption.player = false
