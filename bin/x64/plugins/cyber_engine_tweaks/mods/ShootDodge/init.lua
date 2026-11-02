@@ -72,6 +72,8 @@ registerForEvent("onInit", function()
   -- C2SD-T14: put back a music duck a crash/reload left behind, then whoosh once on dive entry.
   -- The FOV pull-back and the music/ambience muffle follow DIVING/AIRBORNE in onUpdate.
   DivePolishDriver.Install()
+  -- C2SD-T67: the muffle also follows Bullet Time mode.
+  DivePolishDriver.isBulletTimeMode = function() return MeterDriver.meter.mode == true end
   ShootDodge.machine:AddListener(function(from, to)
     DivePolishDriver.OnStateChange(from, to, ShootDodge.machine.clock)
   end)

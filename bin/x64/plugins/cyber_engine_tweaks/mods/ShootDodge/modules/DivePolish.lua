@@ -115,7 +115,9 @@ function DivePolish:Update(deltaTime, ctx)
   end
 
   -- Audio: on only while diving, not paused, V alive.
-  local wantMuffle = diving and cfg.audioEnabled and not ctx.paused and not ctx.dead
+  -- C2SD-T67: Bullet Time mode muffles too (MP2's bullet time sound), not only the dive.
+  local slowed = diving or (ctx.enabled == true and ctx.mode == true)
+  local wantMuffle = slowed and cfg.audioEnabled and not ctx.paused and not ctx.dead
   if wantMuffle and not self.muffled then
     plan.audio = "muffle"
   elseif not wantMuffle and self.muffled then

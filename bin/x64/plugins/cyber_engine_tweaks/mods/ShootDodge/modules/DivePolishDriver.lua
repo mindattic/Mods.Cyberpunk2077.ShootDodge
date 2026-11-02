@@ -22,6 +22,8 @@ local MUSIC_GROUP, MUSIC_VAR = "/audio/volume", "MusicVolume"
 
 local DivePolishDriver = {
   rules = DivePolish.new(),
+  -- C2SD-T67: set by init.lua; Bullet Time mode muffles the world's sound like a dive does.
+  isBulletTimeMode = function() return false end,
   baseFov = nil,        -- the camera's FOV before the pull-back, while held
   appliedFov = nil,     -- the FOV last written, for the overlay
   musicOriginal = nil,  -- the player's music volume while it is ducked
@@ -218,6 +220,7 @@ function DivePolishDriver.Update(machine, enabled, deltaTime, paused)
     enabled = enabled,
     paused = paused,
     dead = DivePolish.diveStates[machine.state] == true and isDead(),
+    mode = DivePolishDriver.isBulletTimeMode() == true, -- C2SD-T67
   })
   if plan.fov ~= nil then
     applyFov(plan.fov)
