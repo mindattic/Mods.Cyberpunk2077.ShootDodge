@@ -1,0 +1,28 @@
+#!/bin/sh
+# ShootDodge pre-commit hook (C2SD-T70): whenever a commit lands mod files, rebuild the dist zip
+# with tools/package.ps1 and add it to the same commit, so dist/ always matches the code on main.
+# Install: tools/install-hooks.ps1 (copies this file to .git/hooks/pre-commit).
+#
+# Works with `git commit -- <paths>` too: git runs this hook against the commit's own index
+# (GIT_INDEX_FILE), and `git add` below writes to that same index.
+
+changed=$(git diff --cached --name-only -- \
+  'bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/' \
+  'r6/scripts/ShootDodge/' \
+  'r6/input/ShootDodge.xml')
+[ -z "$changed" ] && exit 0
+
+root=$(git rev-parse --show-toplevel)
+if ! powershell -NoProfile -ExecutionPolicy Bypass -File "$root/tools/package.ps1" >/dev/null; then
+  echo "pre-commit: tools/package.ps1 failed; dist zip not rebuilt" >&2
+  exit 1
+fi
+
+zip=$(ls -t "$root"/dist/ShootDodge-*.zip 2>/dev/null | head -n 1)
+if [ -z "$zip" ]; then
+  echo "pre-commit: no dist/ShootDodge-*.zip after packaging" >&2
+  exit 1
+fi
+git add -- "$zip"
+echo "pre-commit: rebuilt and staged ${zip#$root/}"
+exit 0
