@@ -12,7 +12,8 @@
 --   * The pause menu (or any menu that pauses the game) and V's death count as "not diving":
 --     dilation is unset while paused and only re-applied on resume if the dive is still going.
 --   * Clear() runs on init (a CET mod reload mid-dive), shutdown and mod disable, and unsets the
---     reason unconditionally even if this session never set it.
+--     reason even if this session never set it, but only while a world with V exists (C2SD-T43:
+--     at game boot/exit the native call crashes the game).
 --   * If the unset call itself fails, the reason is forced back to 1.0 instead.
 --
 -- C2SD-T9: while the world is slowed, V's weapon (and, opt-in, all of V) is exempted from the
@@ -182,11 +183,25 @@ local function clearExemption()
   exemption:Forget()
 end
 
--- Unconditionally remove this mod's dilation.
+-- C2SD-T43: true only while a game world with V is running. The TimeSystem's native calls are
+-- not safe before that (onInit fires during game boot, onShutdown during exit): calling
+-- UnsetTimeDilation there is an access violation that pcall cannot catch, and it crashed the game
+-- at start-up. With no world, there is no dilation of ours to remove anyway.
+local function worldReady()
+  local ok, player = pcall(function() return Game.GetPlayer() end)
+  return ok and player ~= nil
+end
+
+-- Remove this mod's dilation (only the Lua bookkeeping when no game world is running).
 function BulletTimeDriver.Clear()
-  unsetDilation()
+  if worldReady() then
+    unsetDilation()
+    clearExemption()
+  else
+    BulletTimeDriver.exemptWeapons = {}
+    BulletTimeDriver.exemption:Forget()
+  end
   BulletTimeDriver.rules.applied = nil
-  clearExemption()
 end
 
 -- Bring the game's dilation in line with the rules for the current state. Cheap when nothing

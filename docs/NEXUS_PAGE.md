@@ -35,17 +35,20 @@ ShootDodge (Max Payne 2 Shootdodge)
 
 ## Version
 
-2.0.0. Upload `dist/ShootDodge-2.0.0.zip`, built by `tools/package.ps1` (see the README's "Building
+2.0.1. Upload `dist/ShootDodge-2.0.1.zip`, built by `tools/package.ps1` (see the README's "Building
 and packaging"; the version comes from `version` in `init.lua`). It is rooted at the game folder and
 holds `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` (`init.lua` and `modules/`),
 `r6/scripts/ShootDodge/` (the phone contact and the Bullet Time key listener) and
 `r6/input/ShootDodge.xml`, nothing else.
 
-On the Files tab: category **Main files**, name "ShootDodge", version 2.0.0, and leave Vortex
+On the Files tab: category **Main files**, name "ShootDodge", version 2.0.1, and leave Vortex
 installation on (the default). Vortex's Cyberpunk 2077 extension installs this layout on its own.
 
 ## Changelog
 
+- **2.0.1:**
+  - Fixed a crash on game start: the mod no longer touches the game's time system before a
+    save is loaded (at boot or exit), only while V is in the world.
 - **2.0.0:**
   - In Bullet Time mode, Space alone is the Shootdodge: no aim needed, dives the way you're moving
     (forward with no direction held). Outside Bullet Time, Space is a normal jump.
