@@ -638,3 +638,11 @@ sections above that say Numpad Enter / `IK_Enter` are superseded by this one.
   mouse; `Insert` is the user's CET overlay key; `Tilde` and `F10`/`F11`/`F12` are CET or Windows
   uses; Mouse 4 sits under the thumb mid-fight with no other job. Mice without side buttons bind
   another free key in CET's Bindings tab.
+
+## Bullet Time default key moved to `/` (C2SD-T40)
+
+The user's mouse has no Mouse 4 button, so the default moved to `/`. `r6/input/ShootDodge.xml` binds both
+`IK_Slash` (191, the main-keyboard `/`) and `IK_NumSlash` (111, numpad `/`), with names and codes from
+RED4ext.SDK `EInputKey.hpp`. Neither appears anywhere in the vanilla `r6/config/inputUserMappings.xml` of
+the user's install (checked 2026-11-01: 0 matches each), so `/` does nothing else in vanilla. Mouse 4 / Mouse 5
+remain good choices for mice that have them, via the CET binding.

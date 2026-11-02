@@ -1,7 +1,7 @@
-// ShootDodge (C2SD-T37): Bullet Time mode's default key (Mouse 4) through a game input action.
+// ShootDodge (C2SD-T37): Bullet Time mode's default key (/) through a game input action.
 //
 // r6/input/ShootDodge.xml (loaded by the Input Loader mod) defines the action ShootDodgeBulletTime,
-// mapped to IK_Mouse4 in the on-foot Locomotion context. This file only listens for it: every fresh
+// mapped to IK_Slash/IK_NumSlash in the on-foot Locomotion context. This file only listens for it: every fresh
 // press is counted here, and the CET side (modules/BulletTimeKeyDriver.lua) takes the count each
 // frame through Game.GetScriptableSystemsContainer():Get("ShootDodgeBulletTimeKeySystem") and
 // toggles Bullet Time mode, debounced against the CET binding. Without Input Loader the action never

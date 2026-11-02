@@ -1,7 +1,7 @@
 -- BulletTimeKey: pure rules for Bullet Time mode's two key routes (C2SD-T37).
 --
 -- The mode can be toggled from two places: the game input action from r6/input/ShootDodge.xml
--- (Mouse 4 by default, needs Input Loader) and the CET binding (Bindings tab, user-set). A
+-- (/ by default, needs Input Loader) and the CET binding (Bindings tab, user-set). A
 -- player who binds the same key in CET gets both on one press, a frame or so apart. This debounce
 -- drops a press from the OTHER route that comes within `windowSec` of the last accepted one, so one
 -- physical press toggles once. Presses from the same route are never dropped (a quick double tap

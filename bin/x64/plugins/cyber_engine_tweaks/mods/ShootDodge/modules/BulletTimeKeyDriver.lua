@@ -1,8 +1,8 @@
 -- BulletTimeKeyDriver: CET glue for Bullet Time mode's key routes (C2SD-T37).
 --
 -- Route 1, the default key: r6/input/ShootDodge.xml (Input Loader) maps the game action
--- ShootDodgeBulletTime to IK_Mouse4 (the thumb side button; C2SD-T39 moved it off IK_Enter, which is
--- also main Enter and the dialogue confirm). r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds counts the presses; Update() takes them
+-- ShootDodgeBulletTime to IK_Slash and IK_NumSlash (/ on the main keyboard or numpad; C2SD-T39 moved it off IK_Enter, which is also main Enter
+-- and the dialogue confirm; C2SD-T40 moved it off Mouse 4, which the user's mouse lacks). r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds counts the presses; Update() takes them
 -- each frame. Route 2, the fallback/rebind: the CET binding calls Press("cet"). Both go through the
 -- BulletTimeKey debounce, then `toggle` (init.lua sets it to MeterDriver.ToggleMode). Missing
 -- redscript or Input Loader only means route 1 never reports a press.

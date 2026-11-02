@@ -18,7 +18,7 @@ checklist with expected results. At minimum these must pass:
       aim and fire stay at normal speed while the world is slow.
 - [ ] G1-G5, H1-H9 (male and female V): one landing per dive with the right held flag, prone shooting
       360 degrees, no timer, get up by a move key or by holding through the landing.
-- [ ] I1-I18: the hourglass HUD, Bullet Time mode (Mouse 4 by default with Input Loader, CET binding as fallback, never V), drain, passive and kill refill, and
+- [ ] I1-I18: the hourglass HUD, Bullet Time mode (the / key by default with Input Loader, CET binding as fallback, never V), drain, passive and kill refill, and
       save persistence.
 - [ ] J1-J4: only pistols, revolvers and SMGs arm the combo, and swaps apply at once.
 - [ ] K1-K9: FOV, whoosh and music duck start and revert on both exit paths, each toggleable.
@@ -81,7 +81,7 @@ install them and the page lists them:
 | Cyber Engine Tweaks | https://www.nexusmods.com/cyberpunk2077/mods/107 | Runs the whole mod. |
 | redscript | https://www.nexusmods.com/cyberpunk2077/mods/1511 | Compiles the Max Payne phone contact. |
 | Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Optional. Lets Max Payne text V in the Messages app. |
-| Input Loader | https://www.nexusmods.com/cyberpunk2077/mods/4575 | Optional. Makes Mouse 4 the default Bullet Time key (needs RED4ext). Without it, bind the key in CET. |
+| Input Loader | https://www.nexusmods.com/cyberpunk2077/mods/4575 | Optional. Makes the / key the default Bullet Time key (needs RED4ext). Without it, bind the key in CET. |
 
 Plus Cyberpunk 2077 (PC). Nothing else: no TweakXL, ArchiveXL or Codeware, and no RED4ext of its own
 (Input Loader runs on RED4ext). Phone Extension itself needs only redscript.
@@ -141,7 +141,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][b]Prone and get-up:[/b] free-aim and fire 360 degrees from the floor, no timer. A fresh movement press stands V up with a short scramble.
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
-[*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (Mouse 4 by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
+[*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (the / key by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
 [*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward. The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
@@ -166,15 +166,15 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/107]Cyber Engine Tweaks[/url]
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/1511]redscript[/url]
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/24949]Phone Extension[/url] (for Max Payne's text)
-[*][url=https://www.nexusmods.com/cyberpunk2077/mods/4575]Input Loader[/url] (optional, needs RED4ext: makes Mouse 4 the default Bullet Time key)
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/4575]Input Loader[/url] (optional, needs RED4ext: makes the / key the default Bullet Time key)
 [/list]
-Nothing else: no TweakXL, ArchiveXL or Codeware. Phone Extension is optional and install order does not matter: without it the phone script compiles to nothing, only Max Payne's text is missing, and no other redscript mod is affected. Input Loader is optional too: without it Mouse 4 does nothing and you bind Bullet Time in CET instead.
+Nothing else: no TweakXL, ArchiveXL or Codeware. Phone Extension is optional and install order does not matter: without it the phone script compiles to nothing, only Max Payne's text is missing, and no other redscript mod is affected. Input Loader is optional too: without it the / key does nothing and you bind Bullet Time in CET instead.
 
 [size=5][b]Install[/b][/size]
 [list=1]
 [*][b]Vortex:[/b] Mod Manager Download. It installs and deploys on its own, no prompts. [b]Manual:[/b] extract the zip into your Cyberpunk 2077 folder (it contains [i]bin[/i] and [i]r6[/i]).
 [*]Start the game, open the CET overlay, and tick [b]Enabled[/b] in the ShootDodge window. It starts off each session.
-[*]Bullet Time mode is on [b]Mouse 4[/b] (the thumb side button) by default with Input Loader installed. Without Input Loader, or for another key, bind it in the CET overlay's Bindings tab. Do not use V, it summons your vehicle.
+[*]Bullet Time mode is on [b]/[/b] (slash, main keyboard or numpad) by default with Input Loader installed. Without Input Loader, or for another key, bind it in the CET overlay's Bindings tab. Do not use V, it summons your vehicle.
 [*]Check your phone a few seconds in. Max has something to say.
 [/list]
 Uninstall in Vortex, or delete [i]bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge[/i], [i]r6/scripts/ShootDodge[/i] and [i]r6/input/ShootDodge.xml[/i].

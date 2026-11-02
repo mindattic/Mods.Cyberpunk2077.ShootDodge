@@ -113,7 +113,7 @@ IntroMessage.messages = {
     .. "nothing happens, you jump like a civilian and eat the floor like one too. It starts off "
     .. "every session, a bad habit of this town. And the debug window only shows while the "
     .. "overlay is open. Close the glass and it's gone. The mod keeps working in the dark.",
-  "Bullet Time has its own switch, and Mouse 4, the thumb button, is the default. It needs Input Loader "
+  "Bullet Time has its own switch, and the slash key, /, is the default. It needs Input Loader "
     .. "installed. Without it, or for another key, open the Bindings tab in that same overlay, "
     .. "find ShootDodge, click the binding, press the key you want, done. Never V. V "
     .. "already summons your ride and the city has enough cars trying to kill you.",
@@ -130,7 +130,7 @@ IntroMessage.messages = {
   "Get up fast. The genius of the hole: no matter how long you spend climbing out, you can "
     .. "still fall back down in an instant.",
   "I don't know about angels, but it's fear that gives men wings. Mine come with an hourglass. "
-    .. "Bullet Time, Mouse 4, is the answer. Press it and the city crawls while the "
+    .. "Bullet Time, the slash key, is the answer. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
   "And in Bullet Time you don't need the whole ritual. Space alone sends you flying. No aim, "
