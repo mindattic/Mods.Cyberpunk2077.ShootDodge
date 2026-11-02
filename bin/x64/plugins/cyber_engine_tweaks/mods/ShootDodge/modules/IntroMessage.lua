@@ -124,9 +124,9 @@ IntroMessage.messages = {
     .. "down. Your whole life flashes by, heartbreak and scars. Your hands don't slow. Keep "
     .. "aiming. Keep firing all the way down.",
   "This hadn't been my first fall in the night, still just a prelude to the real deal, still a "
-    .. "long way to the bottom. You hit the concrete like a confession and you stay there, prone, "
-    .. "still shooting, until you move or jump and scramble back up. Hold the "
-    .. "direction through the landing and you're up before the brass stops bouncing.",
+    .. "long way to the bottom. You hit the concrete like a confession and keep going, sliding low "
+    .. "on your knees, still shooting, until the momentum bleeds out and you're back on your feet. "
+    .. "Press a direction and you're up before the brass stops bouncing.",
   "Get up fast. The genius of the hole: no matter how long you spend climbing out, you can "
     .. "still fall back down in an instant.",
   "I don't know about angels, but it's fear that gives men wings. Mine come with an hourglass. "
