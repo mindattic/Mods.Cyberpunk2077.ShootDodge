@@ -27,6 +27,9 @@ GetUp.defaults = {
   -- Time V lies on the ground after impact before the held-at-impact get-up begins (s); matches
   -- Prone's minProneSec, the earliest a fresh press can stand V up.
   impactBeatSec = 0.25,
+  -- C2SD-T49: whether movement held through the landing stands V up by itself. False: V stays
+  -- pinned until a fresh direction press (release, then press), as in MP2.
+  standIfHeldAtImpact = false,
   -- How long the scramble back to the feet takes (s). Normal movement returns when it ends.
   durationSec = 0.7,
   -- Horizontal push (m/s) given at the start of the scramble, along the held movement direction.
@@ -74,7 +77,10 @@ end
 function GetUp:OnProne(landing)
   self:Clear()
   self.watching = true
-  self.heldAtImpact = landing ~= nil and landing.moveHeld == true
+  -- C2SD-T49: off by default. The direction is held through every dive, so this stood V straight
+  -- back up; MP2 pins you on the floor until you press a direction again.
+  self.heldAtImpact = self.config.standIfHeldAtImpact == true
+    and landing ~= nil and landing.moveHeld == true
 end
 
 -- Advance one prone frame. Returns GetUp.Cause.heldAtImpact on the frame the automatic get-up

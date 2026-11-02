@@ -131,6 +131,7 @@ function DiveDriver.Update(machine, deltaTime)
     if pos.z and DiveDriver.lastPos.z then vz = (pos.z - DiveDriver.lastPos.z) / deltaTime end
     local cx, cy = dive:Correction(vx, vy)
     if cx then queueImpulse(player, cx, cy, 0) end
+    DiveDriver.lastVel = { x = vx, y = vy }
   end
   DiveDriver.lastPos = pos
 
@@ -141,15 +142,23 @@ function DiveDriver.Update(machine, deltaTime)
   if reason == nil then
     -- C2SD-T10: V has really left the ground -> AIRBORNE (once; refused harmlessly otherwise).
     if dive.leftGround and machine:Is("DIVING") then machine:Fire("launch", "left the ground") end
+    -- C2SD-T49: keep the leap low, then slam V down once the arc tops out.
+    local z = dive:AirImpulse(vz)
+    if z then queueImpulse(player, 0, 0, z) end
     return
   end
 
   DiveDriver.lastEnd = { reason = reason, time = machine.clock }
   DiveDriver.lastPos = nil
+  local vel = DiveDriver.lastVel
+  DiveDriver.lastVel = nil
   if reason ~= Dive.End.landed then
     machine:Fire("abort", "dive over: " .. reason)
     return
   end
+  -- C2SD-T49: hit the ground and stay there: cancel the leap's horizontal speed on impact.
+  local stop = dive.config.landingStop or 0
+  if vel and stop > 0 then queueImpulse(player, -vel.x * stop, -vel.y * stop, 0) end
 
   -- C2SD-T10: the landing. Every dive that lands goes prone, held input or not.
   DiveDriver.landingCount = DiveDriver.landingCount + 1
@@ -172,6 +181,7 @@ end
 function DiveDriver.Cancel()
   DiveDriver.dive:Clear()
   DiveDriver.lastPos = nil
+  DiveDriver.lastVel = nil
 end
 
 return DiveDriver

@@ -17,8 +17,18 @@ Dive.__index = Dive
 Dive.defaults = {
   -- Horizontal speed added at launch (m/s), along the locked direction.
   launchSpeed = 7.5,
-  -- Upward speed added at launch (m/s), on top of the stock jump it rides on.
-  launchLift = 2.5,
+  -- Upward speed added at launch (m/s), on top of the stock jump it rides on. C2SD-T49: 0, the
+  -- Shootdodge is a low flat leap, not a full-height jump (it was 2.5, higher than a jump).
+  launchLift = 0.0,
+  -- C2SD-T49: just after lift-off, keep only this fraction of the stock jump's upward speed (one
+  -- downward push), so the arc stays low and flat.
+  flattenAfterSec = 0.05,
+  flattenKeep = 0.4,
+  -- C2SD-T49: once the arc stops rising, one extra downward push (m/s) so V hits the ground hard.
+  slamSpeed = 5.0,
+  -- C2SD-T49: fraction of V's horizontal speed cancelled on impact, so V lands and stays put
+  -- instead of sliding.
+  landingStop = 1.0,
   -- Below this movement-input magnitude there is no direction to lock, so no dive.
   minMoveMagnitude = 0.2,
   -- Grounded frames before this much air time don't count as the dive having landed (the stock
@@ -74,6 +84,29 @@ function Dive:Clear()
   self.groundedFrames = 0
   self.touchdownAt = nil
   self.grazes = 0
+  -- C2SD-T49: the one-off flatten and slam pushes have been sent.
+  self.flattened = false
+  self.slammed = false
+end
+
+-- C2SD-T49: the vertical push (m/s, negative = down) to send this frame, or nil. `vz` is V's
+-- vertical speed (m/s, game time, up positive). Call after Update() each airborne frame:
+--   * flatten: once, `flattenAfterSec` into the air while still rising, cut the rise to
+--     `flattenKeep` of itself (a low, flat leap);
+--   * slam: once, when the arc stops rising, push down by `slamSpeed` (a hard landing).
+function Dive:AirImpulse(vz)
+  if not self.active or not self.leftGround or vz == nil then return nil end
+  local cfg = self.config
+  if not self.flattened then
+    if self.airTime < cfg.flattenAfterSec then return nil end
+    self.flattened = true
+    if vz > 0 then return -vz * (1 - cfg.flattenKeep) end
+  end
+  if not self.slammed and vz <= 0 then
+    self.slammed = true
+    if cfg.slamSpeed > 0 then return -cfg.slamSpeed end
+  end
+  return nil
 end
 
 -- World-space unit direction for movement input (moveX right, moveY forward) relative to a camera
