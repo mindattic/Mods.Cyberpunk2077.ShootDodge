@@ -23,6 +23,13 @@ BulletTime.defaults = {
   -- Clamp for the configurable factor: never freeze time, never speed it up.
   minFactor = 0.01,
   maxFactor = 1.0,
+  -- C2SD-T66: Bullet Time mode (the toggle) has its own depth, like MP2: it starts shallow and
+  -- goes deeper "into the zone" as kills turn the sand yellow (meter.yellow 0..1), from
+  -- modeShallow down to modeDeep, in steps of modeStep so the dilation isn't re-set every frame.
+  -- The dive keeps `factor`.
+  modeShallow = 0.35,
+  modeDeep = 0.10,
+  modeStep = 0.05,
 }
 
 -- States during which the world is slowed.
@@ -68,7 +75,19 @@ function BulletTime:Wanted(ctx)
   if not diving and not ctx.mode then return nil end
   if ctx.paused or ctx.dead then return nil end
   if cfg.factor >= 1.0 then return nil end
-  return cfg.factor
+  if diving then return cfg.factor end
+  return self:ModeFactor(ctx.depth)
+end
+
+-- C2SD-T66: Bullet Time mode's factor for a depth of 0 (no kills) .. 1 (full yellow sand),
+-- quantized to modeStep. Never shallower than modeShallow nor deeper than modeDeep.
+function BulletTime:ModeFactor(depth)
+  local cfg = self.config
+  local d = math.max(0, math.min(1, tonumber(depth) or 0))
+  local f = cfg.modeShallow + (cfg.modeDeep - cfg.modeShallow) * d
+  local step = cfg.modeStep or 0
+  if step > 0 then f = math.floor(f / step + 0.5) * step end
+  return self:ClampFactor(f)
 end
 
 -- Work out what the driver must do this frame. Returns "set", factor | "unset" | nil (no change).

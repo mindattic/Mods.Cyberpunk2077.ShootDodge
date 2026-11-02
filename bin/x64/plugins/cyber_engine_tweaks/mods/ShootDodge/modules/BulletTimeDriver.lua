@@ -229,6 +229,7 @@ function BulletTimeDriver.Sync(machine, enabled)
     dead = (BulletTime.slowStates[machine.state] or mode) and isDead() or false,
     diveSlow = meter == nil or meter:DiveSlowAllowed(),
     mode = mode,
+    depth = meter ~= nil and meter.yellow or 0, -- C2SD-T66: kills deepen Bullet Time mode
   }
   local action, factor = rules:Step(ctx)
   if action == "set" then
