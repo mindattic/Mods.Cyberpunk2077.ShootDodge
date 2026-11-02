@@ -310,6 +310,10 @@ registerForEvent("onDraw", function()
     prone.active and string.format("down %.2fs", prone.elapsed) or "no", prone:Height(),
     ProneDriver.cameraOk == nil and "-" or (ProneDriver.cameraOk and "ok" or "failed"),
     ProneDriver.lastEnd and (" | last stand: " .. ProneDriver.lastEnd.reason) or ""))
+  -- C2SD-T68: MP2's landing as an option: lie on the floor firing until a fresh direction press.
+  -- Off (default) = land on your feet and keep the momentum.
+  local lie = ImGui.Checkbox("Max Payne 2 landing: lie down and fire until you move", not prone.config.slide)
+  prone.config.slide = not lie
   local drop, dropChanged = ImGui.SliderFloat("Prone eye drop (m)", prone.config.eyeDrop, 0.0,
     1.6, "%.2f")
   if dropChanged then prone.config.eyeDrop = drop end
