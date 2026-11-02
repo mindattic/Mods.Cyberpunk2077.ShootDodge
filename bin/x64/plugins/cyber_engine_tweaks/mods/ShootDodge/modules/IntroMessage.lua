@@ -102,9 +102,9 @@ IntroMessage.messages = {
     .. "static between the stations like a ghost that wants a drink.",
   "I lied to myself that it was over. I was still alive, my loved ones were still dead. It "
     .. "wasn't over. It never is. So listen, kid, because I'm only going to teach you this once.",
-  "Open the Cyber Engine Tweaks overlay, find the ShootDodge window, tick Enabled. Put a pistol, "
-    .. "a revolver or an SMG in your hand. Nothing else. A rifle is an anchor, and anchors don't "
-    .. "fly.",
+  "Open the Cyber Engine Tweaks overlay, find the ShootDodge window, tick Enabled. Put a gun in your "
+    .. "hand, any gun, pistol to machine gun, from the hip or down the sights. A blade won't do. "
+    .. "Nobody ever dodged a bullet with a knife.",
   "Here's the part nobody tells you, so I will. The overlay is Cyber Engine Tweaks. Its key is "
     .. "whatever you picked the first night CET started, and if you never picked, it's the "
     .. "tilde, the squiggle under Escape. Press it and a pane of cold glass drops over the city. "
