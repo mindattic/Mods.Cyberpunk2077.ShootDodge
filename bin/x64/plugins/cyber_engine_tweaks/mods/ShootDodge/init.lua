@@ -23,7 +23,7 @@ local IntroMessageDriver = require("modules/IntroMessageDriver")
 
 local ShootDodge = {
   -- C2SD-T27: release version; tools/package.ps1 names dist/ShootDodge-<version>.zip from it.
-  version = "1.0.0",
+  version = "2.0.0",
   enabled = false,
   -- C2SD-T6: the one centralized state (NONE | DIVING | AIRBORNE | PRONE | GETUP). Every
   -- transition is defined in modules/StateMachine.lua; read it with ShootDodge.machine.state.

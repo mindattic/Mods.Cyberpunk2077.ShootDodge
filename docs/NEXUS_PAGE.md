@@ -35,16 +35,24 @@ ShootDodge (Max Payne 2 Shootdodge)
 
 ## Version
 
-1.0.0. Upload `dist/ShootDodge-1.0.0.zip`, built by `tools/package.ps1` (see the README's "Building
+2.0.0. Upload `dist/ShootDodge-2.0.0.zip`, built by `tools/package.ps1` (see the README's "Building
 and packaging"; the version comes from `version` in `init.lua`). It is rooted at the game folder and
-holds `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` (`init.lua` and `modules/`) and
-`r6/scripts/ShootDodge/ShootDodgePhone.reds`, nothing else.
+holds `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/` (`init.lua` and `modules/`),
+`r6/scripts/ShootDodge/` (the phone contact and the Bullet Time key listener) and
+`r6/input/ShootDodge.xml`, nothing else.
 
-On the Files tab: category **Main files**, name "ShootDodge", version 1.0.0, and leave Vortex
+On the Files tab: category **Main files**, name "ShootDodge", version 2.0.0, and leave Vortex
 installation on (the default). Vortex's Cyberpunk 2077 extension installs this layout on its own.
 
 ## Changelog
 
+- **2.0.0:**
+  - In Bullet Time mode, Space alone is the Shootdodge: no aim needed, dives the way you're moving
+    (forward with no direction held). Outside Bullet Time, Space is a normal jump.
+  - Bullet Time mode has a default key, `/` (main keyboard or numpad), through Input Loader. No
+    vanilla context binds it. The CET binding stays for rebinding and as the fallback.
+  - Max Payne's texts now also walk you through CET: the overlay key, the Enabled tick, and
+    binding or rebinding Bullet Time (never V, which summons your vehicle).
 - **1.0.0:** first release.
   - The Shootdodge: aim + jump + a movement direction leaps V in that direction, locked in the air.
   - Slow-mo with full-speed aim and fire; lands prone and keeps shooting; a move key stands V back up.
