@@ -125,34 +125,20 @@ local function unexemptEntity(entity)
   return ok
 end
 
--- C2SD-T55: in game the player stayed at 5% (dive air 0.2 s game time took 4 s real), so V also
--- gets the per-entity exemption the weapon uses. Either lever succeeding counts.
+-- C2SD-T55 / C2SD-T60: V gets the per-entity exemption the weapon uses (confirmed in game: V's
+-- dive runs at full speed while the world is at 5%). The TimeSystem's
+-- SetTimeDilationOnLocalPlayerZero lever is not used: in this game version it takes 2-5
+-- parameters and has no ignore-global flag, so it can't exempt V from the world dilation.
 local function exemptPlayer(factor)
   local ok, err = pcall(function()
-    timeSystem():SetTimeDilationOnLocalPlayerZero(REASON, factor, 0.0, "", "", true)
-  end)
-  if not ok then logError("exempt player (local player zero): " .. tostring(err)) end
-  local okEntity, errEntity = pcall(function()
     Game.GetPlayer():SetIndividualTimeDilation(REASON, factor, 0.0, "", "", true)
   end)
-  if not okEntity then logError("exempt player (entity): " .. tostring(errEntity)) end
-  BulletTimeDriver.playerExemptVia = (ok and "local player zero" or "")
-    .. ((ok and okEntity) and " + " or "") .. (okEntity and "entity" or "")
-  return ok or okEntity
+  if not ok then logError("exempt player: " .. tostring(err)) end
+  return ok
 end
 
 local function unexemptPlayer()
-  -- C2SD-T55: drop the per-entity exemption too (harmless when it was never set).
-  pcall(function() Game.GetPlayer():UnsetIndividualTimeDilation() end)
-  -- The signature changed across game versions (with and without the reason).
-  if pcall(function() timeSystem():UnsetTimeDilationOnLocalPlayerZero(REASON) end) then
-    return true
-  end
-  if pcall(function() timeSystem():UnsetTimeDilationOnLocalPlayerZero() end) then return true end
-  -- Fallback: at least stop ignoring the world dilation (V follows it again).
-  local ok, err = pcall(function()
-    timeSystem():SetTimeDilationOnLocalPlayerZero(REASON, 1.0, 0.0, "", "", false)
-  end)
+  local ok, err = pcall(function() Game.GetPlayer():UnsetIndividualTimeDilation() end)
   if not ok then logError("unexempt player: " .. tostring(err)) end
   return ok
 end
