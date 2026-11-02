@@ -32,8 +32,12 @@ Prone.defaults = {
   -- V keeps the dive's momentum along the dive line at crouch height, the speed drains to zero
   -- over `slideSec` (real time), then V stands. A fresh direction press ends it early.
   slide = true,
-  slideSec = 0.9,
-  slideEyeDrop = 0.8,
+  -- C2SD-T62: the fake slide (camera dropped to crouch height, pushes along the dive line) fought
+  -- the game's own landing and wrecked it. V now lands on their feet and keeps the dive's
+  -- momentum through the game's own physics: no camera drop, no pushes, control back at once.
+  slideSec = 0.15,
+  slideEyeDrop = 0.0,
+  slideDrive = false,
   -- Slide start speed (m/s): the landing speed, kept inside these bounds.
   slideMinSpeed = 4.0,
   slideMaxSpeed = 8.0,

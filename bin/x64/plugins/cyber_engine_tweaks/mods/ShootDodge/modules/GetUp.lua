@@ -33,9 +33,9 @@ GetUp.defaults = {
   -- How long the scramble back to the feet takes (s). Normal movement returns when it ends.
   durationSec = 0.7,
   -- Horizontal push (m/s) given at the start of the scramble, along the held movement direction.
-  scrambleSpeed = 2.0,
+  scrambleSpeed = 0.0, -- C2SD-T62: no push (the landing keeps its own momentum)
   -- Horizontal speed cap (m/s) during the scramble, so V can't sprint off before standing.
-  maxScrambleSpeed = 2.5,
+  maxScrambleSpeed = 100.0, -- C2SD-T62: no cap (it braked V hard right after landing)
   -- Fraction of the excess speed removed per frame, and the most one frame may push (m/s).
   limitGain = 0.6,
   maxCorrection = 3.0,

@@ -57,6 +57,10 @@ end
 -- this (m/s, game time).
 local AIR_HEIGHT = 0.08
 local AIR_FALL_SPEED = 0.5
+-- C2SD-T61/T62: below this vertical speed (m/s) V counts as stopped vertically (on the ground),
+-- and mid-glide V can only land this close to (or below) the launch height (m).
+local AIR_STILL_SPEED = 0.3
+local GLIDE_GROUND_HEIGHT = 0.1
 
 local function queueImpulse(player, x, y, z)
   local ok, err = pcall(function()
@@ -151,16 +155,31 @@ function DiveDriver.Update(machine, deltaTime)
   local grounded = DiveDriver.isGrounded(player)
   if pos and pos.z and DiveDriver.launchZ then
     local above = pos.z - DiveDriver.launchZ
-    if above > AIR_HEIGHT or (vz ~= nil and vz < -AIR_FALL_SPEED) then grounded = false end
+    local still = vz ~= nil and vz > -AIR_FALL_SPEED and vz < AIR_STILL_SPEED
+    if not dive.leftGround then
+      -- Lift-off: clearly above the launch point, or falling (stepped off an edge).
+      if above > AIR_HEIGHT or (vz ~= nil and vz < -AIR_FALL_SPEED) then grounded = false end
+    elseif dive:InGlide() then
+      -- C2SD-T61: mid-glide only a stop back at (or below) launch height is a landing; the glide's
+      -- own apex (vz near 0 but well above the launch point) is not.
+      grounded = grounded and still and above <= GLIDE_GROUND_HEIGHT
+    else
+      -- C2SD-T62: after the glide, V has landed once V stops moving vertically, at any height
+      -- (a dive onto something higher than the launch point used to never land and hit the
+      -- time limit).
+      grounded = grounded and still
+    end
   end
   DiveDriver.lastGrounded = grounded
   local reason = dive:Update(deltaTime, grounded, vz)
   if reason == nil then
     -- C2SD-T10: V has really left the ground -> AIRBORNE (once; refused harmlessly otherwise).
     if dive.leftGround and machine:Is("DIVING") then machine:Fire("launch", "left the ground") end
-    -- C2SD-T49: keep the leap low, then slam V down once the arc tops out.
-    local z = dive:AirImpulse(vz)
-    if z then queueImpulse(player, 0, 0, z) end
+    -- C2SD-T61: steer the low glide, then slam V down once it is over.
+    local vel = DiveDriver.lastVel
+    local along = vel and (vel.x * dive.dirX + vel.y * dive.dirY) or nil
+    local px, py, pz = dive:AirImpulse(vz, along)
+    if px then queueImpulse(player, px, py, pz) end
     return
   end
 

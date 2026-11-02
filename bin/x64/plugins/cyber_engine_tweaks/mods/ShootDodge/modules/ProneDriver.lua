@@ -45,6 +45,7 @@ end
 -- C2SD-T53: hold V's speed along the dive line at the slide's target speed this frame.
 local function driveSlide(player, deltaTime)
   local s = ProneDriver.slideState
+  if not ProneDriver.prone.config.slideDrive then return end -- C2SD-T62
   if s == nil or player == nil or not deltaTime or deltaTime <= 0 then return end
   local pos = slidePosition(player)
   if pos == nil then return end

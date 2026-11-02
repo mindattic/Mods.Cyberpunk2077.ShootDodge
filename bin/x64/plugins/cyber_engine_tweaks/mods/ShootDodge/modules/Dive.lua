@@ -20,11 +20,17 @@ Dive.defaults = {
   -- Upward speed added at launch (m/s), on top of the stock jump it rides on. C2SD-T49: 0, the
   -- Shootdodge is a low flat leap, not a full-height jump (it was 2.5, higher than a jump).
   launchLift = 0.0,
-  -- C2SD-T49: just after lift-off, keep only this fraction of the stock jump's upward speed (one
-  -- downward push), so the arc stays low and flat.
-  flattenAfterSec = 0.05,
-  flattenKeep = 0.4,
-  -- C2SD-T49: once the arc stops rising, one extra downward push (m/s) so V hits the ground hard.
+  -- C2SD-T61: the dive is a long, low glide, not a hop. For `glideSec` of air time V's vertical
+  -- speed is steered from `glideRise` (m/s, up) down to `glideFall` (m/s, down), so V hangs low
+  -- in the air, and V's speed along the dive line is held at `glideSpeed`. With V running at full
+  -- speed while the world is at 5% (C2SD-T55), that is ~1.5 s of real air time to shoot in.
+  glideSec = 1.5,
+  glideRise = 1.5,
+  glideFall = -1.0,
+  glideSpeed = 6.5,
+  -- The most one frame's steering may change V's speed (m/s), so the glide can't jolt.
+  glideMaxPush = 4.0,
+  -- C2SD-T49: once the glide is over, one downward push (m/s) so V comes down hard.
   slamSpeed = 5.0,
   -- C2SD-T49: fraction of V's horizontal speed cancelled on impact, so V lands and stays put
   -- instead of sliding.
@@ -84,27 +90,40 @@ function Dive:Clear()
   self.groundedFrames = 0
   self.touchdownAt = nil
   self.grazes = 0
-  -- C2SD-T49: the one-off flatten and slam pushes have been sent.
-  self.flattened = false
+  -- C2SD-T49: the one-off slam push has been sent.
   self.slammed = false
 end
 
--- C2SD-T49: the vertical push (m/s, negative = down) to send this frame, or nil. `vz` is V's
--- vertical speed (m/s, game time, up positive). Call after Update() each airborne frame:
---   * flatten: once, `flattenAfterSec` into the air while still rising, cut the rise to
---     `flattenKeep` of itself (a low, flat leap);
---   * slam: once, when the arc stops rising, push down by `slamSpeed` (a hard landing).
-function Dive:AirImpulse(vz)
+local function clampPush(v, limit)
+  if v > limit then return limit end
+  if v < -limit then return -limit end
+  return v
+end
+
+-- C2SD-T61: true while the glide is steering V (in the air, before `glideSec` of air time).
+function Dive:InGlide()
+  return self.active and self.leftGround and self.airTime < self.config.glideSec
+end
+
+-- C2SD-T61: the push (m/s) to send this frame as x, y, z, or nil. `vz` is V's vertical speed and
+-- `along` V's horizontal speed along the dive line (m/s, up/forward positive). Call after Update()
+-- each airborne frame:
+--   * glide: while InGlide(), steer vz toward the glide's target for this moment (rise easing to
+--     a gentle fall) and the along-speed toward glideSpeed;
+--   * slam: once, when the glide is over, push down by `slamSpeed` (a hard landing).
+function Dive:AirImpulse(vz, along)
   if not self.active or not self.leftGround or vz == nil then return nil end
   local cfg = self.config
-  if not self.flattened then
-    if self.airTime < cfg.flattenAfterSec then return nil end
-    self.flattened = true
-    if vz > 0 then return -vz * (1 - cfg.flattenKeep) end
+  if self:InGlide() then
+    local t = cfg.glideSec > 0 and self.airTime / cfg.glideSec or 1
+    local targetVz = cfg.glideRise + (cfg.glideFall - cfg.glideRise) * t
+    local dz = clampPush(targetVz - vz, cfg.glideMaxPush)
+    local da = clampPush(cfg.glideSpeed - (along or cfg.glideSpeed), cfg.glideMaxPush)
+    return self.dirX * da, self.dirY * da, dz
   end
-  if not self.slammed and vz <= 0 then
+  if not self.slammed then
     self.slammed = true
-    if cfg.slamSpeed > 0 then return -cfg.slamSpeed end
+    if cfg.slamSpeed > 0 then return 0, 0, -cfg.slamSpeed end
   end
   return nil
 end
