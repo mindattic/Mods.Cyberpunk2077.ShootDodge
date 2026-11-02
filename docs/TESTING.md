@@ -84,7 +84,7 @@ Expected: nothing happens; no second dive starts.
 
 **D1. Strafe left.** Strafe left, press Shift + Space.
 Expected: V leaves the ground moving left of where the camera faced; the overlay reads `DIVING`, then
-`AIRBORNE`, with a locked dive direction line.
+`AIRBORNE`, with a dive direction line.
 
 **D2. Strafe right.** As D1 to the right.
 Expected: V leaps right.
@@ -95,8 +95,9 @@ Expected: V leaps backward.
 **D4. Forward and diagonal.** Forward, then forward-left.
 Expected: V leaps forward, then diagonally.
 
-**D5. Locked direction.** In the air, press other directions and the opposite direction.
-Expected: the path doesn't bend.
+**D5. Direction set at launch.** In the air, press other directions and the opposite direction.
+Expected: the line is set by the one launch push (C2SD-T63 turned the per-frame direction lock off, `lockGain` 0), so
+pressing keys adds no push from the mod. Whatever small steering the game's own air control gives is not a failure.
 
 **D6. Free aim.** In the air, turn the camera and aim at something.
 Expected: the camera turns freely and the shot goes where you aim.
@@ -154,7 +155,7 @@ Expected: V's own draw, raise and aim animations run at normal speed and the wea
 Expected: the camera turns at normal speed.
 
 **F3. Things that stay slow.** Watch bullets and enemies.
-Expected: all slowed to 5%. V's own dive arc is NOT slowed (about 0.4 s, full speed) while V is exempt.
+Expected: all slowed to 5%. V's own dive arc is NOT slowed (about 0.7 s, full speed) while V is exempt.
 Untick "All of V at normal speed" and dive again: V's arc and raise/aim animations now crawl with the world,
 only the weapon's fire stays fast.
 
@@ -175,18 +176,20 @@ Expected: the Landings count rises by exactly 1; the console prints one `landing
 "movement not held".
 
 **G2. Held flag.** Dive and keep holding a direction through the touchdown.
-Expected: one landing line saying "movement held". The landing slide starts (see H5).
+Expected: one landing line saying "movement held". V lands on their feet with the momentum kept (see H1s).
 
-**G6. Low flat leap and slam.** Dive on flat ground, watch from a mirror or the overlay's height readout.
-Expected: a low, flat arc (no extra lift, the rise is cut right after lift-off); at the apex V is slammed down
-and hits the ground hard; the dive's own skid stops at impact (`landingStop` 0), and the landing slide (H1) takes over.
+**G6. Low flat leap (C2SD-T65).** Dive on flat ground, watch from a mirror or the overlay's height readout.
+Expected: a low, flat arc like Max Payne 2's, from one launch impulse with a -1.5 m/s lift cut (`launchLift`) and 8.5 m/s
+forward (`launchSpeed`): about 0.73 s in the air, about 6 m of travel, a peak of about 0.6 m. There is no mid-air slam
+(`slamSpeed` 0) and no glide (`glideSec` 0); the arc after the launch is the game's own. V is not jolted at any point.
 
 **G7. Airborne detection.** Dive repeatedly (10 times) on flat ground.
 Expected: no dive aborts with "never left the ground"; airborne is detected from V's height above the launch
 point (more than 0.08 m) or a fall speed above 0.5 m/s, since the PSM locomotion check never reports it.
 
-**G3. Always the slide.** Each landing in G1-G2.
-Expected: State goes to `PRONE` (the slide, still named PRONE internally) either way, never directly to `NONE`.
+**G3. Always PRONE first.** Each landing in G1-G2.
+Expected: State goes to `PRONE` either way (internally; with the default feet landing it lasts about 0.15 s with no camera drop),
+then `GETUP` and `NONE`, never directly to `NONE`.
 
 **G4. Graze.** Dive past a low obstacle or ledge so V clips it mid-air.
 Expected: no early landing: the dive carries on (the landing line shows grazes counted) and slow-mo lasts
@@ -195,28 +198,29 @@ until the real touchdown.
 **G5. Cap.** (Optional) Dive off a very high ledge.
 Expected: it lands whenever V touches down, or aborts to `NONE` at the 4 second cap; slow-mo still clears.
 
-## H. Landing slide, prone option and get-up (C2SD-T11, C2SD-T12, C2SD-T53) (M) (F)
+## H. Landing, prone option and get-up (C2SD-T11, C2SD-T12, C2SD-T53, C2SD-T62, C2SD-T68) (M) (F)
 
-Since C2SD-T53 the landing is a slide (Prone `slide = true`). H1-H9 below describe the prone option (`slide = false`, C2SD-T49 pinned
-behaviour) except where H1s-H5s say otherwise. Internally the slide is still the `PRONE` state.
+The default landing (Prone `slide = true`, the overlay's lie-down tick OFF) is on V's feet. C2SD-T62 removed the fake slide
+(the camera drop to crouch height, the pushes along the dive line and the get-up speed cap): `slideEyeDrop` 0, `slideDrive` false,
+`maxScrambleSpeed` 100. H1-H9 below describe the prone option, the overlay's **Max Payne 2 landing: lie down and fire until
+you move** tick (C2SD-T68, `slide = false`), except where H1s-H4s say otherwise. Internally a landing is still the `PRONE` state.
 
-**H1s. Slide.** Dive forward (or any direction) and land.
-Expected: V keeps sliding along the dive line (not along where the camera looks) at the landing speed (4 to 8 m/s),
-the camera drops to crouch height (0.8 m drop) and the speed drains smoothly to 0 over about 0.9 s real time, then
-V stands automatically (`PRONE -> GETUP -> NONE`, the log says "slide over"). Slow-mo ended on impact, V looks and
-shoots freely the whole way.
+**H1s. Feet landing.** Dive forward (or any direction) and land, with the tick off.
+Expected: V lands on their feet and keeps the dive's momentum through the game's own physics: no camera drop, no pushes, no
+braking, control back at once. State passes through `PRONE` for about 0.15 s, then `GETUP`, `NONE`. Slow-mo ended on impact,
+V looks and shoots freely the whole way.
 
-**H2s. Slide direction.** Dive left, right, back and diagonally, turning the camera mid-slide.
-Expected: the slide follows the dive line each time, whatever the camera does.
+**H2s. Landing detection (C2SD-T63).** Dive repeatedly; also dive onto a low ledge (V lands higher than the launch point).
+Expected: slow-mo and the dive never end at the arc's apex, mid-air. A landing counts only after V has come down (fallen) and
+stopped vertically, or after 0.1 s of stillness (the ledge case).
 
-**H3s. Early end.** Land holding a direction, release it, press it again during the slide.
-Expected: the slide ends early and V stands (a press shorter than the first 0.25 s after impact is ignored).
-Holding the key through the whole slide does not end it early; it just runs out.
+**H3s. Dive arc log (C2SD-T65).** Check `scripting.log` after a dive.
+Expected: one line per dive, `[ShootDodge] dive arc: vz after launch ...; peak ... m; air ...s`.
 
-**H4s. Option off.** Set Prone `slide = false` (config) and dive.
-Expected: V lies prone as in H1-H9 below.
+**H4s. Option on (C2SD-T68).** Tick **Max Payne 2 landing: lie down and fire until you move** in the overlay and dive.
+Expected: V lies prone as in H1-H9 below (the tick sets Prone `slide = false`; it is off by default and not saved between sessions).
 
-**H1. Prone shooting.** (Option `slide = false`.) Dive, release movement before landing.
+**H1. Prone shooting.** (Lie-down tick on.) Dive, release movement before landing.
 Expected: V ends prone: the first-person view drops close to the floor (eye about 0.4 m high) within a
 fraction of a second. The overlay says Prone: down, with the eye height. Aim 360 degrees and fire.
 V shoots in every direction without standing up.
@@ -231,7 +235,7 @@ short way in that direction at a capped speed; full control returns when it ends
 **H4. Any direction.** Repeat with left, right and back.
 Expected: the get-up works with each.
 
-**H5. Held through the landing.** (Prone option.) Dive and keep holding forward through touchdown.
+**H5. Held through the landing.** (Lie-down tick on.) Dive and keep holding forward through touchdown.
 Expected: V hits the ground and stays pinned prone; it does not get up on its own, however long the key is
 held. Look and shoot freely. Releasing and then pressing forward stands V up.
 
@@ -373,8 +377,8 @@ Expected: only the unticked effect is missing; the other two still work.
 **K5. Sliders.** Set Pull-back to 0 and 30; Music kept to 0 and 1.
 Expected: each takes effect on the next dive (0 = no FOV change; 1 = no duck).
 
-**K6. Both exit paths.** Dive then stay prone (prone option) or slide; dive then get up.
-Expected: all three effects start at dive entry and revert on landing in both cases.
+**K6. Both exit paths.** Dive then stay prone (lie-down tick on) or land on your feet; dive then get up.
+Expected: all three effects start at dive entry and revert on landing in both cases. (The muffle also plays in Bullet Time mode, see T2.)
 
 **K7. Abort and pause.** Untick Enabled mid-dive; pause mid-dive.
 Expected: FOV and music return to normal.
@@ -414,7 +418,7 @@ Run L1-L7 on both a male V and a female V.
 
 ## M. Everything together
 
-**M1. Combat run.** In a fight, dive, shoot a few enemies from the air, slide out of the landing, shoot more
+**M1. Combat run.** In a fight, dive, shoot a few enemies from the air, land and keep moving, shoot more
 throughout, stand, and repeat with the hourglass mode in between.
 Expected: no stuck slow-mo, no stuck camera, no console errors, and the hourglass refills with kills.
 
@@ -571,7 +575,7 @@ Expected: normal jumps, no dive ("Shift not held"); Shift + Space (B2) still wor
 
 **R1. V and weapon at normal speed.** Equip a gun, dive, and during the slow-mo draw, raise and fire it.
 Expected: V and the weapon move at normal speed while the world is at 5%; the dive's air phase takes
-about 0.2 s real time, not 4 s. CET's `scripting.log` has no repeated "exempt player" errors (one line
+about 0.7 s real time, not 4 s. CET's `scripting.log` has no repeated "exempt player" errors (one line
 is fine if one lever failed, as long as the other worked).
 
 **R2. ADS and reload mid-dive.** Mid-dive, aim down sights, fire, then reload.
@@ -581,7 +585,7 @@ Expected: all at normal speed, the reload completes at normal speed.
 Expected: it dies in one hit; the log shows "lethal headshots on".
 
 **R4. Not lethal on foot, modifier removed.** Land, and shoot an enemy of the same type in the head from the
-ground and in the landing slide.
+ground and after the landing.
 Expected: normal headshot damage (not a one-hit kill); the log showed "lethal headshots off" the frame
 the dive ended.
 
@@ -591,6 +595,37 @@ Expected: each dives; aim is not required.
 
 **R6. Melee blocked.** Equip a katana, then bare fists, and try the combo.
 Expected: no dive; "Last jump not a combo: weapon not allowed". Double Trouble pairs still work (section P).
+
+## S. Max Payne 2 alignment: low flat dive, landing, Bullet Time depth (C2SD-T61 to T68)
+
+**S1. One push.** Dive and watch V's movement closely, in slow-mo and after.
+Expected: no jaggy motion: one launch impulse, then the game's own jump arc. The glide, slam and direction lock are off
+(Dive `glideSec` 0, `slamSpeed` 0, `lockGain` 0).
+
+**S2. Arc size.** Dive on flat ground five times and read the `dive arc` log lines (see H3s).
+Expected: air about 0.7 s, peak about 0.6 m, about 6 m of travel, each time similar.
+
+**S3. Bullet Time depth starts shallow.** Turn Bullet Time mode on with no recent kills (sand white).
+Expected: world speed 0.35x in the overlay. V and the weapon stay at full speed.
+
+**S4. Depth deepens with kills.** In the mode, kill enemies one after another.
+Expected: world speed steps down in 0.05 increments toward 0.10x as the sand turns yellow (+34% per kill), and drifts back up as the
+yellow fades (8% per second). It never goes below 0.10x in the mode.
+
+**S5. The dive stays 0.05x.** Dive with the sand fully yellow, and start the mode while white then dive.
+Expected: the dive is 0.05x each time (the mode ends when the dive starts, as before); the dive ignores the yellow.
+
+**S6. Lie-down option.** Run H4s, H5 and H7.
+Expected: as described there: prone, held until a fresh direction press; off by default.
+
+## T. Audio muffle in Bullet Time mode (C2SD-T67)
+
+**T1. Dive muffle.** Dive with music audible.
+Expected: the music and ambience muffle during the dive and return on landing.
+
+**T2. Mode muffle.** Turn Bullet Time mode on with music audible, then off.
+Expected: the same muffle plays while the mode is on and clears when it ends or the pause menu opens. There is no yellow screen tint
+(no known CET lever); that is not a bug.
 
 ## Results
 
@@ -725,3 +760,11 @@ Expected: no dive; "Last jump not a combo: weapon not allowed". Double Trouble p
 | R4 |  |  |
 | R5 |  |  |
 | R6 |  |  |
+| S1 |  |  |
+| S2 |  |  |
+| S3 |  |  |
+| S4 |  |  |
+| S5 |  |  |
+| S6 |  |  |
+| T1 |  |  |
+| T2 |  |  |

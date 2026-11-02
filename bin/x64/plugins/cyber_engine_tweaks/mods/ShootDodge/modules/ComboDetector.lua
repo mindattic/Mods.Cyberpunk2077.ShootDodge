@@ -19,7 +19,8 @@
 --   * at least `cooldownSec` has passed since the last trigger (no double dives);
 --   * the context allows it: `blocked` is false (menus, vehicles, scenes, an active dive) and
 --     the player is grounded;
---   * the equipped weapon is on the allow-list (pistol, revolver, SMG -- C2SD-T13, see
+--   * the equipped weapon is on the allow-list (every ranged weapon type since C2SD-T57: pistol,
+--     revolver, SMG, rifles, shotguns, LMG, HMG; melee, fists and no weapon are refused -- C2SD-T13, see
 --     modules/WeaponGate.lua). The weapon is read at the jump press itself, so a swap takes
 --     effect on the very next combo.
 --

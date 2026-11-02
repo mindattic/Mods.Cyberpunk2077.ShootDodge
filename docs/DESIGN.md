@@ -1,7 +1,8 @@
 # Design notes
 
 Inspiration: *Max Payne 2: The Fall of Max Payne*'s Shootdodge — leap in the aim direction, time
-slows but aiming and firing stay sharp, then either stay prone shooting or scramble back up.
+slows but aiming and firing stay sharp, then either stay prone shooting or scramble back up. (The
+current alignment with MP2, and what was dropped along the way, is in "Max Payne 2 alignment" at the end.)
 
 ## Mechanics, in build order (matches the ticket log)
 
@@ -140,7 +141,8 @@ With Double Trouble both held guns are exempted (C2SD-T30, below).
 - **The yellow hourglass.** Kills turn the sand yellow, which fades back toward white over time
   ("the more enemies you kill, the more yellow the bullet time meter gets, while constantly going
   towards white again", [hermiene.net][hn]); a yellower hourglass also slows time further in the
-  mode. The tint is implemented; the extra slowdown tier is not (no ticket asks for it yet).
+  mode. The tint is implemented, and since C2SD-T66 so is the deeper slowdown (see "Max Payne 2
+  alignment").
 - **Rates.** MP2's internal drain/regen/kill amounts are not published in any source found. The
   values in `BulletTimeMeter.defaults` are estimates (full hourglass ~10 s of mode, empty -> full
   ~80 s passive, +15% per kill) and are the numbers to tune after the in-game check.
@@ -699,7 +701,7 @@ same dilation. The overlay's Time scale slider minimum (`minFactor`) is now 0.01
 
 ## Flat leap, slam and pinned prone (C2SD-T49, C2SD-T50)
 
-*The pinned-prone landing below is superseded by the slide (C2SD-T53, last section) as the default, but it is kept as an option (Prone `slide = false`). The leap, slam and airborne detection are unchanged.*
+*SUPERSEDED in part. The flat leap's rise cut, the apex slam (`slamSpeed`) and the `landingStop` are gone or replaced: since C2SD-T63 the dive is one launch impulse (C2SD-T65 sets its shape) and `slamSpeed` is 0. The pinned-prone landing is no longer the default but is the optional lie-down landing (C2SD-T68, Prone `slide = false`). The airborne detection (C2SD-T50) still applies, and C2SD-T63 added a landing rule on top of it.*
 
 **Leap (C2SD-T49, `modules/Dive.lua`).** `launchLift` is 0 (no extra lift above the stock jump), and just after
 lift-off (`flattenAfterSec` 0.05 s) the rise is cut to `flattenKeep` 0.4 of its speed, so the dive is a low flat
@@ -716,13 +718,15 @@ game, so every dive aborted with "never left the ground". V now counts as airbor
 
 ## V at full speed and the landing slide (C2SD-T53)
 
+*SUPERSEDED for the landing slide. C2SD-T62 removed the fake slide (camera drop, pushes along the dive line, get-up speed cap): V now lands on their feet and keeps the momentum through the game's own physics. The full-speed V exemption below is still current, except that the dive arc is now about 0.7 s, not 0.4 s (C2SD-T65).*
+
 **V exempt by default (`modules/AimFireExemption.lua`).** `exemptPlayer` now defaults to true, so all of V
 runs at full speed during the 5% world slow-mo, not just the weapon entity. Before, V's own weapon raise and
 ADS animations ran at 5%, so the weapon was not ready in time. Now draw, raise, aim and fire are instant. The side
 effect is that V's dive arc also plays at full speed (about 0.4 s) while enemies and the world stay at 5%. The
 overlay tick "All of V at normal speed" still turns it off.
 
-**The landing is a slide (`modules/Prone.lua`, `modules/ProneDriver.lua`, `modules/Dive.lua`, `modules/DiveDriver.lua`).**
+**The landing is a slide (SUPERSEDED by C2SD-T62; `modules/Prone.lua`, `modules/ProneDriver.lua`, `modules/Dive.lua`, `modules/DiveDriver.lua`).**
 Like the game's own crouch-slide, instead of lying prone: `Dive.landingStop` is now 0, so V keeps the dive's
 momentum along the dive line (the driver records `dirX/dirY/speed` in the landing). `Prone.defaults.slide` is
 true: the camera drops by `slideEyeDrop` 0.8 m (crouch height, not the prone `eyeDrop`), and the target speed
@@ -758,3 +762,56 @@ headshots on" and "lethal headshots off". Bosses with scripted invulnerability c
 type: `Wea_AssaultRifle`, `Wea_Rifle`, `Wea_PrecisionRifle`, `Wea_SniperRifle`, `Wea_Shotgun`,
 `Wea_ShotgunDual`, `Wea_LightMachineGun`, `Wea_HeavyMachineGun`. Hip fire or ADS both work; aim is never
 required. Melee, fists, cyberware arms and no weapon still block it, and Double Trouble pairs still work.
+
+## Max Payne 2 alignment (C2SD-T61 to C2SD-T68)
+
+Basis: the C2SD-T64 review of how MP2 plays, against what the mod did. Sources:
+[ludo.guide, Max Payne 2 part 8](https://www.ludo.guide/guide/max-payne-2/max-payne-2-part-8),
+[Wikipedia, Max Payne 2: The Fall of Max Payne][wp2] and
+[GamesFirst review][gf]. What those establish, and what the mod does about each point:
+
+- **Bullet Time mode is a toggle whose levels deepen with kills.** MP2's mode slows time more as you
+  kill (the yellow sand). The mod's mode now does the same (C2SD-T66, below).
+- **A shootdodge costs no hourglass, and its slow-mo lasts only until you hit the ground.** The meter
+  already charged nothing (C2SD-T15). The dive's slow-mo now really ends at the ground, because the
+  landing check no longer fires at the arc's apex (C2SD-T63).
+- **Max can lie and fire after a dive.** Kept as an option, not the default (C2SD-T68).
+
+### Per-frame pushes jolt V: one launch impulse (C2SD-T61 to C2SD-T63, `modules/Dive.lua`, `modules/DiveDriver.lua`)
+Per-frame `PSMImpulse` pushes made V's movement jolt in game (a jaggy dive). T61 tried a steered
+glide, which overshot against the game's delayed impulses, so T63 removed every per-frame push: the dive is
+ONE launch impulse and then the game's own jump arc. The glide (`glideSec` 0), the slam (`slamSpeed` 0) and
+the direction lock (`lockGain` 0) are all off; their code and config remain but are inert.
+
+**Landing rule (C2SD-T63, `DiveDriver.Update`).** Past lift-off, a landing counts only once V has come
+down (`wasFalling`: vertical speed below -0.5 m/s at some point) and is stopped vertically (vertical speed
+between -0.5 and 0.3 m/s), or after `LAND_STILL_SEC` 0.1 s of stillness (a ledge the dive never fell to). Before this
+the arc's apex, where vertical speed is also near 0, ended the dive and its slow-mo mid-air.
+
+**The fake slide is gone (C2SD-T62).** The camera drop to crouch height, the pushes along the dive line and
+the get-up speed cap fought the game's own landing. Now `Prone.defaults.slideEyeDrop` is 0,
+`slideDrive` is false, `slideSec` is 0.15 and `GetUp.maxScrambleSpeed` is 100 (no cap): V lands on their feet
+keeping the momentum, and control comes back at once.
+
+### Low flat dive like MP2 (C2SD-T65)
+The one launch impulse folds in `launchLift` -1.5 m/s with `launchSpeed` 8.5 m/s (was 7.5, raised so the
+lower arc still covers about 6 m). Simulated: about 0.73 s in the air, about 6 m of travel and a peak of
+about 0.6 m on flat ground. Each dive prints `[ShootDodge] dive arc: vz after launch ...; peak ... m; air ...s` to
+`scripting.log` (first six vertical-speed samples, the peak height above the launch point, the air time), to check the real arc
+against the simulation.
+
+### Bullet Time mode depth (C2SD-T66, `modules/BulletTime.lua`)
+The mode has its own world speed, like MP2's deepening levels: `modeShallow` 0.35 with no kills, down to
+`modeDeep` 0.10 as `meter.yellow` (0 to 1, +0.34 per kill, fading 0.08 per second) rises, quantized in
+`modeStep` 0.05 steps so the time dilation isn't re-set every frame. The dive keeps `factor` 0.05. V and the weapon
+stay at full speed in both.
+
+### Audio muffle in Bullet Time mode (C2SD-T67, `modules/DivePolish.lua`)
+The music and ambience muffle plays whenever the world is slowed, so in Bullet Time mode as well as in
+the dive (unless the overlay's muffle tick is off, the game is paused or V is dead). MP2 also tints the
+screen yellow in bullet time; no CET lever for that is known, so it is not done.
+
+### Optional MP2 landing: lie down and fire (C2SD-T68, `init.lua`, `modules/Prone.lua`)
+The overlay checkbox "Max Payne 2 landing: lie down and fire until you move" sets Prone `slide = false`:
+the pinned prone of C2SD-T49 (eye dropped by `eyeDrop`, held until a fresh direction press). Off by default,
+so V lands on their feet. Not saved between sessions.

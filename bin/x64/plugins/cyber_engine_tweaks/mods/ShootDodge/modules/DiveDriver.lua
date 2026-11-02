@@ -1,24 +1,31 @@
 -- DiveDriver: CET glue that turns a detected combo into the Shootdodge leap (C2SD-T7).
 --
 -- On a combo trigger, while the state machine is in NONE:
---   1. read the camera's heading and lock the dive direction from the held movement input
+--   1. read the camera's heading and work out the dive direction from the held movement input
 --      (modules/Dive.lua does the math);
 --   2. fire NONE -> DIVING on the state machine (the only legal way in, so a combo mid-dive is
 --      refused there even if the input layer let one through);
---   3. queue a PSMImpulse on V: the game's own locomotion impulse, layered on the stock jump the
---      same button press already starts (no custom animation; see docs/DESIGN.md).
--- Every frame of the dive it drives the state machine, keeps V on the locked line by cancelling
--- any sideways/backward drift with small corrective impulses, and ends the dive once V is back on
--- the ground. It never touches the camera or aim: V stays first person and free to look and shoot
--- anywhere while flying.
+--   3. queue ONE PSMImpulse on V: the game's own locomotion impulse, layered on the stock jump the
+--      same button press already starts (no custom animation; see docs/DESIGN.md). It folds in
+--      Dive's launchLift (-1.5 m/s, a low flat arc) and launchSpeed (8.5 m/s forward) (C2SD-T65).
+-- After that the game's own jump arc carries V. C2SD-T61..T63: per-frame impulses jolt V in game,
+-- so the mid-air glide, the slam and the direction lock are all disabled in Dive's config
+-- (glideSec 0, slamSpeed 0, lockGain 0) and the per-frame calls below are inert. Every frame of
+-- the dive it still drives the state machine, tracks the arc (a "dive arc" line goes to
+-- scripting.log when the dive ends, C2SD-T65) and ends the dive once V has landed. It never touches
+-- the camera or aim: V stays first person and free to look and shoot anywhere while flying.
 --
 -- C2SD-T10 ground contact: the driver owns both DIVING and AIRBORNE. The frame V actually leaves
--- the ground it fires DIVING -> AIRBORNE (launch); the frame the landing is confirmed (see
--- Dive:Update, which rejects grazes) it fires land -> PRONE, always, whatever input is held, and
--- records one landing event with whether a movement input was held at impact (`lastLanding`, for
--- the get-up in C2SD-T12, modules/GetUpDriver.lua). PRONE itself is driven by ProneDriver
--- (C2SD-T11), with no timer, until the get-up takes over. A dive that never lifts off or hits the
--- time cap is not a landing and still aborts to NONE.
+-- the ground it fires DIVING -> AIRBORNE (launch). C2SD-T63 landing rule: V has landed only after it
+-- has come down (fallen) and stopped vertically, or after LAND_STILL_SEC (0.1 s) of stillness (a
+-- ledge it never fell to), so the arc's apex no longer ends the dive and its slow-mo mid-air; Dive:Update
+-- also rejects grazes. The frame the landing is confirmed it fires land -> PRONE, whatever input is
+-- held, and records one landing event with whether a movement input was held at impact
+-- (`lastLanding`, for the get-up in C2SD-T12, modules/GetUpDriver.lua). The default landing is on
+-- V's feet with the momentum kept (C2SD-T62: no fake slide, no camera drop); with the overlay's
+-- Max Payne 2 landing option (C2SD-T68, Prone slide = false) V lies prone until a fresh direction
+-- press. PRONE itself is driven by ProneDriver (C2SD-T11), until the get-up takes over. A dive that
+-- never lifts off or hits the time cap is not a landing and still aborts to NONE.
 
 local Dive = require("modules/Dive")
 
