@@ -1,7 +1,7 @@
 # Mods.Cyberpunk2077.ShootDodge
 
-A Cyberpunk 2077 gameplay mod that recreates *Max Payne 2*'s Shootdodge in first person. Press Ctrl and
-Space together: V dives in the direction you hold, time slows while your aim and fire stay at full speed,
+A Cyberpunk 2077 gameplay mod that recreates *Max Payne 2*'s Shootdodge in first person. Press Shift and
+Space together (sprint and jump): V dives in the direction you hold, time slows while your aim and fire stay at full speed,
 V lands prone and keeps shooting from the floor, and a movement key gets V back on their feet. It
 also has Max Payne 2's bullet-time hourglass and grants the matching outfit and twin pistols.
 
@@ -85,33 +85,33 @@ Payne contact disappears from the phone with it.
 1. Equip a pistol, revolver or SMG, or two pistols with Double Trouble (see below).
 2. Optionally hold a movement direction (forward, back, strafe left or right, or a diagonal). With
    none held, V dives straight forward.
-3. Press **Ctrl + Space** (either Ctrl; crouch and jump together). No aim is needed. V launches.
+3. Press **Shift + Space** (either Shift; sprint and jump together). No aim is needed. V launches.
 
-Ctrl is read from the vanilla Dodge (Left Ctrl), Crouch (Right Ctrl, hold) and Toggle Crouch actions,
-and from the mod's own Input Loader action `ShootDodgeModifier` (both Ctrl keys). Caveat: vanilla Left
-Ctrl is also Dodge, so pressing Ctrl while already moving can start a vanilla dodge dash before you
-press Space. Pressing Ctrl and Space together, or Ctrl while standing still, is the clean input.
+Shift is read from the vanilla Sprint (Right Shift, hold) and Toggle Sprint (Left Shift) actions, and
+from the mod's own Input Loader action `ShootDodgeModifier` (both Shift keys). Sprinting into a dive is
+the intended feel, and Shift has no competing vanilla action, so there is no input caveat.
 
 What happens next:
 
 - **The leap is locked.** V flies in the direction you were moving, relative to where the camera
   faced at launch. Moving in the air changes nothing; the camera and aim stay free, and the camera
   stays first person the whole time.
-- **Time slows.** The world drops to 0.2x speed while V is in the air. Your mouse look and your
+- **Time slows.** The world drops to 0.05x speed (5%) while V is in the air. Your mouse look and your
   weapon's fire rate stay at normal speed, so you shoot at full pace while everything else crawls.
   The camera pulls back a little (+12 degrees of FOV), a whoosh plays, and music is ducked.
+- **A low, flat leap.** The dive adds no extra lift and cuts the rise to 40% just after lift-off. At
+  the apex V is slammed down, and the slide is stopped on impact.
 - **V lands prone.** Every dive ends on the ground, whatever you hold. Slow-mo ends on impact. V's
   first-person view drops to near floor height.
 - **Then choose.** Keep shooting from the ground in any direction for as long as you like (there is
-  no timer), or press a movement key to scramble back up. If you were still holding a direction when
-  you touched down, V hits the ground, waits a quarter second, then gets up on its own. Jump alone
-  does not stand V up, and a key still held from the dive has to be released once before it counts
-  as a stand-up press.
+  no timer; look and shoot freely), or press a movement key to scramble back up. V stays pinned
+  prone until a fresh direction press: release the key, then press it. Movement held through the
+  landing no longer stands V up by itself. Jump alone does not stand V up.
 - A new combo can't start while a Shootdodge is still in progress (in the air, prone or getting up),
   and there is a 1 second cooldown between combos.
 
 The combo only fires from the ground, on foot, with an allowed weapon. Plain Space is always a normal
-jump; Ctrl, aiming or moving on its own never triggers it either, except that Space alone dives in
+jump; Shift, aiming or moving on its own never triggers it either, except that Space alone dives in
 Bullet Time mode (below). Version 3.0.0 also has a session gate: the mod makes no game calls until a
 real save is loaded and has settled for 1.5 s (the main menu is a world with its own V).
 
@@ -120,7 +120,7 @@ dives, no aim needed: in the direction you hold, or straight forward when you ho
 restriction, the on-the-ground check and the cooldown still apply, so with a disallowed weapon Space
 is a normal jump. Starting the dive ends Bullet Time mode (the dive's own slow-mo takes over, as in
 Max Payne 2), so after you land Space is a normal jump again until you switch the mode back on.
-Outside Bullet Time mode nothing changes: you need Ctrl + Space.
+Outside Bullet Time mode nothing changes: you need Shift + Space.
 
 ### Weapon restriction
 
@@ -149,7 +149,7 @@ click, right gun on right click) is optional and **untested with ShootDodge**.
 The hourglass follows *Max Payne 2*:
 
 - A **Shootdodge costs no meter** and is always slow-motion, even with an empty hourglass.
-- **Bullet Time mode** is a separate manual slow-mo toggle. It uses the same 0.2x slowdown, and it is
+- **Bullet Time mode** is a separate manual slow-mo toggle. It uses the same 0.05x slowdown, and it is
   the only thing that drains the hourglass: a full one lasts about 10 seconds. Aim and fire stay at
   normal speed in it too. It needs at least 2% sand to start, can't start mid-dive, ends on its own
   when the hourglass is empty, and also ends if you die, disable the mod or start a Shootdodge.
@@ -207,7 +207,7 @@ pair up as twin pistols (see [Dual pistols](#dual-pistols-the-max-payne-way-reco
 Once per save, about 8 seconds after V first appears (after the loadout), V's phone buzzes with a
 real SMS: a new contact, **Max Payne**, in the phone's Messages app like any other contact. The
 thread is a string of texts in Max's own over-the-top noir narration that explains how to
-Shootdodge (Ctrl + Space, direction, the slow-mo, landing prone, shooting or getting up, binding the
+Shootdodge (Shift + Space, direction, the slow-mo, landing prone, shooting or getting up, binding the
 Bullet Time hotkey and the hourglass), woven around 25 genuine lines from *Max Payne* and *Max Payne
 2*, each checked word for word against its source (the list is in
 [`docs/DESIGN.md`](docs/DESIGN.md#in-game-text-message-c2sd-t27)).
@@ -232,7 +232,7 @@ open; the hourglass HUD does not depend on it. Settings are not saved between se
 | Enabled | off | Master switch for the Shootdodge combo and its state machine. Unticking it cancels any dive in progress. The hourglass and loadout work either way. |
 | Prone eye drop (m) | 1.30 (0 to 1.6) | How far the first-person camera drops while prone. |
 | Bullet-time | on | World slow-mo on (dive and Bullet Time mode). Off means the dive still happens at normal speed. |
-| Time scale | 0.20 (0.05 to 1.00) | World speed during slow-mo. |
+| Time scale | 0.05 (0.01 to 1.00) | World speed during slow-mo. |
 | Weapon at normal speed (fire rate) | on | Keeps V's weapon's fire cycle (both guns while dual wielding) at normal speed during slow-mo. |
 | All of V at normal speed (pad look; fall not slowed) | off | Also exempts V, which fixes slow gamepad turning but speeds V's fall arc back up. |
 | Start/Stop bullet-time mode | | Toggles Bullet Time mode (same as the hotkey). |

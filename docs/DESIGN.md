@@ -75,8 +75,8 @@ a "Check loadout now" button. Nothing is auto-equipped: V equips the pieces from
 six items arrive, equip, and render; reloading the save adds nothing.
 
 ### Input detection (C2SD-T5)
-A CET input listener watches for jump while Ctrl is held (Ctrl + Space; see C2SD-T46 below, it
-was aim + jump + a direction before 3.0.0). Logged to a debug overlay before it drives anything, so false positives against
+A CET input listener watches for jump while Shift is held (Shift + Space; see C2SD-T51 below; Ctrl + Space
+in C2SD-T46, aim + jump + a direction before 3.0.0). Logged to a debug overlay before it drives anything, so false positives against
 ordinary play can be ruled out first.
 
 ### State machine (C2SD-T6)
@@ -96,7 +96,7 @@ guard only allows `dive` from `NONE`, so a combo mid-air does nothing. Touching 
 dive in the landing branch below (C2SD-T10).
 
 ### Bullet-time (C2SD-T8) and responsive aim/fire (C2SD-T9)
-On entering `DIVING`, world time dilation drops (default 0.2x) via the game's time system, the
+On entering `DIVING`, world time dilation drops (default 0.05x since C2SD-T52, 0.2x before) via the game's time system, the
 same lever Sandevistan-style effects use. V's own camera turn-speed and weapon fire-rate are
 exempted from that dilation so aiming/shooting during the dive feels fast even though everything
 else is slow. Dilation must unconditionally clear when the state leaves `DIVING`/`AIRBORNE`
@@ -201,8 +201,8 @@ As in Max Payne 2, every dive ends lying on the ground and slow-mo ends on impac
 both `DIVING` and `AIRBORNE`: the frame V actually leaves the ground it fires `DIVING -> AIRBORNE`;
 the landing is the airborne -> grounded transition of V's locomotion state (the same ground check
 the combo uses). It fires once per dive, always `-> PRONE` whatever input is held, and records
-whether a movement input was held at impact (`DiveDriver.lastLanding.moveHeld`), so the get-up can
-start right after impact without a fresh press. No false positives from grazes: the touchdown must
+whether a movement input was held at impact (`DiveDriver.lastLanding.moveHeld`). Since C2SD-T49 that
+flag no longer stands V up by itself (see the get-up below). No false positives from grazes: the touchdown must
 stay grounded for `landConfirmFrames` (2) consecutive frames, and a grounded reading while V is
 still rising faster than `maxLandingRiseSpeed` doesn't count; a shorter contact is counted as a
 graze and the arc carries on. A dive that never lifts off, or hits the 4 s cap, isn't a landing and
@@ -221,9 +221,9 @@ aborts to `NONE`. The overlay and the CET log show one landing event per dive wi
 - Get-up (C2SD-T12, `modules/GetUp.lua` + `modules/GetUpDriver.lua`): `PRONE -> GETUP -> NONE`.
   Two ways in: the prone driver's fresh move press, handed over through
   `ProneDriver.onStandRequest` (pointed at `GetUpDriver.OnStandRequest`, so there is one stand-press
-  watcher), or movement held through the landing (`DiveDriver.lastLanding.moveHeld`), which stands V
-  up automatically once the 0.25 s impact beat has played: V hits the ground first, no fresh press
-  needed. Without either, V stays prone and keeps shooting; there is no timer. `GETUP` is a short
+  watcher), or, only if `GetUp.defaults.standIfHeldAtImpact` is set (false since C2SD-T49), movement held
+  through the landing (`DiveDriver.lastLanding.moveHeld`), which would stand V up once the 0.25 s
+  impact beat has played. By default V stays pinned until a fresh press. Without either, V stays prone and keeps shooting; there is no timer. `GETUP` is a short
   scramble, not a snap to idle: a small push (2 m/s) in the held movement direction (camera
   relative, like the dive), V's horizontal speed held under 2.5 m/s, and the eye easing back up from
   the floor over the same 0.7 s (init.lua sets the prone driver's raise time to the scramble's
@@ -649,7 +649,9 @@ RED4ext.SDK `EInputKey.hpp`. Neither appears anywhere in the vanilla `r6/config/
 the user's install (checked 2026-11-01: 0 matches each), so `/` does nothing else in vanilla. Mouse 4 / Mouse 5
 remain good choices for mice that have them, via the CET binding.
 
-## Shootdodge is Ctrl + Space (C2SD-T46)
+## Shootdodge is Ctrl + Space (C2SD-T46, superseded by C2SD-T51)
+
+**Superseded.** The key became Shift + Space in C2SD-T51 (next sections). The rationale below still holds; the Ctrl reading and the Left Ctrl dodge caveat no longer apply, and the 20% slow-mo became 5% (C2SD-T52).
 
 **Why.** Aim + a direction + jump needed three coordinated inputs and clashed with normal play
 (aiming while strafing and jumping is common). Ctrl + Space is the crouch + jump pair, the same
@@ -658,7 +660,7 @@ No aim is needed; the aim checks and the movement hold time are gone from `Combo
 V dives in the held direction, or straight forward with none, locked in the air, with the world at
 20% while aim and fire stay full speed. The weapon gate, grounded check, vehicle/menu block and 1 s
 cooldown are unchanged. Bullet Time mode (the `/` key) still lets Space alone dive (C2SD-T38). The
-overlay's reject reason is now "Ctrl not held".
+overlay's reject reason was "Ctrl not held" (now "Shift not held").
 
 **How Ctrl is read** (`modules/Input.lua`). Four sources, any of which counts as Ctrl held:
 the vanilla actions `Dodge` (Left Ctrl), `Crouch` (Right Ctrl, hold) and `ToggleCrouch`, and the
@@ -674,3 +676,38 @@ dodge dash before Space arrives. Ctrl + Space together, or Ctrl while standing, 
 **Session gate (C2SD-T45, shipped in 3.0.0).** The main menu is a world with its own player, and
 acting there crashed the game. The mod now makes no game calls until a real save is loaded (player
 present, not `IsPreGame`) and has settled for 1.5 s.
+
+## Shootdodge is Shift + Space (C2SD-T51)
+
+**Why.** Ctrl had a real conflict: vanilla Left Ctrl is Dodge, so Ctrl while moving could start a dodge dash
+before Space arrived (the T46 caveat, tests B5/B6). Shift is sprint, and sprinting into a dive is the
+intended feel, with no competing vanilla action. The rest of T46 is unchanged: no aim needed, the held
+direction (or straight forward) locked in the air, weapon gate, grounded check, vehicle/menu block and 1 s
+cooldown. Space alone still dives in Bullet Time mode (the `/` key, C2SD-T38). The overlay's reject reason is
+now "Shift not held".
+
+**How Shift is read** (`modules/Input.lua`, `MODIFIER_ACTIONS`). Any of: the vanilla actions `Sprint` (Right
+Shift, hold) and `ToggleSprint` (Left Shift), and the mod's Input Loader action `ShootDodgeModifier`, now
+mapped to `IK_LShift` and `IK_RShift` in `r6/input/ShootDodge.xml` and listened for in
+`r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds`.
+
+## Dive slow-mo is 5% (C2SD-T52)
+
+The dive's world time dilation (`BulletTime.defaults.factor`) went from 0.2 to **0.05**: enemies have RPG health
+and need several hits, so at 20% they were still too quick to land them in the air. Bullet Time mode uses the
+same dilation. The overlay's Time scale slider minimum (`minFactor`) is now 0.01.
+
+## Flat leap, slam and pinned prone (C2SD-T49, C2SD-T50)
+
+**Leap (C2SD-T49, `modules/Dive.lua`).** `launchLift` is 0 (no extra lift above the stock jump), and just after
+lift-off (`flattenAfterSec` 0.05 s) the rise is cut to `flattenKeep` 0.4 of its speed, so the dive is a low flat
+leap. When the arc stops rising V gets one extra downward push (`slamSpeed` 5 m/s), and `landingStop` stops the
+slide on impact.
+
+**Pinned prone (C2SD-T49, `modules/GetUp.lua`).** `standIfHeldAtImpact` is false: the direction is held through
+every dive, so the old held-at-impact rule stood V straight back up. Now V stays prone (look and shoot freely)
+until a fresh direction press, release then press, as in MP2. `moveHeld` is still recorded in the landing log.
+
+**Airborne detection (C2SD-T50, `modules/DiveDriver.lua`).** The PSM locomotion check never reported airborne in
+game, so every dive aborted with "never left the ground". V now counts as airborne when it is more than
+`AIR_HEIGHT` 0.08 m above the launch point or falling faster than `AIR_FALL_SPEED` 0.5 m/s, alongside the PSM check.

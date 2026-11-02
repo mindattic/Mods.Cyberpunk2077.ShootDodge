@@ -22,7 +22,7 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
    shotgun, a sniper rifle, and melee or fists. For section P (dual wielding), a V with Cool 9 and the
    **Double Trouble** perk (game 2.5 or later) and the loadout's two Lexingtons.
 
-Abbreviations: **combo** = Ctrl + Space (either Ctrl), with or without a movement direction. **Overlay** = the ShootDodge window.
+Abbreviations: **combo** = Shift + Space (either Shift), with or without a movement direction. **Overlay** = the ShootDodge window.
 
 ## A. Install and loading
 
@@ -38,34 +38,30 @@ Expected: the ShootDodge window disappears, but the hourglass (case I1) stays on
 
 ## B. Input detection (C2SD-T5)
 
-**B1. No false triggers.** Enabled. For about 1 minute with the overlay open, jump (Space) alone, Ctrl
+**B1. No false triggers.** Enabled. For about 1 minute with the overlay open, jump (Space) alone, Shift
 alone, aim alone, move alone, aim and move without jumping, and jump while moving and aiming.
 Expected: the Combo line's detected count stays 0, and "Last jump not a combo" gives a sensible reason
-(for example "Ctrl not held").
+(for example "Shift not held").
 
-**B2. The real combo.** Equip a pistol. Stand still on the ground, hold forward, press Ctrl + Space together (no aim).
+**B2. The real combo.** Equip a pistol. Stand still on the ground, hold forward, press Shift + Space together (no aim).
 Expected: exactly one trigger: the detected count goes from 0 to 1, the console prints one `combo detected`
 line with the move direction, and V leaps.
 
-**B3. Ctrl alone and Space alone.** Press Ctrl alone, then Space alone, on the ground.
-Expected: no dive; Space is a normal jump and "Last jump not a combo" says "Ctrl not held".
+**B3. Shift alone and Space alone.** Press Shift alone, then Space alone, on the ground.
+Expected: no dive; Space is a normal jump and "Last jump not a combo" says "Shift not held".
 
 **B4. Cooldown.** Complete a dive and get up, then repeat the combo within a second of the previous
 trigger.
 Expected: refused with "cooldown" if inside the second; works after it.
 
-**B5. Left Ctrl dodge caveat.** Run forward, then press Left Ctrl and Space.
-Expected: vanilla Left Ctrl is Dodge, so a vanilla dodge dash may start before Space; the Shootdodge
-may or may not fire. Note which. Then stand still and press Left Ctrl + Space together: a clean
-Shootdodge (the documented clean input). Also press Ctrl alone while moving: only the vanilla dodge.
+**B5. Shift while moving.** Run forward (sprinting), then press Shift + Space, and also tap Shift then Space.
+Expected: a Shootdodge each time. There is no vanilla dodge dash and no input caveat; sprinting into the dive
+is the intended feel.
 
-**B6. Right Ctrl.** Stand still, press Right Ctrl + Space (Right Ctrl is Crouch, hold). Repeat with
-Toggle Crouch on and V already crouched, and with Input Loader installed and removed.
-Expected: a Shootdodge each time, with no vanilla dodge dash; Ctrl is read from Dodge, Crouch,
-Toggle Crouch or the mod's `ShootDodgeModifier` action.
-
-**B5. Disabled.** Untick Enabled and try the combo.
-Expected: nothing happens; no state change.
+**B6. Either Shift.** Stand still, press Left Shift + Space (Toggle Sprint), then Right Shift + Space (Sprint,
+hold). Repeat with Input Loader installed and removed.
+Expected: a Shootdodge each time; Shift is read from Sprint, Toggle Sprint or the mod's `ShootDodgeModifier`
+action (IK_LShift / IK_RShift).
 
 ## C. State machine (C2SD-T6)
 
@@ -86,14 +82,14 @@ Expected: nothing happens; no second dive starts.
 
 ## D. The dive (C2SD-T7) (M) (F)
 
-**D1. Strafe left.** Strafe left, press Ctrl + Space.
+**D1. Strafe left.** Strafe left, press Shift + Space.
 Expected: V leaves the ground moving left of where the camera faced; the overlay reads `DIVING`, then
 `AIRBORNE`, with a locked dive direction line.
 
 **D2. Strafe right.** As D1 to the right.
 Expected: V leaps right.
 
-**D3. Backpedal.** Hold back, press Ctrl + Space.
+**D3. Backpedal.** Hold back, press Shift + Space.
 Expected: V leaps backward.
 
 **D4. Forward and diagonal.** Forward, then forward-left.
@@ -123,7 +119,7 @@ returns to `NONE`.
 
 **E1. World slows.** Dive.
 Expected: enemies, NPCs, projectiles and the environment visibly slow; the overlay shows World time
-`0.20x (slowed)`.
+`0.05x (slowed)`.
 
 **E2. Clears on landing.** Dive and land.
 Expected: World time returns to `1.00x` the frame V touches down; no lingering slow-mo.
@@ -136,7 +132,7 @@ normal.
 **E4. Death.** Dive while taking damage until V dies (or use a safe way to die).
 Expected: slow-mo does not persist after death.
 
-**E5. Time scale slider.** Set Time scale to 0.5, dive, then to 0.05, dive, then 1.00, dive.
+**E5. Time scale slider.** Set Time scale to 0.5, dive, then to 0.01, dive, then 1.00, dive. The slider minimum is 0.01 and the default is 0.05.
 Expected: the world speed follows the slider each time. At 1.00 the dive still happens at normal speed,
 with no slow-mo.
 
@@ -172,7 +168,15 @@ Expected: the Landings count rises by exactly 1; the console prints one `landing
 "movement not held".
 
 **G2. Held flag.** Dive and keep holding a direction through the touchdown.
-Expected: one landing line saying "movement held".
+Expected: one landing line saying "movement held". V does not stand up by itself (see H5).
+
+**G6. Low flat leap and slam.** Dive on flat ground, watch from a mirror or the overlay's height readout.
+Expected: a low, flat arc (no extra lift, the rise is cut right after lift-off); at the apex V is slammed down
+and hits the ground hard, and the slide stops on impact instead of skidding on.
+
+**G7. Airborne detection.** Dive repeatedly (10 times) on flat ground.
+Expected: no dive aborts with "never left the ground"; airborne is detected from V's height above the launch
+point (more than 0.08 m) or a fall speed above 0.5 m/s, since the PSM locomotion check never reports it.
 
 **G3. Always prone.** Each landing in G1-G2.
 Expected: State goes to `PRONE` either way, never directly to `NONE`.
@@ -202,16 +206,16 @@ short way in that direction at a capped speed; full control returns when it ends
 Expected: the get-up works with each.
 
 **H5. Held through the landing.** Dive and keep holding forward through touchdown.
-Expected: V hits the ground, stays down for about a quarter second, then gets up on its own without a new
-press.
+Expected: V hits the ground and stays pinned prone; it does not get up on its own, however long the key is
+held. Look and shoot freely. Releasing and then pressing forward stands V up.
 
 **H6. Jump does not stand.** From prone, press jump only.
 Expected: V stays prone.
 
-**H7. Held key must be released.** Dive while holding a direction and then, after landing, release it and
-press it again (rather than letting the held-at-impact rule stand V up: do this by releasing before
-touchdown, then pressing within 0.25 s of impact).
-Expected: a press within the first 0.25 s after impact does not stand V up; a press after that does.
+**H7. Fresh press needed.** Dive while holding a direction. After landing keep holding it, then release it
+and press it again.
+Expected: V stays prone while the key is held; a press shorter than the first 0.25 s after impact does not
+stand V up; a fresh press (release, then press) after that does.
 
 **H8. Knocked off a ledge.** Go prone at a ledge edge and push V off (or roll over it).
 Expected: after about 0.4 s of being off the ground, State aborts to `NONE` and the camera rises.
@@ -435,7 +439,7 @@ shows a thread of 14 texts from Max Payne, in his first person, ending with "The
 their messages." No popup or on-screen banner text is used anywhere.
 
 **O3. Content.** Read the thread.
-Expected: it covers Ctrl + Space with a direction, pistol/revolver/SMG only, the slow-mo with aim and fire at
+Expected: it covers Shift + Space with a direction, pistol/revolver/SMG only, the slow-mo with aim and fire at
 full speed, landing prone and shooting or moving/jumping to get up, holding the direction through the
 landing, and binding Bullet Time in the overlay's Bindings tab with the hourglass (drains while on,
 refills on its own and with kills, a shootdodge costs nothing).
@@ -504,7 +508,7 @@ Expected: exactly as before ("Exempt now: weapons 1" during the dive).
 
 **P9. Independent Pistol Controls (optional, untested).** If you use
 [Independent Pistol Controls](https://www.nexusmods.com/cyberpunk2077/mods/35649), note whether the
-combo still detects Ctrl + Space and whether each gun fires at full cadence in the dive.
+combo still detects Shift + Space and whether each gun fires at full cadence in the dive.
 Expected: note the result only; it is not a requirement.
 
 ## Q. Space is the Shootdodge in Bullet Time mode (C2SD-T38)
@@ -516,7 +520,7 @@ Enabled, a pistol drawn, a full hourglass (overlay **Refill meter**), the Bullet
 Expected: the overlay shows "Space = Shootdodge (Bullet Time)" under the Combo line; stop the mode and
 the line disappears.
 
-**Q2. Space with a direction.** Start Bullet Time mode, hold strafe left (no aim, no Ctrl), press Space.
+**Q2. Space with a direction.** Start Bullet Time mode, hold strafe left (no aim, no Shift), press Space.
 Expected: V dives left relative to the camera, locked as usual; the detected count rises by 1, the
 mode ends ("Bullet-time mode last ended: shootdodge") and the dive's slow-mo carries on to the landing.
 
@@ -535,7 +539,7 @@ Expected: no dive mid-air ("airborne"), none while prone or getting up (Space ne
 "cooldown" inside the second.
 
 **Q6. Space outside Bullet Time mode.** Mode off, press Space alone, then with a direction held.
-Expected: normal jumps, no dive ("Ctrl not held"); Ctrl + Space (B2) still works.
+Expected: normal jumps, no dive ("Shift not held"); Shift + Space (B2) still works.
 
 ## Results
 

@@ -47,8 +47,14 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
 ## Changelog
 
 - **3.0.0:**
-  - The Shootdodge is now **Ctrl + Space** (either Ctrl; crouch + jump together). No aim needed: V
+  - The Shootdodge is now **Shift + Space** (either Shift; sprint + jump together). No aim needed: V
     dives the way you hold, or straight forward with none held. Plain Space is always a normal jump.
+    Sprinting into a dive is the intended feel; there is no vanilla-dodge conflict.
+  - The dive's slow-mo is now **5%** world speed (was 20%), because enemies have RPG health and need
+    several hits. The overlay's Time scale slider goes down to 0.01.
+  - The dive is a low flat leap with no extra lift. V is slammed down at the apex and the slide stops
+    on impact. V then stays pinned prone (look and shoot freely) until a fresh direction press
+    (release, then press); movement held through the landing no longer stands V up by itself.
   - Fixed the start-up crash: the main menu is a game world with its own V, and the mod was
     already acting there. It now makes no game calls (time, inventory, phone, key listener, kill
     hook) until a real save is loaded and has settled for 1.5 seconds.
@@ -82,7 +88,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Press Ctrl + Space: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
+Max Payne 2's Shootdodge in first person. Press Shift + Space: V dives, time slows to 5% while your aim and fire stay fast, then you hit the floor prone and keep shooting. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
 
 ## Tags
 
@@ -138,31 +144,31 @@ Once uploaded, right-click each one on the mod page, copy its image address, and
 
 ```
 [size=5][b]ShootDodge[/b][/size]
-Max Payne 2's signature move, in first person. Press Ctrl + Space, and V dives: time slows, your aim and fire stay at full speed, and you land prone still shooting.
+Max Payne 2's signature move, in first person. Press Shift + Space, and V dives: time slows, your aim and fire stay at full speed, and you land prone still shooting.
 
 [img]IMAGE_1_URL[/img]
 
 [size=5][b]How it works[/b][/size]
 [list=1]
 [*]Equip a pistol, revolver or SMG, or two pistols with the Double Trouble perk.
-[*]Press [b]Ctrl + Space[/b] (either Ctrl: crouch and jump together), optionally holding a movement direction. No aim needed. With Left Ctrl, press it together with Space or from standing: Ctrl while already moving can start the vanilla dodge dash first.
+[*]Press [b]Shift + Space[/b] (either Shift: sprint and jump together), optionally holding a movement direction. No aim needed.
 [*]V dives that way, or straight forward with none held. The direction is locked for the whole dive, but the camera and aim stay free.
-[*]The world drops to 0.2x speed while your mouse look and your gun's fire rate stay at normal speed.
+[*]The world drops to 0.05x speed (5%) while your mouse look and your gun's fire rate stay at normal speed.
 [*]V lands prone, first-person view down at floor height, slow-mo ends.
-[*]Keep shooting from the ground as long as you like, or press a movement key to scramble back up. Hold a direction through the landing and V gets up right after impact.
+[*]Keep shooting from the ground as long as you like, or release and press a movement key to scramble back up. V stays pinned prone until that fresh press, even if you held a direction through the landing.
 [*]In Bullet Time mode it's simpler: Space alone sends V flying, no aim needed, in the direction you hold or straight forward.
 [/list]
 [img]IMAGE_2_URL[/img]
 
 [size=5][b]Features[/b][/size]
 [list]
-[*][b]The dive:[/b] forward, back, left, right or diagonal, locked in the air. Can't start mid-air, in a vehicle or with no direction held.
+[*][b]The dive:[/b] a low flat leap forward, back, left, right or diagonal, locked in the air and slammed down at the apex. Can't start mid-air, in a vehicle or with no direction held.
 [*][b]Aim and fire stay fast:[/b] slow world, normal fire rate and mouse look. Bullets, enemies and V's own fall arc stay slowed for contrast.
 [*][b]Prone and get-up:[/b] free-aim and fire 360 degrees from the floor, no timer. A fresh movement press stands V up with a short scramble.
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (the / key by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
-[*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward (Ctrl + Space works there too). The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.
+[*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward (Shift + Space works there too). The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
 [*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
