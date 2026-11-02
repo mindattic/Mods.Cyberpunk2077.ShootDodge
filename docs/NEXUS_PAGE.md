@@ -20,7 +20,8 @@ checklist with expected results. At minimum these must pass:
       (momentum drains over about 0.9 s, shooting throughout, then V stands by itself or on a fresh press).
 - [ ] I1-I18: the hourglass HUD, Bullet Time mode (the / key by default with Input Loader, CET binding as fallback, never V), drain, passive and kill refill, and
       save persistence.
-- [ ] J1-J4: only pistols, revolvers and SMGs arm the combo, and swaps apply at once.
+- [ ] J1-J4: every ranged weapon arms the combo, melee and fists don't, and swaps apply at once.
+- [ ] R1-R6: V and the weapon at normal speed (ADS, reload), lethal headshots only mid-dive, any ranged weapon.
 - [ ] K1-K9: FOV, whoosh and music duck start and revert on both exit paths, each toggleable.
 - [ ] L1-L7 (male and female V): the loadout is granted once, equips and renders, never duplicates.
 - [ ] M1-M2: a combat run and save/load in each state leave nothing stuck.
@@ -47,6 +48,14 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
 ## Changelog
 
 - **3.0.0:**
+  - **Every headshot is lethal mid-dive:** while V is in the air, V's headshot damage gets a +1000
+    bonus that is removed the frame the dive ends. Scripted-invulnerable bosses can still survive.
+  - **Every ranged weapon works:** pistols, revolvers, SMGs, assault rifles, rifles, precision and
+    sniper rifles, shotguns, LMGs and HMGs, hip fire or ADS. Melee, fists, cyberware arms and no
+    weapon still block it.
+  - **V really stays at normal speed:** the game ignored the time-system exemption in testing (V stayed
+    at 5%), so V now also gets a per-entity exemption like the weapon's. Draw, raise, ADS, fire and
+    reload are all at normal speed; failures are logged to `scripting.log`.
   - The Shootdodge is now **Shift + Space** (either Shift; sprint + jump together). No aim needed: V
     dives the way you hold, or straight forward with none held. Plain Space is always a normal jump.
     Sprinting into a dive is the intended feel; there is no vanilla-dodge conflict.
@@ -78,7 +87,7 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
 - **1.0.0:** first release.
   - The Shootdodge: V leaps in the held movement direction, locked in the air.
   - Slow-mo with full-speed aim and fire; lands prone and keeps shooting; a move key stands V back up.
-  - Pistols, revolvers and SMGs only.
+  - Pistols, revolvers and SMGs only (3.0.0 opens it to every ranged weapon).
   - Dual pistols with the game's Double Trouble perk (Update 2.5): both guns arm the combo and fire
     at full speed in the slow-mo.
   - Max Payne 2's bullet-time hourglass with a bindable Bullet Time mode, kill refill and a HUD.
@@ -95,7 +104,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Press Shift + Space: V dives, time slows to 5% while V, your aim and fire stay fast, then V slides out of the landing still shooting. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
+Max Payne 2's Shootdodge in first person, with any ranged weapon. Press Shift + Space: V dives, time slows to 5% while V, your aim and fire stay fast, and every headshot is lethal in the air. Bullet-time hourglass, Max's outfit, twin pistols, texts from Max. Needs CET and redscript; Phone Extension optional.
 
 ## Tags
 
@@ -157,7 +166,7 @@ Max Payne 2's signature move, in first person. Press Shift + Space, and V dives:
 
 [size=5][b]How it works[/b][/size]
 [list=1]
-[*]Equip a pistol, revolver or SMG, or two pistols with the Double Trouble perk.
+[*]Equip any ranged weapon (pistol to sniper, shotgun, LMG), or two pistols with the Double Trouble perk.
 [*]Press [b]Shift + Space[/b] (either Shift: sprint and jump together), optionally holding a movement direction. No aim needed.
 [*]V dives that way, or straight forward with none held. The direction is locked for the whole dive, but the camera and aim stay free.
 [*]The world drops to 0.05x speed (5%) while V (mouse look, weapon draw and aim, fire rate) stays at normal speed.
@@ -172,7 +181,8 @@ Max Payne 2's signature move, in first person. Press Shift + Space, and V dives:
 [*][b]The dive:[/b] a low flat leap forward, back, left, right or diagonal, locked in the air and slammed down at the apex. Can't start mid-air, in a vehicle or with no direction held.
 [*][b]V stays fast:[/b] slow world, but V runs at full speed: instant weapon draw, raise and aim, normal fire rate and mouse look. Bullets and enemies stay slowed for contrast, and V's own dive arc plays at full speed.
 [*][b]The landing slide:[/b] V keeps the dive's momentum along the dive line, camera at crouch height, speed draining to zero over about 0.9 seconds, then V stands up by itself. Free-aim and fire throughout. A fresh movement press ends it early.
-[*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
+[*][b]Every ranged weapon:[/b] pistols, revolvers, SMGs, assault rifles, rifles, snipers, shotguns, LMGs and HMGs, hip fire or ADS. Melee, fists, cyberware arms and no weapon don't arm it. Checked live on every swap.
+[*][b]Lethal headshots mid-dive:[/b] while V is in the air every headshot kills an ordinary enemy (+1000 headshot damage, removed the instant the dive ends). Bosses with scripted invulnerability can still survive.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (the / key by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
 [*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward (Shift + Space works there too). The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.

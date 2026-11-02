@@ -82,7 +82,7 @@ Payne contact disappears from the phone with it.
 
 ### The Shootdodge
 
-1. Equip a pistol, revolver or SMG, or two pistols with Double Trouble (see below).
+1. Equip any ranged weapon (pistol, revolver, SMG, rifle, shotgun, sniper, LMG or HMG), or two pistols with Double Trouble (see below).
 2. Optionally hold a movement direction (forward, back, strafe left or right, or a diagonal). With
    none held, V dives straight forward.
 3. Press **Shift + Space** (either Shift; sprint and jump together). No aim is needed. V launches.
@@ -127,8 +127,9 @@ Outside Bullet Time mode nothing changes: you need Shift + Space.
 
 ### Weapon restriction
 
-Pistols, revolvers and SMGs arm the combo. Rifles, shotguns, LMGs and HMGs, sniper and precision
-rifles, melee weapons, fists, cyberware arms and having nothing equipped all block it. The weapon is
+Every ranged weapon arms the combo: pistols, revolvers, SMGs, assault rifles, rifles, precision rifles,
+sniper rifles, shotguns, double-barrel shotguns, LMGs and HMGs, hip fire or aimed down sights (aim is
+never required). Melee weapons, fists, cyberware arms and having nothing equipped block it. The weapon is
 checked at the instant you press jump, so swapping weapons takes effect on the very next jump. The
 overlay's last-jump line says "weapon not allowed" when this was the reason.
 
@@ -137,6 +138,21 @@ in each hand, and the Shootdodge works with both: both guns must be allowed (Dou
 power pistols and power revolvers, so any pair it gives you is), and both fire at normal speed during
 the slow-mo. If the off-hand gun is not allowed, the combo is refused with "weapon not allowed
 (off-hand ...)". Single-weapon play is unchanged.
+
+### Lethal headshots mid-dive
+
+While V is in the air (the diving and airborne part of the dive), every headshot is lethal: the mod adds
+a +1000 bonus to V's own headshot damage multiplier, so a head hit kills an ordinary enemy outright. The
+bonus is removed the frame the dive ends (landing, abort, mod disabled or a CET reload), so on foot and
+in the landing slide headshots are normal. CET's log shows "lethal headshots on" and "lethal headshots
+off". Bosses with scripted invulnerability can still survive.
+
+### V and the weapon at normal speed
+
+During the 5% slow-mo V and the weapon (draw, raise, aim down sights, fire, reload) run at normal speed.
+The exemption uses two levers: the time system's local-player-zero call (which did not take effect in
+game on its own) and a per-entity time dilation on V, the same one the weapon uses. Either succeeding is
+enough, and a failure is printed once to CET's `scripting.log`.
 
 ### Dual pistols, the Max Payne way (recommended)
 

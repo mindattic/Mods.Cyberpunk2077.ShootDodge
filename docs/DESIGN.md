@@ -231,9 +231,9 @@ aborts to `NONE`. The overlay and the CET log show one landing event per dive wi
   `GETUP` is entered, the get-up driver runs it; the camera stays first person throughout.
 
 ### Weapon restriction (C2SD-T13)
-The input check (C2SD-T5) also reads the equipped weapon type. Pistols, revolvers, and small SMGs
-arm the combo; rifles, shotguns, LMGs, sniper rifles, and melee/fists block it. Re-checked live on
-every weapon swap.
+The input check (C2SD-T5) also reads the equipped weapon type. Originally only pistols, revolvers
+and SMGs armed the combo; since C2SD-T57 every ranged weapon does (see the last section). Re-checked
+live on every weapon swap.
 
 ### Camera + audio polish (C2SD-T14)
 FOV pull-back, a one-shot whoosh on dive entry, and a music/ambience low-pass for the duration of
@@ -495,7 +495,7 @@ Read from the 2.5 decompiled game scripts and TweakDB sources, not guessed. Sour
   (the C2SD-T24 clean-up, extended to the left hand). With one weapon this is the old single-key
   behaviour. The overlay shows "Exempt now: weapons N".
 - **Weapon gate** (`WeaponGate.ClassifyPair`, `Input.lua`). The jump-press check reads both slots. One
-  weapon: exactly `Classify` as before. Two: both must be on the allow-list (pistol, revolver, SMG); a
+  weapon: exactly `Classify` as before. Two: both must be on the allow-list (every ranged type since C2SD-T57); a
   bad main gun refuses with its type, a bad off-hand gun refuses with "weapon not allowed (off-hand
   <type>)". Vanilla Double Trouble only pairs power pistols and revolvers, so the off-hand refusal
   only shows with mods that widen the pairing (Dual Wield Any Weapon, Expanded Dual Wielding).
@@ -732,3 +732,29 @@ drains linearly from the landing speed (clamped to `slideMinSpeed` 4 to `slideMa
 raises the stand request and V stands through the normal `PRONE -> GETUP -> NONE` path. A fresh direction press
 (release, then press, ignored in the first 0.25 s) still ends it early. Internally the state is still named `PRONE`.
 `slide = false` restores the C2SD-T49 pinned prone (see "Flat leap, slam and pinned prone").
+
+## V exemption, second lever (C2SD-T55)
+
+**Problem (`modules/BulletTimeDriver.lua`, `exemptPlayer`).** In game, the TimeSystem call
+`SetTimeDilationOnLocalPlayerZero` did not take effect: the dive's air phase (0.2 s of game time) took
+4 s of real time and V stayed at 5%. **Fix.** V now also gets a per-entity exemption,
+`Game.GetPlayer():SetIndividualTimeDilation(reason, 1.0, 0, "", "", true)`, the same lever the weapon
+uses. Either call succeeding counts as exempt. Failures are printed to CET's `scripting.log` once per
+distinct message, and `unexemptPlayer` drops the per-entity dilation too. Result: V and the weapon (draw,
+raise, ADS, fire, reload) run at normal speed while the world is at 5%.
+
+## Lethal headshots mid-dive (C2SD-T56)
+
+**`modules/HeadshotDriver.lua`, wired in `init.lua`.** Enemies have RPG health, so one headshot rarely
+kills. While the state is `DIVING` or `AIRBORNE`, the driver adds an additive +1000 stat modifier to V's
+`HeadshotDamageMultiplier` (via `RPGManager.CreateStatModifier` and the StatsSystem), so every head hit
+is lethal. The modifier is removed the frame the dive ends (state listener), on every `Update` frame
+that outlives the state (session end, mod disabled), and on shutdown (`Cancel`). It logs "lethal
+headshots on" and "lethal headshots off". Bosses with scripted invulnerability can still survive.
+
+## Every ranged weapon (C2SD-T57)
+
+**`modules/WeaponGate.lua`.** The allow-list grew from pistol, revolver and SMG to every ranged item
+type: `Wea_AssaultRifle`, `Wea_Rifle`, `Wea_PrecisionRifle`, `Wea_SniperRifle`, `Wea_Shotgun`,
+`Wea_ShotgunDual`, `Wea_LightMachineGun`, `Wea_HeavyMachineGun`. Hip fire or ADS both work; aim is never
+required. Melee, fists, cyberware arms and no weapon still block it, and Double Trouble pairs still work.

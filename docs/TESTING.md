@@ -341,15 +341,15 @@ Expected: dives always slow time; only Bullet Time mode is refused with an empty
 
 ## J. Weapon restriction (C2SD-T13)
 
-**J1. Sniper blocked.** Equip a sniper rifle and try the combo.
+**J1. Melee blocked.** Equip a katana and try the combo.
 Expected: no trigger; "Last jump not a combo: weapon not allowed".
 
 **J2. Pistol allowed.** Switch to a pistol and try it again without any restart.
 Expected: it triggers normally.
 
-**J3. Each type.** Try pistol, revolver, SMG (all allowed), then assault rifle, shotgun, LMG, melee weapon
-and bare fists (all blocked), and holstered or unarmed.
-Expected: exactly the pistols, revolvers and SMGs trigger.
+**J3. Each type.** Try pistol, revolver, SMG, assault rifle, shotgun, LMG (all allowed), then melee weapon
+and bare fists (blocked), and holstered or unarmed.
+Expected: every ranged weapon triggers (see R5); melee and fists do not.
 
 **J4. Swap on the fly.** Alternate allowed and blocked weapons within one session.
 Expected: each jump follows the weapon equipped at that moment.
@@ -465,7 +465,7 @@ shows a thread of 14 texts from Max Payne, in his first person, ending with "The
 their messages." No popup or on-screen banner text is used anywhere.
 
 **O3. Content.** Read the thread.
-Expected: it covers Shift + Space with a direction, pistol/revolver/SMG only, the slow-mo with aim and fire at
+Expected: it covers Shift + Space with a direction, (the texts may still say pistol/revolver/SMG only), the slow-mo with aim and fire at
 full speed, landing (the in-game texts still describe prone) and shooting or moving/jumping to get up, holding the direction through the
 landing, and binding Bullet Time in the overlay's Bindings tab with the hourglass (drains while on,
 refills on its own and with kills, a shootdodge costs nothing).
@@ -566,6 +566,31 @@ Expected: no dive mid-air ("airborne"), none while prone or getting up (Space ne
 
 **Q6. Space outside Bullet Time mode.** Mode off, press Space alone, then with a direction held.
 Expected: normal jumps, no dive ("Shift not held"); Shift + Space (B2) still works.
+
+## R. Normal speed, lethal headshots, every ranged weapon (C2SD-T55, C2SD-T56, C2SD-T57)
+
+**R1. V and weapon at normal speed.** Equip a gun, dive, and during the slow-mo draw, raise and fire it.
+Expected: V and the weapon move at normal speed while the world is at 5%; the dive's air phase takes
+about 0.2 s real time, not 4 s. CET's `scripting.log` has no repeated "exempt player" errors (one line
+is fine if one lever failed, as long as the other worked).
+
+**R2. ADS and reload mid-dive.** Mid-dive, aim down sights, fire, then reload.
+Expected: all at normal speed, the reload completes at normal speed.
+
+**R3. Lethal headshot mid-dive.** Dive at an ordinary enemy and shoot it in the head in the air.
+Expected: it dies in one hit; the log shows "lethal headshots on".
+
+**R4. Not lethal on foot, modifier removed.** Land, and shoot an enemy of the same type in the head from the
+ground and in the landing slide.
+Expected: normal headshot damage (not a one-hit kill); the log showed "lethal headshots off" the frame
+the dive ended.
+
+**R5. Every ranged weapon.** Dive with an assault rifle, a rifle, a shotgun, a sniper rifle and an LMG, hip
+fire and aimed.
+Expected: each dives; aim is not required.
+
+**R6. Melee blocked.** Equip a katana, then bare fists, and try the combo.
+Expected: no dive; "Last jump not a combo: weapon not allowed". Double Trouble pairs still work (section P).
 
 ## Results
 
@@ -694,3 +719,9 @@ Expected: normal jumps, no dive ("Shift not held"); Shift + Space (B2) still wor
 | Q4 |  |  |
 | Q5 |  |  |
 | Q6 |  |  |
+| R1 |  |  |
+| R2 |  |  |
+| R3 |  |  |
+| R4 |  |  |
+| R5 |  |  |
+| R6 |  |  |
