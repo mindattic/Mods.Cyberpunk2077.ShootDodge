@@ -10,6 +10,7 @@
 --     yellow after kills, as MP2's does.
 
 local Meter = require("modules/BulletTimeMeter")
+local Session = require("modules/Session") -- C2SD-T45
 local BulletTimeDriver = require("modules/BulletTimeDriver")
 
 local FACT = "shootdodge_bt_meter"
@@ -99,6 +100,7 @@ local function killedByPlayer(evt)
 end
 
 local function onDeath(npc, evt)
+  if not Session.Ready() then return end -- C2SD-T45
   if not killedByPlayer(evt) then return end
   local key = entityKey(npc)
   if key ~= nil then
@@ -135,7 +137,7 @@ end
 -- Call every onUpdate with the real frame time.
 function MeterDriver.Update(deltaTime, ctx)
   local meter = MeterDriver.meter
-  local hasPlayer = Game.GetPlayer() ~= nil
+  local hasPlayer = Session.Ready() -- C2SD-T45: not the main menu's player
   -- Fallback session detection: the player reappearing after none (main menu -> load).
   if not hasPlayer then
     MeterDriver.hadPlayer = false
@@ -227,7 +229,7 @@ end
 -- Call from onDraw. paused = the game is paused (menus), when the HUD hides like the game's own.
 function MeterDriver.DrawHud(paused)
   local hud = MeterDriver.hud
-  if not hud.visible or paused or Game.GetPlayer() == nil then return end
+  if not hud.visible or paused or not Session.Ready() then return end
   local meter = MeterDriver.meter
   local sw, sh = GetDisplayResolution()
   local h = hud.height

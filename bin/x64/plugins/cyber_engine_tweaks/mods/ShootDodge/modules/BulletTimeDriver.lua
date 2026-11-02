@@ -23,6 +23,7 @@
 -- held guns are exempted, and both are dropped on landing, a swap of either hand, and Clear().
 
 local BulletTime = require("modules/BulletTime")
+local Session = require("modules/Session") -- C2SD-T45
 local AimFireExemption = require("modules/AimFireExemption")
 
 local REASON = "ShootDodgeBulletTime"
@@ -187,9 +188,9 @@ end
 -- not safe before that (onInit fires during game boot, onShutdown during exit): calling
 -- UnsetTimeDilation there is an access violation that pcall cannot catch, and it crashed the game
 -- at start-up. With no world, there is no dilation of ours to remove anyway.
+-- C2SD-T45: the main menu has a player too, so ask the shared session gate.
 local function worldReady()
-  local ok, player = pcall(function() return Game.GetPlayer() end)
-  return ok and player ~= nil
+  return Session.Ready()
 end
 
 -- Remove this mod's dilation (only the Lua bookkeeping when no game world is running).

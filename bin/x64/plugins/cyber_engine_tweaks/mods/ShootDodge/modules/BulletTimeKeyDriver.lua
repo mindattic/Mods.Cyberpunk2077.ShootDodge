@@ -8,6 +8,7 @@
 -- redscript or Input Loader only means route 1 never reports a press.
 
 local BulletTimeKey = require("modules/BulletTimeKey")
+local Session = require("modules/Session") -- C2SD-T45
 
 local KEY_SYSTEM = "ShootDodgeBulletTimeKeySystem"
 
@@ -49,6 +50,7 @@ end
 function BulletTimeKeyDriver.Update(deltaTime)
   local d = BulletTimeKeyDriver
   d.clock = d.clock + (deltaTime or 0)
+  if not Session.Ready() then return end -- C2SD-T45: no game calls from the main menu
   local okSys, system = pcall(d.KeySystem)
   if not okSys or system == nil then return end
   local okTake, presses = pcall(function() return system:TakePresses() end)

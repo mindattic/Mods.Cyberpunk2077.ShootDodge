@@ -7,6 +7,7 @@
 -- pistols granted once per save (C2SD-T4). See docs/DESIGN.md in the repo root for the planned states and build order
 -- (follow the ticket log's requires chain, docs/USER_STORIES.md).
 
+local Session = require("modules/Session") -- C2SD-T45: the real-save gate
 local Input = require("modules/Input")
 local StateMachine = require("modules/StateMachine")
 local DiveDriver = require("modules/DiveDriver")
@@ -147,6 +148,9 @@ registerForEvent("onShutdown", function()
 end)
 
 registerForEvent("onUpdate", function(deltaTime)
+  -- C2SD-T45: first, decide whether a real save is loaded (the main menu has a player too);
+  -- every driver below makes no game calls until it is.
+  Session.Update(deltaTime)
   Input.Update(deltaTime)
   -- C2SD-T37: / presses from the game input action (Input Loader), debounced.
   local keyOk, keyErr = pcall(BulletTimeKeyDriver.Update, deltaTime)

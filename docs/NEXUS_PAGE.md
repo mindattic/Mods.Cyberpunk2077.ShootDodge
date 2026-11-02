@@ -47,7 +47,9 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
 ## Changelog
 
 - **3.0.0:**
-  - Release of the start-up crash fix (2.0.1) as the new main version.
+  - Fixed the start-up crash: the main menu is a game world with its own V, and the mod was
+    already acting there. It now makes no game calls (time, inventory, phone, key listener, kill
+    hook) until a real save is loaded and has settled for 1.5 seconds.
 - **2.0.1:**
   - Fixed a crash on game start: the mod no longer touches the game's time system before a
     save is loaded (at boot or exit), only while V is in the world.

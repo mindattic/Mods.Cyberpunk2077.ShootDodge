@@ -9,6 +9,7 @@
 --   * V's body type is read from the player (GetResolvedGenderName) for the per-body list.
 
 local Loadout = require("modules/Loadout")
+local Session = require("modules/Session") -- C2SD-T45
 
 local LoadoutDriver = {
   installed = false,
@@ -124,7 +125,7 @@ end
 
 -- Call every onUpdate with the real frame time.
 function LoadoutDriver.Update(deltaTime)
-  local hasPlayer = Game.GetPlayer() ~= nil
+  local hasPlayer = Session.Ready() -- C2SD-T45: not the main menu's player
   if not hasPlayer then
     if LoadoutDriver.hadPlayer then sessionEnded() end
     LoadoutDriver.hadPlayer = false

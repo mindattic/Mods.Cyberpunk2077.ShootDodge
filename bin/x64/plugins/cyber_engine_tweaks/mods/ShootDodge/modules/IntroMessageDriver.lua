@@ -13,6 +13,7 @@
 --   * The CET overlay keeps the whole thread for re-reading and a button to re-notify (testing).
 
 local IntroMessage = require("modules/IntroMessage")
+local Session = require("modules/Session") -- C2SD-T45
 
 local IntroMessageDriver = {
   installed = false,
@@ -101,7 +102,7 @@ end
 
 -- Call every onUpdate with the real frame time and the game's pause flag.
 function IntroMessageDriver.Update(deltaTime, paused)
-  local hasPlayer = Game.GetPlayer() ~= nil
+  local hasPlayer = Session.Ready() -- C2SD-T45: not the main menu's player
   if not hasPlayer then
     if IntroMessageDriver.hadPlayer then sessionEnded() end
     IntroMessageDriver.hadPlayer = false

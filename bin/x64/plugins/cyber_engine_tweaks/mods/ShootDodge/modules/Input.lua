@@ -9,6 +9,7 @@
 -- times and cooldown use one time base.
 
 local ComboDetector = require("modules/ComboDetector")
+local Session = require("modules/Session") -- C2SD-T45
 local WeaponGate = require("modules/WeaponGate")
 
 local Input = {
@@ -142,6 +143,7 @@ end
 local function onAction(player, action)
   local d = Input.detector
   if d == nil then return end
+  if not Session.Ready() then return end -- C2SD-T45: ignore the main menu's player
 
   local name = actionName(action)
   if name ~= "CameraAim" and name ~= "Jump" and name ~= "MoveX" and name ~= "MoveY" then
@@ -190,7 +192,7 @@ function Input.Update(deltaTime)
   Input.clock = Input.clock + (deltaTime or 0)
   -- C2SD-T21: session start (the player reappearing after none: main menu -> load, same signal
   -- MeterDriver/LoadoutDriver use) drops held aim / stale move axes from the previous session.
-  local hasPlayer = Game ~= nil and Game.GetPlayer() ~= nil
+  local hasPlayer = Session.Ready() -- C2SD-T45: not the main menu's player
   if hasPlayer and not Input.hadPlayer then Input.Reset() end
   Input.hadPlayer = hasPlayer
 end
