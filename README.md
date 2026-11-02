@@ -1,7 +1,7 @@
 # Mods.Cyberpunk2077.ShootDodge
 
-A Cyberpunk 2077 gameplay mod that recreates *Max Payne 2*'s Shootdodge in first person. Aim, jump and
-press a movement direction: V leaps that way, time slows while your aim and fire stay at full speed,
+A Cyberpunk 2077 gameplay mod that recreates *Max Payne 2*'s Shootdodge in first person. Press Ctrl and
+Space together: V dives in the direction you hold, time slows while your aim and fire stay at full speed,
 V lands prone and keeps shooting from the floor, and a movement key gets V back on their feet. It
 also has Max Payne 2's bullet-time hourglass and grants the matching outfit and twin pistols.
 
@@ -79,9 +79,14 @@ Payne contact disappears from the phone with it.
 ### The Shootdodge
 
 1. Equip a pistol, revolver or SMG, or two pistols with Double Trouble (see below).
-2. Hold aim (right mouse button or the left trigger) for at least 0.15 s.
-3. Hold a movement direction (forward, back, strafe left or right, or a diagonal) for at least 0.05 s.
-4. Press jump. With all three, V launches.
+2. Optionally hold a movement direction (forward, back, strafe left or right, or a diagonal). With
+   none held, V dives straight forward.
+3. Press **Ctrl + Space** (either Ctrl; crouch and jump together). No aim is needed. V launches.
+
+Ctrl is read from the vanilla Dodge (Left Ctrl), Crouch (Right Ctrl, hold) and Toggle Crouch actions,
+and from the mod's own Input Loader action `ShootDodgeModifier` (both Ctrl keys). Caveat: vanilla Left
+Ctrl is also Dodge, so pressing Ctrl while already moving can start a vanilla dodge dash before you
+press Space. Pressing Ctrl and Space together, or Ctrl while standing still, is the clean input.
 
 What happens next:
 
@@ -101,15 +106,17 @@ What happens next:
 - A new combo can't start while a Shootdodge is still in progress (in the air, prone or getting up),
   and there is a 1 second cooldown between combos.
 
-The combo only fires from the ground, on foot, with an allowed weapon. Jumping, aiming or moving on
-its own never triggers it, except in Bullet Time mode (below).
+The combo only fires from the ground, on foot, with an allowed weapon. Plain Space is always a normal
+jump; Ctrl, aiming or moving on its own never triggers it either, except that Space alone dives in
+Bullet Time mode (below). Version 3.0.0 also has a session gate: the mod makes no game calls until a
+real save is loaded and has settled for 1.5 s (the main menu is a world with its own V).
 
 **In Bullet Time mode, Space alone is the Shootdodge.** While the mode is on, press jump (Space) and V
 dives, no aim needed: in the direction you hold, or straight forward when you hold none. The weapon
 restriction, the on-the-ground check and the cooldown still apply, so with a disallowed weapon Space
 is a normal jump. Starting the dive ends Bullet Time mode (the dive's own slow-mo takes over, as in
 Max Payne 2), so after you land Space is a normal jump again until you switch the mode back on.
-Outside Bullet Time mode nothing changes: you need the aim + direction + jump combo.
+Outside Bullet Time mode nothing changes: you need Ctrl + Space.
 
 ### Weapon restriction
 
@@ -196,7 +203,7 @@ pair up as twin pistols (see [Dual pistols](#dual-pistols-the-max-payne-way-reco
 Once per save, about 8 seconds after V first appears (after the loadout), V's phone buzzes with a
 real SMS: a new contact, **Max Payne**, in the phone's Messages app like any other contact. The
 thread is a string of texts in Max's own over-the-top noir narration that explains how to
-Shootdodge (aim, direction, jump, the slow-mo, landing prone, shooting or getting up, binding the
+Shootdodge (Ctrl + Space, direction, the slow-mo, landing prone, shooting or getting up, binding the
 Bullet Time hotkey and the hourglass), woven around 25 genuine lines from *Max Payne* and *Max Payne
 2*, each checked word for word against its source (the list is in
 [`docs/DESIGN.md`](docs/DESIGN.md#in-game-text-message-c2sd-t27)).

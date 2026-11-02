@@ -75,8 +75,8 @@ a "Check loadout now" button. Nothing is auto-equipped: V equips the pieces from
 six items arrive, equip, and render; reloading the save adds nothing.
 
 ### Input detection (C2SD-T5)
-A CET input listener watches for aim (ADS) held + jump + a movement direction, all within one
-short window. Logged to a debug overlay before it drives anything, so false positives against
+A CET input listener watches for jump while Ctrl is held (Ctrl + Space; see C2SD-T46 below, it
+was aim + jump + a direction before 3.0.0). Logged to a debug overlay before it drives anything, so false positives against
 ordinary play can be ruled out first.
 
 ### State machine (C2SD-T6)
@@ -646,3 +646,29 @@ The user's mouse has no Mouse 4 button, so the default moved to `/`. `r6/input/S
 RED4ext.SDK `EInputKey.hpp`. Neither appears anywhere in the vanilla `r6/config/inputUserMappings.xml` of
 the user's install (checked 2026-11-01: 0 matches each), so `/` does nothing else in vanilla. Mouse 4 / Mouse 5
 remain good choices for mice that have them, via the CET binding.
+
+## Shootdodge is Ctrl + Space (C2SD-T46)
+
+**Why.** Aim + a direction + jump needed three coordinated inputs and clashed with normal play
+(aiming while strafing and jumping is common). Ctrl + Space is the crouch + jump pair, the same
+gesture as diving in Max Payne 2, and plain Space stays a normal jump, so false triggers are rare.
+No aim is needed; the aim checks and the movement hold time are gone from `ComboDetector:Evaluate`.
+V dives in the held direction, or straight forward with none, locked in the air, with the world at
+20% while aim and fire stay full speed. The weapon gate, grounded check, vehicle/menu block and 1 s
+cooldown are unchanged. Bullet Time mode (the `/` key) still lets Space alone dive (C2SD-T38). The
+overlay's reject reason is now "Ctrl not held".
+
+**How Ctrl is read** (`modules/Input.lua`). Four sources, any of which counts as Ctrl held:
+the vanilla actions `Dodge` (Left Ctrl), `Crouch` (Right Ctrl, hold) and `ToggleCrouch`, and the
+mod's own Input Loader action `ShootDodgeModifier`, mapped to `IK_LControl` and `IK_RControl` in
+`r6/input/ShootDodge.xml` and listened for in `r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds`.
+The vanilla actions cover users without Input Loader; the own action covers cases where vanilla
+swallows the key in a context.
+
+**Caveat.** Vanilla Left Ctrl is Dodge, so pressing it while already moving can start a vanilla
+dodge dash before Space arrives. Ctrl + Space together, or Ctrl while standing, is the clean input
+(tests B5 and B6 in `TESTING.md`).
+
+**Session gate (C2SD-T45, shipped in 3.0.0).** The main menu is a world with its own player, and
+acting there crashed the game. The mod now makes no game calls until a real save is loaded (player
+present, not `IsPreGame`) and has settled for 1.5 s.

@@ -22,7 +22,7 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
    shotgun, a sniper rifle, and melee or fists. For section P (dual wielding), a V with Cool 9 and the
    **Double Trouble** perk (game 2.5 or later) and the loadout's two Lexingtons.
 
-Abbreviations: **combo** = aim held + jump + a movement direction. **Overlay** = the ShootDodge window.
+Abbreviations: **combo** = Ctrl + Space (either Ctrl), with or without a movement direction. **Overlay** = the ShootDodge window.
 
 ## A. Install and loading
 
@@ -38,21 +38,31 @@ Expected: the ShootDodge window disappears, but the hourglass (case I1) stays on
 
 ## B. Input detection (C2SD-T5)
 
-**B1. No false triggers.** Enabled. For about 1 minute with the overlay open, jump alone, aim alone, move
-alone, aim and move without jumping, and jump while moving without aiming.
+**B1. No false triggers.** Enabled. For about 1 minute with the overlay open, jump (Space) alone, Ctrl
+alone, aim alone, move alone, aim and move without jumping, and jump while moving and aiming.
 Expected: the Combo line's detected count stays 0, and "Last jump not a combo" gives a sensible reason
-(for example "aim not held" or "no movement direction").
+(for example "Ctrl not held").
 
-**B2. The real combo.** Equip a pistol. Stand still on the ground, hold aim, hold forward, press jump.
+**B2. The real combo.** Equip a pistol. Stand still on the ground, hold forward, press Ctrl + Space together (no aim).
 Expected: exactly one trigger: the detected count goes from 0 to 1, the console prints one `combo detected`
 line with the move direction, and V leaps.
 
-**B3. Too brief.** Tap aim or a move key and press jump at once.
-Expected: no dive; "Last jump not a combo" says "aim held too briefly" or "movement held too briefly".
+**B3. Ctrl alone and Space alone.** Press Ctrl alone, then Space alone, on the ground.
+Expected: no dive; Space is a normal jump and "Last jump not a combo" says "Ctrl not held".
 
 **B4. Cooldown.** Complete a dive and get up, then repeat the combo within a second of the previous
 trigger.
 Expected: refused with "cooldown" if inside the second; works after it.
+
+**B5. Left Ctrl dodge caveat.** Run forward, then press Left Ctrl and Space.
+Expected: vanilla Left Ctrl is Dodge, so a vanilla dodge dash may start before Space; the Shootdodge
+may or may not fire. Note which. Then stand still and press Left Ctrl + Space together: a clean
+Shootdodge (the documented clean input). Also press Ctrl alone while moving: only the vanilla dodge.
+
+**B6. Right Ctrl.** Stand still, press Right Ctrl + Space (Right Ctrl is Crouch, hold). Repeat with
+Toggle Crouch on and V already crouched, and with Input Loader installed and removed.
+Expected: a Shootdodge each time, with no vanilla dodge dash; Ctrl is read from Dodge, Crouch,
+Toggle Crouch or the mod's `ShootDodgeModifier` action.
 
 **B5. Disabled.** Untick Enabled and try the combo.
 Expected: nothing happens; no state change.
@@ -76,14 +86,14 @@ Expected: nothing happens; no second dive starts.
 
 ## D. The dive (C2SD-T7) (M) (F)
 
-**D1. Strafe left.** Hold aim, strafe left, press jump.
+**D1. Strafe left.** Strafe left, press Ctrl + Space.
 Expected: V leaves the ground moving left of where the camera faced; the overlay reads `DIVING`, then
 `AIRBORNE`, with a locked dive direction line.
 
 **D2. Strafe right.** As D1 to the right.
 Expected: V leaps right.
 
-**D3. Backpedal.** Hold back, aim, jump.
+**D3. Backpedal.** Hold back, press Ctrl + Space.
 Expected: V leaps backward.
 
 **D4. Forward and diagonal.** Forward, then forward-left.
@@ -425,7 +435,7 @@ shows a thread of 14 texts from Max Payne, in his first person, ending with "The
 their messages." No popup or on-screen banner text is used anywhere.
 
 **O3. Content.** Read the thread.
-Expected: it covers aim + direction + jump, pistol/revolver/SMG only, the slow-mo with aim and fire at
+Expected: it covers Ctrl + Space with a direction, pistol/revolver/SMG only, the slow-mo with aim and fire at
 full speed, landing prone and shooting or moving/jumping to get up, holding the direction through the
 landing, and binding Bullet Time in the overlay's Bindings tab with the hourglass (drains while on,
 refills on its own and with kills, a shootdodge costs nothing).
@@ -490,7 +500,7 @@ Expected: exactly as before ("Exempt now: weapons 1" during the dive).
 
 **P9. Independent Pistol Controls (optional, untested).** If you use
 [Independent Pistol Controls](https://www.nexusmods.com/cyberpunk2077/mods/35649), note whether the
-combo still detects aim and whether each gun fires at full cadence in the dive.
+combo still detects Ctrl + Space and whether each gun fires at full cadence in the dive.
 Expected: note the result only; it is not a requirement.
 
 ## Q. Space is the Shootdodge in Bullet Time mode (C2SD-T38)
@@ -502,7 +512,7 @@ Enabled, a pistol drawn, a full hourglass (overlay **Refill meter**), the Bullet
 Expected: the overlay shows "Space = Shootdodge (Bullet Time)" under the Combo line; stop the mode and
 the line disappears.
 
-**Q2. Space with a direction.** Start Bullet Time mode, hold strafe left (no aim), press Space.
+**Q2. Space with a direction.** Start Bullet Time mode, hold strafe left (no aim, no Ctrl), press Space.
 Expected: V dives left relative to the camera, locked as usual; the detected count rises by 1, the
 mode ends ("Bullet-time mode last ended: shootdodge") and the dive's slow-mo carries on to the landing.
 
@@ -521,7 +531,7 @@ Expected: no dive mid-air ("airborne"), none while prone or getting up (Space ne
 "cooldown" inside the second.
 
 **Q6. Space outside Bullet Time mode.** Mode off, press Space alone, then with a direction held.
-Expected: normal jumps, no dive ("aim not held"); the aim + direction + jump combo (B2) still works.
+Expected: normal jumps, no dive ("Ctrl not held"); Ctrl + Space (B2) still works.
 
 ## Results
 
@@ -534,6 +544,8 @@ Expected: normal jumps, no dive ("aim not held"); the aim + direction + jump com
 | B2 |  |  |
 | B3 |  |  |
 | B4 |  |  |
+| B5 |  |  |
+| B6 |  |  |
 | B5 |  |  |
 | C1 |  |  |
 | C2 |  |  |

@@ -47,6 +47,8 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
 ## Changelog
 
 - **3.0.0:**
+  - The Shootdodge is now **Ctrl + Space** (either Ctrl; crouch + jump together). No aim needed: V
+    dives the way you hold, or straight forward with none held. Plain Space is always a normal jump.
   - Fixed the start-up crash: the main menu is a game world with its own V, and the mod was
     already acting there. It now makes no game calls (time, inventory, phone, key listener, kill
     hook) until a real save is loaded and has settled for 1.5 seconds.
@@ -61,7 +63,7 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
   - Max Payne's texts now also walk you through CET: the overlay key, the Enabled tick, and
     binding or rebinding Bullet Time (never V, which summons your vehicle).
 - **1.0.0:** first release.
-  - The Shootdodge: aim + jump + a movement direction leaps V in that direction, locked in the air.
+  - The Shootdodge: V leaps in the held movement direction, locked in the air.
   - Slow-mo with full-speed aim and fire; lands prone and keeps shooting; a move key stands V back up.
   - Pistols, revolvers and SMGs only.
   - Dual pistols with the game's Double Trouble perk (Update 2.5): both guns arm the combo and fire
@@ -80,7 +82,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Aim, hold a direction, jump: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension optional.
+Max Payne 2's Shootdodge in first person. Press Ctrl + Space: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension optional.
 
 ## Tags
 
@@ -133,15 +135,15 @@ Once uploaded, right-click each one on the mod page, copy its image address, and
 
 ```
 [size=5][b]ShootDodge[/b][/size]
-Max Payne 2's signature move, in first person. Aim, jump, press a direction, and V dives: time slows, your aim and fire stay at full speed, and you land prone still shooting.
+Max Payne 2's signature move, in first person. Press Ctrl + Space, and V dives: time slows, your aim and fire stay at full speed, and you land prone still shooting.
 
 [img]IMAGE_1_URL[/img]
 
 [size=5][b]How it works[/b][/size]
 [list=1]
 [*]Equip a pistol, revolver or SMG, or two pistols with the Double Trouble perk.
-[*]Hold aim, hold a movement direction, press jump.
-[*]V leaps that way. The direction is locked for the whole dive, but the camera and aim stay free.
+[*]Press [b]Ctrl + Space[/b] (either Ctrl: crouch and jump together), optionally holding a movement direction. No aim needed. With Left Ctrl, press it together with Space or from standing: Ctrl while already moving can start the vanilla dodge dash first.
+[*]V dives that way, or straight forward with none held. The direction is locked for the whole dive, but the camera and aim stay free.
 [*]The world drops to 0.2x speed while your mouse look and your gun's fire rate stay at normal speed.
 [*]V lands prone, first-person view down at floor height, slow-mo ends.
 [*]Keep shooting from the ground as long as you like, or press a movement key to scramble back up. Hold a direction through the landing and V gets up right after impact.
@@ -157,7 +159,7 @@ Max Payne 2's signature move, in first person. Aim, jump, press a direction, and
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (the / key by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
-[*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward. The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.
+[*][b]Space dives in Bullet Time:[/b] while Bullet Time mode is on, Space is the Shootdodge instead of a jump: no aim needed, it dives the way you hold or straight forward (Ctrl + Space works there too). The dive's own slow-mo takes over from the mode, as in Max Payne 2. Outside the mode, and with a weapon that doesn't arm the dive, Space is a normal jump.
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
 [*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
