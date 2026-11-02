@@ -35,7 +35,10 @@ AimFireExemption.defaults = {
   -- Exempt the equipped weapon (fire rate and shoot-input cadence).
   exemptWeapon = true,
   -- Exempt all of V (turn rate on every input device, but V's fall arc speeds up too).
-  exemptPlayer = false,
+  -- C2SD-T53: on by default: V's weapon raise, aim-down-sights and draw are V's own animations,
+  -- which at 5% world speed took forever. V now runs at full speed (hands ready at once) while the
+  -- world stays slowed; the dive arc runs at full speed too.
+  exemptPlayer = true,
   -- Time scale the exempted entities run at (1.0 = normal speed).
   factor = 1.0,
 }

@@ -184,6 +184,9 @@ function DiveDriver.Update(machine, deltaTime)
     moveHeld = moveHeld and true or false,
     moveMagnitude = moveMagnitude or 0,
     airTime = dive.airTime,
+    -- C2SD-T53: the slide that follows carries on along the dive line at the landing speed.
+    dirX = dive.dirX, dirY = dive.dirY,
+    speed = vel and math.sqrt(vel.x * vel.x + vel.y * vel.y) or 0,
     grazes = dive.grazes,
   }
   DiveDriver.lastLanding = landing

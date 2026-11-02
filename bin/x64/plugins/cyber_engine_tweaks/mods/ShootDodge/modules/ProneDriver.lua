@@ -28,7 +28,41 @@ local ProneDriver = {
   isMoveHeld = function() return false end,
   isJumpHeld = function() return false end,
   isGrounded = function() return true end,
+  -- C2SD-T53: the dive's landing record (DiveDriver.lastLanding: dirX, dirY, speed), set by init.lua.
+  lastLanding = function() return nil end,
+  slideState = nil, -- { dirX, dirY, speed, lastPos } while sliding
 }
+
+-- C2SD-T53: the most one frame's push may change V's speed (m/s), so the slide can't jolt.
+local SLIDE_MAX_PUSH = 6.0
+
+local function slidePosition(player)
+  local ok, pos = pcall(function() return player:GetWorldPosition() end)
+  if ok and pos ~= nil then return { x = pos.x, y = pos.y } end
+  return nil
+end
+
+-- C2SD-T53: hold V's speed along the dive line at the slide's target speed this frame.
+local function driveSlide(player, deltaTime)
+  local s = ProneDriver.slideState
+  if s == nil or player == nil or not deltaTime or deltaTime <= 0 then return end
+  local pos = slidePosition(player)
+  if pos == nil then return end
+  local last = s.lastPos
+  s.lastPos = pos
+  if last == nil then return end
+  local vx, vy = (pos.x - last.x) / deltaTime, (pos.y - last.y) / deltaTime
+  local along = vx * s.dirX + vy * s.dirY
+  local push = ProneDriver.prone:SlideSpeed(s.speed) - along
+  push = math.max(-SLIDE_MAX_PUSH, math.min(SLIDE_MAX_PUSH, push))
+  if math.abs(push) < 0.05 then return end
+  pcall(function()
+    local evt = PSMImpulse.new()
+    evt.id = "impulse"
+    evt.impulse = Vector4.new(s.dirX * push, s.dirY * push, 0, 0)
+    player:QueueEvent(evt)
+  end)
+end
 
 -- What a stand request does. C2SD-T12 may replace this; the default hands PRONE to GETUP.
 function ProneDriver.onStandRequest(machine, reason)
@@ -71,8 +105,15 @@ function ProneDriver.OnStateChange(from, to)
     ProneDriver.prone:Enter(ProneDriver.isMoveHeld(), ProneDriver.isJumpHeld())
     ProneDriver.lastEnd = nil
     ProneDriver.lastError = nil
+    -- C2SD-T53: start the slide along the dive line at the landing speed.
+    ProneDriver.slideState = nil
+    local okL, landing = pcall(ProneDriver.lastLanding)
+    if ProneDriver.prone.config.slide and okL and landing and landing.dirX then
+      ProneDriver.slideState = { dirX = landing.dirX, dirY = landing.dirY, speed = landing.speed or 0 }
+    end
   elseif from == "PRONE" then
     ProneDriver.prone:Exit()
+    ProneDriver.slideState = nil
   end
 end
 
@@ -93,6 +134,7 @@ function ProneDriver.Update(machine, deltaTime)
     machine:Drive()
     reason = prone:Update(deltaTime, ProneDriver.isMoveHeld(), ProneDriver.isJumpHeld(),
       ProneDriver.isGrounded(player))
+    if reason == nil then driveSlide(player, deltaTime) end -- C2SD-T53
   else
     prone:Update(deltaTime) -- keeps easing the camera back up
   end
@@ -119,6 +161,7 @@ end
 function ProneDriver.Cancel()
   local prone = ProneDriver.prone
   prone:Exit()
+  ProneDriver.slideState = nil
   prone.lowered = 0
   if ProneDriver.baseCamera ~= nil then
     applyCamera(0)

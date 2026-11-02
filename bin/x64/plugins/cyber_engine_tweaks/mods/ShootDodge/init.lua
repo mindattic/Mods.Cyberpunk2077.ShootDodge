@@ -102,6 +102,8 @@ registerForEvent("onInit", function()
   ProneDriver.isJumpHeld = function()
     return ShootDodge.combo ~= nil and ShootDodge.combo.jumpHeld == true
   end
+  -- C2SD-T53: the landing turns into a slide along the dive line at the landing speed.
+  ProneDriver.lastLanding = function() return DiveDriver.lastLanding end
   ShootDodge.machine:AddListener(ProneDriver.OnStateChange)
   -- C2SD-T12: PRONE -> GETUP -> NONE. ProneDriver's stand press (fresh move) is handed to the
   -- get-up through its hook; the get-up also starts right after impact when movement was held

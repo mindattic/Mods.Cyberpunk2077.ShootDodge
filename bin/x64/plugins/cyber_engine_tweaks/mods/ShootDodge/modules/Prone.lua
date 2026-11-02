@@ -28,6 +28,15 @@ Prone.defaults = {
   minProneSec = 0.25,
   -- V knocked off a ledge while prone: after this long ungrounded the pose is dropped (s).
   maxUngroundedSec = 0.4,
+  -- C2SD-T53: the landing is a slide, like the game's own crouch-slide, instead of lying prone:
+  -- V keeps the dive's momentum along the dive line at crouch height, the speed drains to zero
+  -- over `slideSec` (real time), then V stands. A fresh direction press ends it early.
+  slide = true,
+  slideSec = 0.9,
+  slideEyeDrop = 0.8,
+  -- Slide start speed (m/s): the landing speed, kept inside these bounds.
+  slideMinSpeed = 4.0,
+  slideMaxSpeed = 8.0,
 }
 
 -- Why PRONE asked to end, reported to the state machine and the overlay.
@@ -35,6 +44,7 @@ Prone.End = {
   move = "movement pressed",
   jump = "jump pressed",
   fell = "fell while prone",
+  slideOver = "slide over", -- C2SD-T53
 }
 
 function Prone.new(config)
@@ -88,6 +98,10 @@ function Prone:Update(deltaTime, moveHeld, jumpHeld, grounded)
     self.ungrounded = 0
   end
 
+  -- C2SD-T53: the slide stands V up by itself once it has run out.
+  if self.standRequest == nil and cfg.slide and self.elapsed >= cfg.slideSec then
+    self.standRequest = Prone.End.slideOver
+  end
   if self.standRequest == nil and self.elapsed >= cfg.minProneSec then
     if moveHeld and self.moveArmed then
       self.standRequest = Prone.End.move
@@ -115,7 +129,18 @@ end
 function Prone:Height()
   local t = self.lowered or 0
   local eased = t * t * (3 - 2 * t)
-  return -self.config.eyeDrop * eased
+  local drop = self.config.slide and self.config.slideEyeDrop or self.config.eyeDrop
+  return -drop * eased
+end
+
+-- C2SD-T53: the slide's target speed this frame (m/s) for a slide that started at `startSpeed`:
+-- the start speed (kept within slideMin/MaxSpeed) draining linearly to 0 over slideSec. 0 when
+-- not sliding.
+function Prone:SlideSpeed(startSpeed)
+  local cfg = self.config
+  if not (self.active and cfg.slide) or cfg.slideSec <= 0 then return 0 end
+  local v0 = math.max(cfg.slideMinSpeed, math.min(cfg.slideMaxSpeed, startSpeed or 0))
+  return v0 * math.max(0, 1 - self.elapsed / cfg.slideSec)
 end
 
 -- True while the camera still needs an offset applied (prone, or still coming back up).

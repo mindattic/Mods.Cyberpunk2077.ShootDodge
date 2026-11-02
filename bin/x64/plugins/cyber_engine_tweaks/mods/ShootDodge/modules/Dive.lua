@@ -28,7 +28,7 @@ Dive.defaults = {
   slamSpeed = 5.0,
   -- C2SD-T49: fraction of V's horizontal speed cancelled on impact, so V lands and stays put
   -- instead of sliding.
-  landingStop = 1.0,
+  landingStop = 0.0, -- C2SD-T53: 0, the landing turns into a slide that keeps the momentum
   -- Below this movement-input magnitude there is no direction to lock, so no dive.
   minMoveMagnitude = 0.2,
   -- Grounded frames before this much air time don't count as the dive having landed (the stock
