@@ -20,18 +20,18 @@ Dive.defaults = {
   -- Upward speed added at launch (m/s), on top of the stock jump it rides on. C2SD-T49: 0, the
   -- Shootdodge is a low flat leap, not a full-height jump (it was 2.5, higher than a jump).
   launchLift = 0.0,
-  -- C2SD-T61: the dive is a long, low glide, not a hop. For `glideSec` of air time V's vertical
-  -- speed is steered from `glideRise` (m/s, up) down to `glideFall` (m/s, down), so V hangs low
-  -- in the air, and V's speed along the dive line is held at `glideSpeed`. With V running at full
-  -- speed while the world is at 5% (C2SD-T55), that is ~1.5 s of real air time to shoot in.
-  glideSec = 1.5,
-  glideRise = 1.5,
-  glideFall = -1.0,
-  glideSpeed = 6.5,
-  -- The most one frame's steering may change V's speed (m/s), so the glide can't jolt.
-  glideMaxPush = 4.0,
+  -- C2SD-T61 / C2SD-T63: the dive is a long, low glide, not a hop. Open loop, no feedback: the
+  -- per-frame steering of C2SD-T61 overshot against the game's delayed impulses and bounced V off
+  -- the ground. Now, once just after lift-off, V's rise is set to `glideLift` (m/s); then for
+  -- `glideSec` of air time a constant upward push of `antiGravity` (m/s per s) makes gravity
+  -- feel light, so V floats low (~0.6 m) for ~1.5 s. Never pushes up while V rises faster than
+  -- `glideLift` + 0.5, so it can't run away.
+  glideSec = 0.0, -- C2SD-T63: off. Any per-frame push jolts V in game (jaggy); one launch push only.
+  glideLift = 1.6,
+  glideLiftAfterSec = 0.03,
+  antiGravity = 7.7,
   -- C2SD-T49: once the glide is over, one downward push (m/s) so V comes down hard.
-  slamSpeed = 5.0,
+  slamSpeed = 0.0, -- C2SD-T63: off (a mid-air push).
   -- C2SD-T49: fraction of V's horizontal speed cancelled on impact, so V lands and stays put
   -- instead of sliding.
   landingStop = 0.0, -- C2SD-T53: 0, the landing turns into a slide that keeps the momentum
@@ -53,7 +53,7 @@ Dive.defaults = {
   maxDurationSec = 4.0,
   -- Fraction of the off-direction horizontal velocity cancelled per frame, and the most one frame
   -- may push (m/s), so the lock can't fight the physics into a jitter.
-  lockGain = 0.6,
+  lockGain = 0.0, -- C2SD-T63: off (per-frame pushes jolt V); the launch push sets the line.
   maxCorrection = 3.0,
   -- Off-direction speed (m/s) below which no correction is sent at all.
   lockDeadZone = 0.25,
@@ -90,14 +90,9 @@ function Dive:Clear()
   self.groundedFrames = 0
   self.touchdownAt = nil
   self.grazes = 0
-  -- C2SD-T49: the one-off slam push has been sent.
+  -- C2SD-T49 / C2SD-T63: the one-off lift-setting and slam pushes have been sent.
+  self.lifted = false
   self.slammed = false
-end
-
-local function clampPush(v, limit)
-  if v > limit then return limit end
-  if v < -limit then return -limit end
-  return v
 end
 
 -- C2SD-T61: true while the glide is steering V (in the air, before `glideSec` of air time).
@@ -105,21 +100,25 @@ function Dive:InGlide()
   return self.active and self.leftGround and self.airTime < self.config.glideSec
 end
 
--- C2SD-T61: the push (m/s) to send this frame as x, y, z, or nil. `vz` is V's vertical speed and
--- `along` V's horizontal speed along the dive line (m/s, up/forward positive). Call after Update()
--- each airborne frame:
---   * glide: while InGlide(), steer vz toward the glide's target for this moment (rise easing to
---     a gentle fall) and the along-speed toward glideSpeed;
+-- C2SD-T63: the vertical push (m/s) to send this frame as x, y, z, or nil. `vz` is V's vertical
+-- speed (m/s, up positive) and `deltaTime` this frame's time step. Call after Update() each
+-- airborne frame. Open loop (see the defaults):
+--   * lift: once, `glideLiftAfterSec` into the air, cut the stock jump's rise to `glideLift`;
+--   * float: while InGlide(), a constant `antiGravity * deltaTime` upward push (skipped while V
+--     rises faster than glideLift + 0.5);
 --   * slam: once, when the glide is over, push down by `slamSpeed` (a hard landing).
-function Dive:AirImpulse(vz, along)
+function Dive:AirImpulse(vz, deltaTime)
   if not self.active or not self.leftGround or vz == nil then return nil end
   local cfg = self.config
   if self:InGlide() then
-    local t = cfg.glideSec > 0 and self.airTime / cfg.glideSec or 1
-    local targetVz = cfg.glideRise + (cfg.glideFall - cfg.glideRise) * t
-    local dz = clampPush(targetVz - vz, cfg.glideMaxPush)
-    local da = clampPush(cfg.glideSpeed - (along or cfg.glideSpeed), cfg.glideMaxPush)
-    return self.dirX * da, self.dirY * da, dz
+    if not self.lifted then
+      if self.airTime < cfg.glideLiftAfterSec then return nil end
+      self.lifted = true
+      if vz > cfg.glideLift then return 0, 0, cfg.glideLift - vz end
+      return nil
+    end
+    if vz > cfg.glideLift + 0.5 then return nil end
+    return 0, 0, cfg.antiGravity * (deltaTime or 0)
   end
   if not self.slammed then
     self.slammed = true

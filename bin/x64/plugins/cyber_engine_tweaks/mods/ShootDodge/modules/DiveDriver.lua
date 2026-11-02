@@ -60,7 +60,8 @@ local AIR_FALL_SPEED = 0.5
 -- C2SD-T61/T62: below this vertical speed (m/s) V counts as stopped vertically (on the ground),
 -- and mid-glide V can only land this close to (or below) the launch height (m).
 local AIR_STILL_SPEED = 0.3
-local GLIDE_GROUND_HEIGHT = 0.1
+-- C2SD-T63: stillness this long (s) counts as a landing even without a fall first.
+local LAND_STILL_SEC = 0.1
 
 local function queueImpulse(player, x, y, z)
   local ok, err = pcall(function()
@@ -110,6 +111,8 @@ function DiveDriver.Start(machine, trigger)
   DiveDriver.lastPos = worldPosition(player)
   -- C2SD-T50: the launch height, for the physical airborne check in Update.
   DiveDriver.launchZ = DiveDriver.lastPos and DiveDriver.lastPos.z or nil
+  DiveDriver.wasFalling = false -- C2SD-T63
+  DiveDriver.stillTime = 0
   DiveDriver.lastError = nil
   return true
 end
@@ -140,8 +143,11 @@ function DiveDriver.Update(machine, deltaTime)
     local vx = (pos.x - DiveDriver.lastPos.x) / deltaTime
     local vy = (pos.y - DiveDriver.lastPos.y) / deltaTime
     if pos.z and DiveDriver.lastPos.z then vz = (pos.z - DiveDriver.lastPos.z) / deltaTime end
-    local cx, cy = dive:Correction(vx, vy)
-    if cx then queueImpulse(player, cx, cy, 0) end
+    -- C2SD-T63: per-frame pushes jolt V (jaggy dive), so the lock only runs if lockGain > 0.
+    if (dive.config.lockGain or 0) > 0 then
+      local cx, cy = dive:Correction(vx, vy)
+      if cx then queueImpulse(player, cx, cy, 0) end
+    end
     DiveDriver.lastVel = { x = vx, y = vy }
   end
   DiveDriver.lastPos = pos
@@ -156,18 +162,17 @@ function DiveDriver.Update(machine, deltaTime)
   if pos and pos.z and DiveDriver.launchZ then
     local above = pos.z - DiveDriver.launchZ
     local still = vz ~= nil and vz > -AIR_FALL_SPEED and vz < AIR_STILL_SPEED
+    if vz ~= nil and vz < -AIR_FALL_SPEED then DiveDriver.wasFalling = true end
+    DiveDriver.stillTime = still and (DiveDriver.stillTime or 0) + (deltaTime or 0) or 0
     if not dive.leftGround then
       -- Lift-off: clearly above the launch point, or falling (stepped off an edge).
       if above > AIR_HEIGHT or (vz ~= nil and vz < -AIR_FALL_SPEED) then grounded = false end
-    elseif dive:InGlide() then
-      -- C2SD-T61: mid-glide only a stop back at (or below) launch height is a landing; the glide's
-      -- own apex (vz near 0 but well above the launch point) is not.
-      grounded = grounded and still and above <= GLIDE_GROUND_HEIGHT
     else
-      -- C2SD-T62: after the glide, V has landed once V stops moving vertically, at any height
-      -- (a dive onto something higher than the launch point used to never land and hit the
-      -- time limit).
+      -- C2SD-T62 / C2SD-T63: landed once V stops moving vertically, at any height, but only after
+      -- coming down (the arc's apex also has vz near 0 and was ending the dive mid-air), or after
+      -- staying still for LAND_STILL_SEC (a dive onto a ledge that never fell).
       grounded = grounded and still
+        and (DiveDriver.wasFalling or DiveDriver.stillTime >= LAND_STILL_SEC)
     end
   end
   DiveDriver.lastGrounded = grounded
@@ -175,10 +180,8 @@ function DiveDriver.Update(machine, deltaTime)
   if reason == nil then
     -- C2SD-T10: V has really left the ground -> AIRBORNE (once; refused harmlessly otherwise).
     if dive.leftGround and machine:Is("DIVING") then machine:Fire("launch", "left the ground") end
-    -- C2SD-T61: steer the low glide, then slam V down once it is over.
-    local vel = DiveDriver.lastVel
-    local along = vel and (vel.x * dive.dirX + vel.y * dive.dirY) or nil
-    local px, py, pz = dive:AirImpulse(vz, along)
+    -- C2SD-T61 / C2SD-T63: float the low glide (open loop), then slam V down once it is over.
+    local px, py, pz = dive:AirImpulse(vz, deltaTime)
     if px then queueImpulse(player, px, py, pz) end
     return
   end
