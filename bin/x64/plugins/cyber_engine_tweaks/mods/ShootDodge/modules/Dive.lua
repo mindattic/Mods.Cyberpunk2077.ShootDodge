@@ -16,10 +16,12 @@ Dive.__index = Dive
 
 Dive.defaults = {
   -- Horizontal speed added at launch (m/s), along the locked direction.
-  launchSpeed = 7.5,
+  launchSpeed = 8.5, -- C2SD-T65: up from 7.5 so the lower arc still covers ~6 m
   -- Upward speed added at launch (m/s), on top of the stock jump it rides on. C2SD-T49: 0, the
   -- Shootdodge is a low flat leap, not a full-height jump (it was 2.5, higher than a jump).
-  launchLift = 0.0,
+  -- C2SD-T65: negative: a downward cut folded into the one launch push, so the leap is low and
+  -- flat like MP2's instead of the full stock jump arc (~1.2 m). No mid-air pushes (they jolt V).
+  launchLift = -1.5,
   -- C2SD-T61 / C2SD-T63: the dive is a long, low glide, not a hop. Open loop, no feedback: the
   -- per-frame steering of C2SD-T61 overshot against the game's delayed impulses and bounced V off
   -- the ground. Now, once just after lift-off, V's rise is set to `glideLift` (m/s); then for

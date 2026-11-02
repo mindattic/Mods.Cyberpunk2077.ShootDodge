@@ -113,6 +113,7 @@ function DiveDriver.Start(machine, trigger)
   DiveDriver.launchZ = DiveDriver.lastPos and DiveDriver.lastPos.z or nil
   DiveDriver.wasFalling = false -- C2SD-T63
   DiveDriver.stillTime = 0
+  DiveDriver.arc = { vz = {}, peak = 0 } -- C2SD-T65: arc telemetry, printed when the dive ends
   DiveDriver.lastError = nil
   return true
 end
@@ -161,6 +162,11 @@ function DiveDriver.Update(machine, deltaTime)
   local grounded = DiveDriver.isGrounded(player)
   if pos and pos.z and DiveDriver.launchZ then
     local above = pos.z - DiveDriver.launchZ
+    local arc = DiveDriver.arc
+    if arc then
+      if above > arc.peak then arc.peak = above end
+      if vz ~= nil and #arc.vz < 6 then arc.vz[#arc.vz + 1] = string.format("%.1f", vz) end
+    end
     local still = vz ~= nil and vz > -AIR_FALL_SPEED and vz < AIR_STILL_SPEED
     if vz ~= nil and vz < -AIR_FALL_SPEED then DiveDriver.wasFalling = true end
     DiveDriver.stillTime = still and (DiveDriver.stillTime or 0) + (deltaTime or 0) or 0
@@ -187,6 +193,12 @@ function DiveDriver.Update(machine, deltaTime)
   end
 
   DiveDriver.lastEnd = { reason = reason, time = machine.clock }
+  -- C2SD-T65: how the arc really went (verifies the launch push's lift cut in game).
+  if DiveDriver.arc then
+    print(string.format("[ShootDodge] dive arc: vz after launch %s m/s; peak %.2f m; air %.2fs",
+      table.concat(DiveDriver.arc.vz, ", "), DiveDriver.arc.peak, dive.airTime))
+    DiveDriver.arc = nil
+  end
   DiveDriver.lastPos = nil
   local vel = DiveDriver.lastVel
   DiveDriver.lastVel = nil
