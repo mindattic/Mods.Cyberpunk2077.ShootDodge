@@ -99,11 +99,22 @@ local function heldWeapons()
 end
 
 -- C2SD-T9: give one entity its own time scale that ignores the world's dilation.
+-- C2SD-T55: exemption failures go to the CET log too (once per distinct message), so a silent
+-- failure (V left at 5% speed) shows up in scripting.log.
+local loggedErrors = {}
+local function logError(msg)
+  BulletTimeDriver.lastError = msg
+  if not loggedErrors[msg] then
+    loggedErrors[msg] = true
+    print("[ShootDodge] " .. msg)
+  end
+end
+
 local function exemptEntity(entity, factor)
   local ok, err = pcall(function()
     entity:SetIndividualTimeDilation(REASON, factor, 0.0, "", "", true)
   end)
-  if not ok then BulletTimeDriver.lastError = "exempt weapon: " .. tostring(err) end
+  if not ok then logError("exempt weapon: " .. tostring(err)) end
   return ok
 end
 
@@ -114,15 +125,25 @@ local function unexemptEntity(entity)
   return ok
 end
 
+-- C2SD-T55: in game the player stayed at 5% (dive air 0.2 s game time took 4 s real), so V also
+-- gets the per-entity exemption the weapon uses. Either lever succeeding counts.
 local function exemptPlayer(factor)
   local ok, err = pcall(function()
     timeSystem():SetTimeDilationOnLocalPlayerZero(REASON, factor, 0.0, "", "", true)
   end)
-  if not ok then BulletTimeDriver.lastError = "exempt player: " .. tostring(err) end
-  return ok
+  if not ok then logError("exempt player (local player zero): " .. tostring(err)) end
+  local okEntity, errEntity = pcall(function()
+    Game.GetPlayer():SetIndividualTimeDilation(REASON, factor, 0.0, "", "", true)
+  end)
+  if not okEntity then logError("exempt player (entity): " .. tostring(errEntity)) end
+  BulletTimeDriver.playerExemptVia = (ok and "local player zero" or "")
+    .. ((ok and okEntity) and " + " or "") .. (okEntity and "entity" or "")
+  return ok or okEntity
 end
 
 local function unexemptPlayer()
+  -- C2SD-T55: drop the per-entity exemption too (harmless when it was never set).
+  pcall(function() Game.GetPlayer():UnsetIndividualTimeDilation() end)
   -- The signature changed across game versions (with and without the reason).
   if pcall(function() timeSystem():UnsetTimeDilationOnLocalPlayerZero(REASON) end) then
     return true
@@ -132,7 +153,7 @@ local function unexemptPlayer()
   local ok, err = pcall(function()
     timeSystem():SetTimeDilationOnLocalPlayerZero(REASON, 1.0, 0.0, "", "", false)
   end)
-  if not ok then BulletTimeDriver.lastError = "unexempt player: " .. tostring(err) end
+  if not ok then logError("unexempt player: " .. tostring(err)) end
   return ok
 end
 
