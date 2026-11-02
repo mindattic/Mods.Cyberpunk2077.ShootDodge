@@ -129,7 +129,25 @@ function Input.Context(player)
     weaponAllowed = weaponAllowed,
     weapon = weapon,
     bulletTime = Input.isBulletTimeMode() == true,
+    modifier = ctrlHeldByScript(), -- C2SD-T46
   }
+end
+
+-- C2SD-T46: the actions that mean "Ctrl (crouch) is down". Vanilla binds Left Ctrl to Dodge and
+-- Right Ctrl to Crouch (hold), and many players put crouch (Crouch / ToggleCrouch) on Ctrl;
+-- ShootDodgeModifier is this mod's own Input Loader action on both Ctrl keys, so Ctrl still counts
+-- whatever those are bound to. Crouch + jump = the Shootdodge.
+local MODIFIER_ACTIONS = { Dodge = true, Crouch = true, ToggleCrouch = true, ShootDodgeModifier = true }
+
+-- C2SD-T46: the redscript side's own read of Ctrl (r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds),
+-- false when redscript or Input Loader is missing.
+local function ctrlHeldByScript()
+  local ok, held = pcall(function()
+    local system = Game.GetScriptableSystemsContainer():Get("ShootDodgeBulletTimeKeySystem")
+    if system == nil then return false end
+    return system:IsModifierHeld()
+  end)
+  return ok and held == true
 end
 
 local function actionName(action)
@@ -146,14 +164,22 @@ local function onAction(player, action)
   if not Session.Ready() then return end -- C2SD-T45: ignore the main menu's player
 
   local name = actionName(action)
-  if name ~= "CameraAim" and name ~= "Jump" and name ~= "MoveX" and name ~= "MoveY" then
+  local isCtrl = MODIFIER_ACTIONS[name] == true
+  if not isCtrl and name ~= "CameraAim" and name ~= "Jump" and name ~= "MoveX" and name ~= "MoveY" then
     return
   end
 
   local kind = actionType(action)
   local now = Input.clock
 
-  if name == "CameraAim" then
+  if isCtrl then
+    -- C2SD-T46: Ctrl held / released (Ctrl + Space is the Shootdodge).
+    if kind == "BUTTON_PRESSED" then
+      d:OnModifier(true)
+    elseif kind == "BUTTON_RELEASED" then
+      d:OnModifier(false)
+    end
+  elseif name == "CameraAim" then
     if kind == "BUTTON_PRESSED" then
       d:OnAim(true, now)
     elseif kind == "BUTTON_RELEASED" then

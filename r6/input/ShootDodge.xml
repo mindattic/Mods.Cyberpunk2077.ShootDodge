@@ -16,6 +16,7 @@
 <bindings>
 	<context name="ShootDodgeActions" >
 		<action name="ShootDodgeBulletTime"		map="ShootDodgeBulletTime_Button" />
+		<action name="ShootDodgeModifier"		map="ShootDodgeModifier_Button" />
 	</context>
 
 	<context name="Locomotion" append="true">
@@ -25,5 +26,12 @@
 	<mapping name="ShootDodgeBulletTime_Button" type="Button" >
 		<button id="IK_Slash" />
 		<button id="IK_NumSlash" />
+	</mapping>
+
+	<!-- C2SD-T46: Ctrl (either), read as "held" so Ctrl + Space is the Shootdodge. Vanilla also uses
+	     Left Ctrl for Dodge and Right Ctrl for Crouch; this action only listens, it blocks neither. -->
+	<mapping name="ShootDodgeModifier_Button" type="Button" >
+		<button id="IK_LControl" />
+		<button id="IK_RControl" />
 	</mapping>
 </bindings>

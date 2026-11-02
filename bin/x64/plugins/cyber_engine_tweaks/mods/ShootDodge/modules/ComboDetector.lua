@@ -1,5 +1,9 @@
--- ComboDetector: recognizes the Shootdodge input combo (aim held + jump + a movement direction)
--- and debounces it against normal play (C2SD-T5 / C2SD-US-D2).
+-- ComboDetector: recognizes the Shootdodge input and debounces it against normal play.
+--
+-- C2SD-T46: the Shootdodge is Ctrl + Space (either Ctrl): no aim needed, it dives the way you're
+-- moving, or straight forward with no direction held. In Bullet Time mode Space alone does the
+-- same. Plain Space is always a normal jump. This replaces the original aim + jump + move combo
+-- (C2SD-T5); the aim/move tracking below is kept for the landing and get-up, which read it.
 --
 -- Pure Lua, no CET or game API: the CET glue (modules/Input.lua) feeds it input events stamped
 -- with the mod's own clock, so the rules here can be exercised outside the game.
@@ -49,6 +53,7 @@ ComboDetector.Reject = {
   noMove = "no movement direction",
   moveTooShort = "movement held too briefly",
   cooldown = "cooldown",
+  noCtrl = "Ctrl not held", -- C2SD-T46
 }
 
 local function clamp(v, lo, hi)
@@ -80,6 +85,7 @@ function ComboDetector:Reset()
   self.lastTrigger = nil
   self.lastReject = nil
   self.triggerCount = 0
+  self.modifierHeld = false -- C2SD-T46: Ctrl
 end
 
 function ComboDetector:SetEnabled(enabled)
@@ -139,13 +145,21 @@ function ComboDetector:OnJump(pressed, now, context)
   return self:Evaluate(now, context)
 end
 
+-- C2SD-T46: Ctrl (either one) held or released. While it is held, Space is the Shootdodge.
+function ComboDetector:OnModifier(pressed)
+  self.modifierHeld = pressed and true or false
+end
+
 function ComboDetector:Evaluate(now, context)
   local cfg = self.config
   local R = ComboDetector.Reject
   context = context or {}
 
   local reason
-  local bulletTime = context.bulletTime == true
+  -- C2SD-T46: Ctrl + Space dives exactly like Space in Bullet Time mode (no aim needed; the held
+  -- direction, or forward with none). context.modifier lets the glue add its own read of Ctrl.
+  local ctrl = self.modifierHeld == true or context.modifier == true
+  local bulletTime = context.bulletTime == true or ctrl
   if not self.enabled then
     reason = R.disabled
   elseif context.blocked then
@@ -160,16 +174,9 @@ function ComboDetector:Evaluate(now, context)
     if self.lastTriggerTime and now - self.lastTriggerTime < cfg.cooldownSec then
       reason = R.cooldown
     end
-  elseif not self.aimHeld then
-    reason = R.noAim
-  elseif now - self.aimSince < cfg.minAimHoldSec then
-    reason = R.aimTooShort
-  elseif not self:IsMoving() then
-    reason = R.noMove
-  elseif now - self.moveSince < cfg.minMoveHoldSec then
-    reason = R.moveTooShort
-  elseif self.lastTriggerTime and now - self.lastTriggerTime < cfg.cooldownSec then
-    reason = R.cooldown
+  else
+    -- C2SD-T46: outside Bullet Time mode the Shootdodge is Ctrl + Space; plain Space is a jump.
+    reason = R.noCtrl
   end
 
   if reason then

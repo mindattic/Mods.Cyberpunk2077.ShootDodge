@@ -22,6 +22,14 @@ public class ShootDodgeBulletTimeKeyListener {
         owner.OnKeyPressed();
       };
     };
+    // C2SD-T46: Ctrl held (Ctrl + Space is the Shootdodge).
+    if Equals(ListenerAction.GetName(action), n"ShootDodgeModifier") {
+      let ctrl: ref<ShootDodgeBulletTimeKeySystem> = this.m_owner;
+      if IsDefined(ctrl) {
+        if ListenerAction.IsButtonJustPressed(action) { ctrl.SetModifier(true); };
+        if ListenerAction.IsButtonJustReleased(action) { ctrl.SetModifier(false); };
+      };
+    };
     return false;
   }
 }
@@ -31,6 +39,7 @@ public class ShootDodgeBulletTimeKeySystem extends ScriptableSystem {
   private let m_player: wref<PlayerPuppet>;
   private let m_pending: Int32;
   private let m_total: Int32;
+  private let m_modifier: Bool;
 
   public static func Get(gi: GameInstance) -> ref<ShootDodgeBulletTimeKeySystem> {
     return GameInstance.GetScriptableSystemsContainer(gi).Get(n"ShootDodgeBulletTimeKeySystem") as ShootDodgeBulletTimeKeySystem;
@@ -45,10 +54,17 @@ public class ShootDodgeBulletTimeKeySystem extends ScriptableSystem {
     let previous: ref<PlayerPuppet> = this.m_player;
     if IsDefined(previous) {
       previous.UnregisterInputListener(this.m_listener, n"ShootDodgeBulletTime");
+      previous.UnregisterInputListener(this.m_listener, n"ShootDodgeModifier");
     };
     player.RegisterInputListener(this.m_listener, n"ShootDodgeBulletTime");
+    player.RegisterInputListener(this.m_listener, n"ShootDodgeModifier");
     this.m_player = player;
     this.m_pending = 0;
+    this.m_modifier = false;
+  }
+
+  public func SetModifier(held: Bool) -> Void {
+    this.m_modifier = held;
   }
 
   public func OnKeyPressed() -> Void {
@@ -67,6 +83,11 @@ public class ShootDodgeBulletTimeKeySystem extends ScriptableSystem {
 
   public func TotalPresses() -> Int32 {
     return this.m_total;
+  }
+
+  // C2SD-T46: whether Ctrl is down right now (false without Input Loader).
+  public func IsModifierHeld() -> Bool {
+    return this.m_modifier;
   }
 
   public func IsListening() -> Bool {
