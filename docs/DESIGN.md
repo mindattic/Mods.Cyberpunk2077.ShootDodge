@@ -109,9 +109,9 @@ applied (dive or Bullet Time mode), the weapon in V's hands gets an individual t
 1.0 that ignores the global one: its fire cycle and shoot-input cadence run at normal speed while
 enemies, projectiles, the environment and V's own fall arc stay slowed. A weapon swap moves the
 exemption to the new weapon. Mouse look is a per-frame displacement, so it isn't slowed in the
-first place. An opt-in overlay toggle also exempts all of V (Sandevistan's "local player zero"
-lever), which restores gamepad turn rate too but speeds V's fall arc back up, so it is off by
-default. The exemption is synced right after the world dilation and dropped with it, same frame.
+first place. The overlay toggle that also exempts all of V (Sandevistan's "local player zero"
+lever) restores gamepad turn rate and V's own animations but speeds V's fall arc back up; it was opt-in,
+but since C2SD-T53 it is on by default (see the last section). The exemption is synced right after the world dilation and dropped with it, same frame.
 With Double Trouble both held guns are exempted (C2SD-T30, below).
 
 ### Bullet-time meter (C2SD-T15)
@@ -699,15 +699,36 @@ same dilation. The overlay's Time scale slider minimum (`minFactor`) is now 0.01
 
 ## Flat leap, slam and pinned prone (C2SD-T49, C2SD-T50)
 
+*The pinned-prone landing below is superseded by the slide (C2SD-T53, last section) as the default, but it is kept as an option (Prone `slide = false`). The leap, slam and airborne detection are unchanged.*
+
 **Leap (C2SD-T49, `modules/Dive.lua`).** `launchLift` is 0 (no extra lift above the stock jump), and just after
 lift-off (`flattenAfterSec` 0.05 s) the rise is cut to `flattenKeep` 0.4 of its speed, so the dive is a low flat
 leap. When the arc stops rising V gets one extra downward push (`slamSpeed` 5 m/s), and `landingStop` stops the
 slide on impact.
 
-**Pinned prone (C2SD-T49, `modules/GetUp.lua`).** `standIfHeldAtImpact` is false: the direction is held through
+**Pinned prone (C2SD-T49, `modules/GetUp.lua`; superseded by the slide, C2SD-T53, but still the behaviour when `slide = false`).** `standIfHeldAtImpact` is false: the direction is held through
 every dive, so the old held-at-impact rule stood V straight back up. Now V stays prone (look and shoot freely)
 until a fresh direction press, release then press, as in MP2. `moveHeld` is still recorded in the landing log.
 
 **Airborne detection (C2SD-T50, `modules/DiveDriver.lua`).** The PSM locomotion check never reported airborne in
 game, so every dive aborted with "never left the ground". V now counts as airborne when it is more than
 `AIR_HEIGHT` 0.08 m above the launch point or falling faster than `AIR_FALL_SPEED` 0.5 m/s, alongside the PSM check.
+
+## V at full speed and the landing slide (C2SD-T53)
+
+**V exempt by default (`modules/AimFireExemption.lua`).** `exemptPlayer` now defaults to true, so all of V
+runs at full speed during the 5% world slow-mo, not just the weapon entity. Before, V's own weapon raise and
+ADS animations ran at 5%, so the weapon was not ready in time. Now draw, raise, aim and fire are instant. The side
+effect is that V's dive arc also plays at full speed (about 0.4 s) while enemies and the world stay at 5%. The
+overlay tick "All of V at normal speed" still turns it off.
+
+**The landing is a slide (`modules/Prone.lua`, `modules/ProneDriver.lua`, `modules/Dive.lua`, `modules/DiveDriver.lua`).**
+Like the game's own crouch-slide, instead of lying prone: `Dive.landingStop` is now 0, so V keeps the dive's
+momentum along the dive line (the driver records `dirX/dirY/speed` in the landing). `Prone.defaults.slide` is
+true: the camera drops by `slideEyeDrop` 0.8 m (crouch height, not the prone `eyeDrop`), and the target speed
+drains linearly from the landing speed (clamped to `slideMinSpeed` 4 to `slideMaxSpeed` 8 m/s) to 0 over
+`slideSec` 0.9 s of real time. The prone driver holds V's speed along the dive line at that target each frame
+(`slideState`, with a per-frame change limit so the slide cannot jolt). When `slideSec` has elapsed, `Prone.End.slideOver`
+raises the stand request and V stands through the normal `PRONE -> GETUP -> NONE` path. A fresh direction press
+(release, then press, ignored in the first 0.25 s) still ends it early. Internally the state is still named `PRONE`.
+`slide = false` restores the C2SD-T49 pinned prone (see "Flat leap, slam and pinned prone").

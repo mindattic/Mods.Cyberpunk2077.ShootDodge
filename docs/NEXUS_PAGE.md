@@ -10,14 +10,14 @@ checklist with expected results. At minimum these must pass:
 
 - [ ] A1-A3: the ShootDodge window appears in the CET overlay, no `[ShootDodge]` errors after loading a save.
 - [ ] B1-B2: a minute of ordinary play gives zero false combo triggers; the real combo gives exactly one.
-- [ ] C1-C4: State reads `NONE` in normal play, walks `NONE -> DIVING -> AIRBORNE -> PRONE -> GETUP -> NONE`,
+- [ ] C1-C4: State reads `NONE` in normal play, walks `NONE -> DIVING -> AIRBORNE -> PRONE (the slide) -> GETUP -> NONE`,
       and never gets stuck.
 - [ ] D1-D10 (male and female V): the leap goes left, right, back, forward and diagonally, is locked in
       the air, keeps the camera free and first person, and can't be re-triggered mid-air.
 - [ ] E1-E6, F1-F6: slow-mo starts and clears the frame V lands (also after a pause and on death), and
-      aim and fire stay at normal speed while the world is slow.
-- [ ] G1-G5, H1-H9 (male and female V): one landing per dive with the right held flag, prone shooting
-      360 degrees, no timer, get up by a move key or by holding through the landing.
+      V, aim and fire stay at normal speed while the world is slow.
+- [ ] G1-G5, H1-H9 (male and female V): one landing per dive with the right held flag, the landing slide
+      (momentum drains over about 0.9 s, shooting throughout, then V stands by itself or on a fresh press).
 - [ ] I1-I18: the hourglass HUD, Bullet Time mode (the / key by default with Input Loader, CET binding as fallback, never V), drain, passive and kill refill, and
       save persistence.
 - [ ] J1-J4: only pistols, revolvers and SMGs arm the combo, and swaps apply at once.
@@ -53,8 +53,15 @@ installation on (the default). Vortex's Cyberpunk 2077 extension installs this l
   - The dive's slow-mo is now **5%** world speed (was 20%), because enemies have RPG health and need
     several hits. The overlay's Time scale slider goes down to 0.01.
   - The dive is a low flat leap with no extra lift. V is slammed down at the apex and the slide stops
-    on impact. V then stays pinned prone (look and shoot freely) until a fresh direction press
-    (release, then press); movement held through the landing no longer stands V up by itself.
+    on impact.
+  - The landing is now a **slide**, like the game's own crouch-slide, instead of lying prone: V keeps
+    the dive's momentum along the dive line, the camera drops to crouch height, the speed drains to zero
+    over about 0.9 s, and V stands up by itself. A fresh direction press ends it early. The earlier
+    pinned-prone landing is still an option in the config.
+  - All of V now runs at full speed during the slow-mo (weapon draw, raise, aim and fire are ready at
+    once; before, only the weapon was exempt and V's own raise and aim animations crawled). V's dive
+    arc also plays at full speed (about 0.4 s) while enemies and the world stay at 5%. The overlay
+    toggle turns it off.
   - Fixed the start-up crash: the main menu is a game world with its own V, and the mod was
     already acting there. It now makes no game calls (time, inventory, phone, key listener, kill
     hook) until a real save is loaded and has settled for 1.5 seconds.
@@ -88,7 +95,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Press Shift + Space: V dives, time slows to 5% while your aim and fire stay fast, then you hit the floor prone and keep shooting. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
+Max Payne 2's Shootdodge in first person. Press Shift + Space: V dives, time slows to 5% while V, your aim and fire stay fast, then V slides out of the landing still shooting. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
 
 ## Tags
 
@@ -144,7 +151,7 @@ Once uploaded, right-click each one on the mod page, copy its image address, and
 
 ```
 [size=5][b]ShootDodge[/b][/size]
-Max Payne 2's signature move, in first person. Press Shift + Space, and V dives: time slows, your aim and fire stay at full speed, and you land prone still shooting.
+Max Payne 2's signature move, in first person. Press Shift + Space, and V dives: time slows, V, your aim and fire stay at full speed, and you slide out of the landing still shooting.
 
 [img]IMAGE_1_URL[/img]
 
@@ -153,9 +160,9 @@ Max Payne 2's signature move, in first person. Press Shift + Space, and V dives:
 [*]Equip a pistol, revolver or SMG, or two pistols with the Double Trouble perk.
 [*]Press [b]Shift + Space[/b] (either Shift: sprint and jump together), optionally holding a movement direction. No aim needed.
 [*]V dives that way, or straight forward with none held. The direction is locked for the whole dive, but the camera and aim stay free.
-[*]The world drops to 0.05x speed (5%) while your mouse look and your gun's fire rate stay at normal speed.
-[*]V lands prone, first-person view down at floor height, slow-mo ends.
-[*]Keep shooting from the ground as long as you like, or release and press a movement key to scramble back up. V stays pinned prone until that fresh press, even if you held a direction through the landing.
+[*]The world drops to 0.05x speed (5%) while V (mouse look, weapon draw and aim, fire rate) stays at normal speed.
+[*]V lands in a slide, like the game's crouch-slide: first-person view at crouch height, the dive's momentum draining to zero over about 0.9 seconds, slow-mo ends.
+[*]Keep looking and shooting through the slide. V stands up by itself, or release and press a movement key to get up early.
 [*]In Bullet Time mode it's simpler: Space alone sends V flying, no aim needed, in the direction you hold or straight forward.
 [/list]
 [img]IMAGE_2_URL[/img]
@@ -163,8 +170,8 @@ Max Payne 2's signature move, in first person. Press Shift + Space, and V dives:
 [size=5][b]Features[/b][/size]
 [list]
 [*][b]The dive:[/b] a low flat leap forward, back, left, right or diagonal, locked in the air and slammed down at the apex. Can't start mid-air, in a vehicle or with no direction held.
-[*][b]Aim and fire stay fast:[/b] slow world, normal fire rate and mouse look. Bullets, enemies and V's own fall arc stay slowed for contrast.
-[*][b]Prone and get-up:[/b] free-aim and fire 360 degrees from the floor, no timer. A fresh movement press stands V up with a short scramble.
+[*][b]V stays fast:[/b] slow world, but V runs at full speed: instant weapon draw, raise and aim, normal fire rate and mouse look. Bullets and enemies stay slowed for contrast, and V's own dive arc plays at full speed.
+[*][b]The landing slide:[/b] V keeps the dive's momentum along the dive line, camera at crouch height, speed draining to zero over about 0.9 seconds, then V stands up by itself. Free-aim and fire throughout. A fresh movement press ends it early.
 [*][b]Weapon restriction:[/b] pistols, revolvers and SMGs only. Rifles, shotguns, LMGs, snipers, melee and fists don't arm it. Checked live on every swap.
 [*][b]Dual pistols, the Max Payne way:[/b] take [b]Double Trouble[/b] in the Cool tree (Cool 9, base game since Update 2.5, no Phantom Liberty needed) and equip the two granted Lexingtons, one per weapon slot. Both guns arm the combo and both fire at full cadence in the slow-mo; an off-hand gun that isn't allowed refuses the combo with a clear reason. Recommended for the full twin-pistol look. [url=https://www.nexusmods.com/cyberpunk2077/mods/35649]Independent Pistol Controls[/url] is optional and untested with ShootDodge.
 [*][b]Bullet-time hourglass:[/b] like Max Payne 2, a separate [b]Bullet Time mode[/b] (the / key by default with Input Loader, or bind any key in the CET Bindings tab, never V, which summons your vehicle) drains it for about 10 seconds. A Shootdodge costs nothing. It refills over time and by 15% per kill, the sand turns yellow with kills, and the level is saved with your game. An hourglass HUD sits in the lower left.
@@ -172,18 +179,18 @@ Max Payne 2's signature move, in first person. Press Shift + Space, and V dives:
 [*][b]Cinematic polish:[/b] FOV pull-back, a whoosh on entry and a music duck, each switchable.
 [*][b]The Max Payne 2 loadout:[/b] twin Militech Lexington power pistols (they qualify for Double Trouble), a long coat, a formal shirt, trousers and shoes, from vanilla items, granted once per save to male or female V. You equip them yourself.
 [*][b]A text from Max Payne:[/b] once per save, Max Payne himself texts V. A real SMS thread in the phone's Messages app, in his over-the-top noir narration, explaining how to Shootdodge between genuine lines from Max Payne 1 and 2. It never re-sends on reload.
-[*][b]Debug overlay:[/b] every number is a slider or tick in the CET overlay: slow-mo factor, FOV, music, prone height and more.
+[*][b]Debug overlay:[/b] every number is a slider or tick in the CET overlay: slow-mo factor, FOV, music, V's speed in slow-mo and more.
 [*][b]Safe:[/b] slow-mo, FOV and music always return to normal on landing, death, pause or disabling the mod.
 [/list]
 [img]IMAGE_3_URL[/img]
 
 [size=5][b]Known limitations[/b][/size]
 [list]
-[*]Prone is camera-only: V's body and hitbox stay standing, because Cyberpunk has no prone stance.
+[*]The slide is camera-only: V's body and hitbox stay standing, because Cyberpunk has no prone stance.
 [*]There is no dive animation (first person shows no body), and no tie, which the game lacks.
 [*]Dual wielding comes from the game's Double Trouble perk and has not yet been checked in game with ShootDodge.
 [*]Ambience low-pass audio events are blank by default, so only the music volume is ducked.
-[*]A gamepad's turn speed follows slow-mo unless you tick "All of V at normal speed" in the overlay, which also speeds up V's fall arc.
+[*]A gamepad's turn speed follows slow-mo only if you untick "All of V at normal speed" in the overlay (it is on by default).
 [/list]
 
 [size=5][b]Requirements[/b][/size]

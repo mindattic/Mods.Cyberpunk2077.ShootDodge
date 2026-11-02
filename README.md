@@ -1,8 +1,8 @@
 # Mods.Cyberpunk2077.ShootDodge
 
 A Cyberpunk 2077 gameplay mod that recreates *Max Payne 2*'s Shootdodge in first person. Press Shift and
-Space together (sprint and jump): V dives in the direction you hold, time slows while your aim and fire stay at full speed,
-V lands prone and keeps shooting from the floor, and a movement key gets V back on their feet. It
+Space together (sprint and jump): V dives in the direction you hold, time slows while V, your aim and your fire stay at full speed,
+V slides out of the landing while still shooting, then stands back up on their own. It
 also has Max Payne 2's bullet-time hourglass and grants the matching outfit and twin pistols.
 
 Everything is Lua for [Cyber Engine Tweaks](https://github.com/maximegmd/CyberEngineTweaks), plus one
@@ -96,18 +96,21 @@ What happens next:
 - **The leap is locked.** V flies in the direction you were moving, relative to where the camera
   faced at launch. Moving in the air changes nothing; the camera and aim stay free, and the camera
   stays first person the whole time.
-- **Time slows.** The world drops to 0.05x speed (5%) while V is in the air. Your mouse look and your
-  weapon's fire rate stay at normal speed, so you shoot at full pace while everything else crawls.
+- **Time slows.** The world drops to 0.05x speed (5%) while V is in the air. All of V stays at full
+  speed (mouse look, drawing, raising and aiming the weapon, and its fire rate), so weapons are ready at
+  once and you shoot at full pace while enemies and the world crawl. V's own dive arc therefore plays at
+  full speed too (about 0.4 s). The overlay can turn this off.
   The camera pulls back a little (+12 degrees of FOV), a whoosh plays, and music is ducked.
 - **A low, flat leap.** The dive adds no extra lift and cuts the rise to 40% just after lift-off. At
   the apex V is slammed down, and the slide is stopped on impact.
-- **V lands prone.** Every dive ends on the ground, whatever you hold. Slow-mo ends on impact. V's
-  first-person view drops to near floor height.
-- **Then choose.** Keep shooting from the ground in any direction for as long as you like (there is
-  no timer; look and shoot freely), or press a movement key to scramble back up. V stays pinned
-  prone until a fresh direction press: release the key, then press it. Movement held through the
-  landing no longer stands V up by itself. Jump alone does not stand V up.
-- A new combo can't start while a Shootdodge is still in progress (in the air, prone or getting up),
+- **V slides out of the landing.** Every dive ends on the ground, whatever you hold. Slow-mo ends on
+  impact. Like the game's own crouch-slide, V keeps the dive's momentum along the dive line with the
+  camera at crouch height, and the speed drains to zero over about 0.9 s, then V stands up by itself.
+  Keep looking and shooting the whole way. A fresh direction press (release the key, then press it)
+  ends the slide early. Jump alone does not.
+- Lying prone and pinned until a fresh press (C2SD-T49) is still available as an option (Prone config
+  `slide = false`); the slide replaced it as the default.
+- A new combo can't start while a Shootdodge is still in progress (in the air, sliding or getting up),
   and there is a 1 second cooldown between combos.
 
 The combo only fires from the ground, on foot, with an allowed weapon. Plain Space is always a normal
@@ -207,7 +210,7 @@ pair up as twin pistols (see [Dual pistols](#dual-pistols-the-max-payne-way-reco
 Once per save, about 8 seconds after V first appears (after the loadout), V's phone buzzes with a
 real SMS: a new contact, **Max Payne**, in the phone's Messages app like any other contact. The
 thread is a string of texts in Max's own over-the-top noir narration that explains how to
-Shootdodge (Shift + Space, direction, the slow-mo, landing prone, shooting or getting up, binding the
+Shootdodge (Shift + Space, direction, the slow-mo, the landing slide, shooting, binding the
 Bullet Time hotkey and the hourglass), woven around 25 genuine lines from *Max Payne* and *Max Payne
 2*, each checked word for word against its source (the list is in
 [`docs/DESIGN.md`](docs/DESIGN.md#in-game-text-message-c2sd-t27)).
@@ -230,11 +233,11 @@ open; the hourglass HUD does not depend on it. Settings are not saved between se
 | Control | Default | What it does |
 |---|---|---|
 | Enabled | off | Master switch for the Shootdodge combo and its state machine. Unticking it cancels any dive in progress. The hourglass and loadout work either way. |
-| Prone eye drop (m) | 1.30 (0 to 1.6) | How far the first-person camera drops while prone. |
+| Prone eye drop (m) | 1.30 (0 to 1.6) | How far the first-person camera drops while prone (the slide uses a fixed 0.8 m drop). |
 | Bullet-time | on | World slow-mo on (dive and Bullet Time mode). Off means the dive still happens at normal speed. |
 | Time scale | 0.05 (0.01 to 1.00) | World speed during slow-mo. |
 | Weapon at normal speed (fire rate) | on | Keeps V's weapon's fire cycle (both guns while dual wielding) at normal speed during slow-mo. |
-| All of V at normal speed (pad look; fall not slowed) | off | Also exempts V, which fixes slow gamepad turning but speeds V's fall arc back up. |
+| All of V at normal speed (pad look; fall not slowed) | on | Exempts all of V from the slow-mo: instant weapon draw, raise and aim, normal gamepad turning, and the dive arc at full speed. Untick to slow V with the world (only the weapon stays fast). |
 | Start/Stop bullet-time mode | | Toggles Bullet Time mode (same as the hotkey). |
 | Refill meter / Empty meter | | Test buttons for the hourglass. |
 | Hourglass HUD | on | Shows or hides the on-screen hourglass. |
@@ -262,15 +265,15 @@ If the game or CET dies mid-dive, the next load puts your music volume back.
 
 ## Known limitations
 
-- **Prone is camera-only.** CP77 has no prone stance, so "lying down" is the first-person camera
-  lowered near the floor. V's body and hitbox stay standing, so enemies still hit V as if standing.
+- **Prone and the slide are camera-only.** CP77 has no prone stance, so "lying down" (and the slide's
+  crouch height) is the first-person camera lowered near the floor. V's body and hitbox stay standing, so enemies still hit V as if standing.
   A real prone pose needs a custom animgraph (WolvenKit and REDmod), a future project.
 - **No dive animation.** The leap rides the stock jump plus an impulse; in first person you see no body.
 - **The ambience low-pass events are blank by default.** No safe low-pass audio event name is known,
   so only the music volume duck is active. If you know event names, type them into the overlay fields.
-- **Gamepad turn speed.** Mouse look is unaffected by slow-mo, but a gamepad's turn rate follows time
-  dilation unless **All of V at normal speed** is on (which has the side effect that V's fall arc
-  is not slowed).
+- **Gamepad turn speed.** Mouse look is unaffected by slow-mo. A gamepad's turn rate follows time
+  dilation only if **All of V at normal speed** is unticked (it is on by default, which has the side
+  effect that V's own dive arc plays at full speed while enemies stay slow).
 - Max Payne 2's extra slowdown for a yellow hourglass is not implemented; the tint is only visual.
 - Drain, refill and kill amounts are estimates (MP2's real numbers are not published) and are the
   values to tune after in-game testing; see `BulletTimeMeter.defaults`.

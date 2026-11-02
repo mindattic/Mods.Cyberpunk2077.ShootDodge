@@ -145,21 +145,28 @@ Expected: the dive happens with no slow-mo; re-tick it and slow-mo returns.
 Expected: shots fire at the same cadence as when not diving (count the shots per second against normal
 fire) while everything else is visibly slow.
 
+**F1b. V at full speed (C2SD-T53).** Dive with the weapon holstered or lowered, then draw/raise and aim down
+sights in the air.
+Expected: V's own draw, raise and aim animations run at normal speed and the weapon is ready at once
+(not at 5%). The overlay says "V yes" and the tick "All of V at normal speed" is on by default.
+
 **F2. Aim speed with the mouse.** In the dive, flick the mouse.
 Expected: the camera turns at normal speed.
 
-**F3. Things that stay slow.** Watch bullets, enemies and V's fall arc.
-Expected: all slowed.
+**F3. Things that stay slow.** Watch bullets and enemies.
+Expected: all slowed to 5%. V's own dive arc is NOT slowed (about 0.4 s, full speed) while V is exempt.
+Untick "All of V at normal speed" and dive again: V's arc and raise/aim animations now crawl with the world,
+only the weapon's fire stays fast.
 
 **F4. Weapon swap.** Swap between two allowed weapons during the dive.
 Expected: the new weapon fires at full cadence too (the overlay "Exempt now: weapons 1").
 
 **F5. Gamepad.** On a pad, dive and turn.
-Expected (known limitation): turning is slow. Tick "All of V at normal speed" and it turns at normal speed,
-but V's fall arc is faster.
+Expected: turning is at normal speed (V is exempt by default). Untick "All of V at normal speed" and turning
+is slow (known limitation), but V's fall arc is slowed too.
 
 **F6. Exemption clears.** Land.
-Expected: the overlay says "Exempt now: weapons 0 | V no"; the weapon fires normally.
+Expected: the overlay says "Exempt now: weapons 0 | V no" (it read "V yes" during the dive); the weapon fires normally.
 
 ## G. Landing (C2SD-T10)
 
@@ -168,18 +175,18 @@ Expected: the Landings count rises by exactly 1; the console prints one `landing
 "movement not held".
 
 **G2. Held flag.** Dive and keep holding a direction through the touchdown.
-Expected: one landing line saying "movement held". V does not stand up by itself (see H5).
+Expected: one landing line saying "movement held". The landing slide starts (see H5).
 
 **G6. Low flat leap and slam.** Dive on flat ground, watch from a mirror or the overlay's height readout.
 Expected: a low, flat arc (no extra lift, the rise is cut right after lift-off); at the apex V is slammed down
-and hits the ground hard, and the slide stops on impact instead of skidding on.
+and hits the ground hard; the dive's own skid stops at impact (`landingStop` 0), and the landing slide (H1) takes over.
 
 **G7. Airborne detection.** Dive repeatedly (10 times) on flat ground.
 Expected: no dive aborts with "never left the ground"; airborne is detected from V's height above the launch
 point (more than 0.08 m) or a fall speed above 0.5 m/s, since the PSM locomotion check never reports it.
 
-**G3. Always prone.** Each landing in G1-G2.
-Expected: State goes to `PRONE` either way, never directly to `NONE`.
+**G3. Always the slide.** Each landing in G1-G2.
+Expected: State goes to `PRONE` (the slide, still named PRONE internally) either way, never directly to `NONE`.
 
 **G4. Graze.** Dive past a low obstacle or ledge so V clips it mid-air.
 Expected: no early landing: the dive carries on (the landing line shows grazes counted) and slow-mo lasts
@@ -188,9 +195,28 @@ until the real touchdown.
 **G5. Cap.** (Optional) Dive off a very high ledge.
 Expected: it lands whenever V touches down, or aborts to `NONE` at the 4 second cap; slow-mo still clears.
 
-## H. Prone and get-up (C2SD-T11, C2SD-T12) (M) (F)
+## H. Landing slide, prone option and get-up (C2SD-T11, C2SD-T12, C2SD-T53) (M) (F)
 
-**H1. Prone shooting.** Dive, release movement before landing.
+Since C2SD-T53 the landing is a slide (Prone `slide = true`). H1-H9 below describe the prone option (`slide = false`, C2SD-T49 pinned
+behaviour) except where H1s-H5s say otherwise. Internally the slide is still the `PRONE` state.
+
+**H1s. Slide.** Dive forward (or any direction) and land.
+Expected: V keeps sliding along the dive line (not along where the camera looks) at the landing speed (4 to 8 m/s),
+the camera drops to crouch height (0.8 m drop) and the speed drains smoothly to 0 over about 0.9 s real time, then
+V stands automatically (`PRONE -> GETUP -> NONE`, the log says "slide over"). Slow-mo ended on impact, V looks and
+shoots freely the whole way.
+
+**H2s. Slide direction.** Dive left, right, back and diagonally, turning the camera mid-slide.
+Expected: the slide follows the dive line each time, whatever the camera does.
+
+**H3s. Early end.** Land holding a direction, release it, press it again during the slide.
+Expected: the slide ends early and V stands (a press shorter than the first 0.25 s after impact is ignored).
+Holding the key through the whole slide does not end it early; it just runs out.
+
+**H4s. Option off.** Set Prone `slide = false` (config) and dive.
+Expected: V lies prone as in H1-H9 below.
+
+**H1. Prone shooting.** (Option `slide = false`.) Dive, release movement before landing.
 Expected: V ends prone: the first-person view drops close to the floor (eye about 0.4 m high) within a
 fraction of a second. The overlay says Prone: down, with the eye height. Aim 360 degrees and fire.
 V shoots in every direction without standing up.
@@ -205,7 +231,7 @@ short way in that direction at a capped speed; full control returns when it ends
 **H4. Any direction.** Repeat with left, right and back.
 Expected: the get-up works with each.
 
-**H5. Held through the landing.** Dive and keep holding forward through touchdown.
+**H5. Held through the landing.** (Prone option.) Dive and keep holding forward through touchdown.
 Expected: V hits the ground and stays pinned prone; it does not get up on its own, however long the key is
 held. Look and shoot freely. Releasing and then pressing forward stands V up.
 
@@ -347,7 +373,7 @@ Expected: only the unticked effect is missing; the other two still work.
 **K5. Sliders.** Set Pull-back to 0 and 30; Music kept to 0 and 1.
 Expected: each takes effect on the next dive (0 = no FOV change; 1 = no duck).
 
-**K6. Both exit paths.** Dive then stay prone; dive then get up.
+**K6. Both exit paths.** Dive then stay prone (prone option) or slide; dive then get up.
 Expected: all three effects start at dive entry and revert on landing in both cases.
 
 **K7. Abort and pause.** Untick Enabled mid-dive; pause mid-dive.
@@ -388,8 +414,8 @@ Run L1-L7 on both a male V and a female V.
 
 ## M. Everything together
 
-**M1. Combat run.** In a fight, dive, shoot a few enemies from the air, land prone, shoot more from the
-floor, stand, and repeat with the hourglass mode in between.
+**M1. Combat run.** In a fight, dive, shoot a few enemies from the air, slide out of the landing, shoot more
+throughout, stand, and repeat with the hourglass mode in between.
 Expected: no stuck slow-mo, no stuck camera, no console errors, and the hourglass refills with kills.
 
 **M2. Save and load mid-states.** Save while prone, while in the air (if possible), and in Bullet Time mode,
@@ -440,7 +466,7 @@ their messages." No popup or on-screen banner text is used anywhere.
 
 **O3. Content.** Read the thread.
 Expected: it covers Shift + Space with a direction, pistol/revolver/SMG only, the slow-mo with aim and fire at
-full speed, landing prone and shooting or moving/jumping to get up, holding the direction through the
+full speed, landing (the in-game texts still describe prone) and shooting or moving/jumping to get up, holding the direction through the
 landing, and binding Bullet Time in the overlay's Bindings tab with the hourglass (drains while on,
 refills on its own and with kills, a shootdodge costs nothing).
 
