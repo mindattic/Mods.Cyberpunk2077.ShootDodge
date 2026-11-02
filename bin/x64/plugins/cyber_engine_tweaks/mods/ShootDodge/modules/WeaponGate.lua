@@ -1,10 +1,9 @@
 -- WeaponGate: which equipped weapons may arm the Shootdodge combo (C2SD-T13 / C2SD-US-D10).
 --
 -- Pure Lua, no CET or game API: it classifies a gamedataItemType name (the string the CET glue in
--- modules/Input.lua reads off the weapon in V's hands). It is an explicit allow-list: only
--- pistols, revolvers and SMGs arm the combo; every other type (rifles, shotguns, LMGs/HMGs,
--- sniper and precision rifles, melee, fists, cyberware arms, no weapon at all, or a type this
--- list doesn't know) blocks it.
+-- modules/Input.lua reads off the weapon in V's hands). It is an explicit allow-list: since
+-- C2SD-T57 every ranged weapon type arms the Shootdodge; melee, fists, cyberware arms, no weapon
+-- at all, or a type this list doesn't know block it.
 --
 -- The check runs at the instant jump is pressed, against whatever is equipped right then, so a
 -- weapon swap mid-session changes the outcome on the very next combo with no restart.
@@ -16,10 +15,20 @@
 local WeaponGate = {}
 
 -- gamedataItemType names that permit the dive.
+-- C2SD-T57: every ranged weapon (hip fire or ADS, aim is never required); melee, fists, cyberware
+-- arms and no weapon still block it.
 WeaponGate.allowed = {
   Wea_Handgun = "pistol",
   Wea_Revolver = "revolver",
   Wea_SubmachineGun = "SMG",
+  Wea_AssaultRifle = "assault rifle",
+  Wea_Rifle = "rifle",
+  Wea_PrecisionRifle = "precision rifle",
+  Wea_SniperRifle = "sniper rifle",
+  Wea_Shotgun = "shotgun",
+  Wea_ShotgunDual = "double-barrel shotgun",
+  Wea_LightMachineGun = "LMG",
+  Wea_HeavyMachineGun = "HMG",
 }
 
 -- Returns allowed (bool) and a short label for the debug overlay.
