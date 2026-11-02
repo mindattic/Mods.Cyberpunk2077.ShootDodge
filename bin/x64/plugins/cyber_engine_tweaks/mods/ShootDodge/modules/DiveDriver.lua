@@ -53,6 +53,11 @@ local function cameraForward(player)
   return nil, nil
 end
 
+-- C2SD-T50: V counts as airborne this far above the launch point (m), or falling faster than
+-- this (m/s, game time).
+local AIR_HEIGHT = 0.08
+local AIR_FALL_SPEED = 0.5
+
 local function queueImpulse(player, x, y, z)
   local ok, err = pcall(function()
     local evt = PSMImpulse.new()
@@ -99,6 +104,8 @@ function DiveDriver.Start(machine, trigger)
     return false
   end
   DiveDriver.lastPos = worldPosition(player)
+  -- C2SD-T50: the launch height, for the physical airborne check in Update.
+  DiveDriver.launchZ = DiveDriver.lastPos and DiveDriver.lastPos.z or nil
   DiveDriver.lastError = nil
   return true
 end
@@ -138,7 +145,16 @@ function DiveDriver.Update(machine, deltaTime)
   -- C2SD-T10: sample the held movement input the same frame as the ground check, so the landing
   -- records what was held at impact.
   local moveHeld, moveMagnitude = DiveDriver.isMoveHeld()
-  local reason = dive:Update(deltaTime, DiveDriver.isGrounded(player), vz)
+  -- C2SD-T50: in game the locomotion-state check never reported V airborne (every dive aborted
+  -- with "never left the ground"), so V's own motion decides too: off the ground while clearly
+  -- above the launch point or falling. Either check saying airborne counts.
+  local grounded = DiveDriver.isGrounded(player)
+  if pos and pos.z and DiveDriver.launchZ then
+    local above = pos.z - DiveDriver.launchZ
+    if above > AIR_HEIGHT or (vz ~= nil and vz < -AIR_FALL_SPEED) then grounded = false end
+  end
+  DiveDriver.lastGrounded = grounded
+  local reason = dive:Update(deltaTime, grounded, vz)
   if reason == nil then
     -- C2SD-T10: V has really left the ground -> AIRBORNE (once; refused harmlessly otherwise).
     if dive.leftGround and machine:Is("DIVING") then machine:Fire("launch", "left the ground") end
@@ -182,6 +198,7 @@ function DiveDriver.Cancel()
   DiveDriver.dive:Clear()
   DiveDriver.lastPos = nil
   DiveDriver.lastVel = nil
+  DiveDriver.launchZ = nil
 end
 
 return DiveDriver
