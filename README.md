@@ -25,24 +25,28 @@ not published. Design notes and the Max Payne 2 research live in [`docs/DESIGN.m
   (`r6/scripts/ShootDodge/ShootDodgePhone.reds`).
 - [Phone Extension](https://www.nexusmods.com/cyberpunk2077/mods/24949) (by r457 and gh057),
   **optional**: needed only for Max Payne's text. It is the framework that lets that contact text V
-  in the phone's Messages app, and itself four redscript files that need nothing but redscript.
+  in the phone's Messages app. Phone Extension itself needs
+  [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) and redscript (Codeware needs
+  [RED4ext](https://www.nexusmods.com/cyberpunk2077/mods/2380)); ShootDodge does not.
 - [Input Loader](https://www.nexusmods.com/cyberpunk2077/mods/4575) (by jackhumbert, needs
   [RED4ext](https://www.nexusmods.com/cyberpunk2077/mods/2380)), **optional**: gives Bullet Time mode
   its default key, `/` (`r6/input/ShootDodge.xml`). Without it, bind the key in CET's
   Bindings tab instead.
 
-That is all. The code uses no TweakXL records, ArchiveXL, Codeware or RED4ext of its own (only the
-optional Input Loader runs on RED4ext): the loadout gives
+That is all. ShootDodge's own code uses no TweakXL records, ArchiveXL, Codeware or RED4ext (Codeware
+and RED4ext are needed only if you install Phone Extension or Input Loader): the loadout gives
 vanilla items by their existing TweakDB IDs. The `.reds` file is guarded with
 redscript conditional compilation (`@if(ModuleExists(...))`), so without Phone Extension it compiles
 to nothing and no redscript mod is affected. Install order does not matter; without Phone Extension
 only Max Payne's text is missing.
 
+**Troubleshooting.** A "REDScript compilation has failed" popup that names `PhoneExtension` means Codeware is missing: install [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) or disable Phone Extension. Any redscript failure stops every redscript mod loading, ShootDodge's included.
+
 ## Install
 
 ### With Vortex
 
-1. Install Cyber Engine Tweaks and redscript, plus Phone Extension if you want Max Payne's text and
+1. Install Cyber Engine Tweaks and redscript, plus Phone Extension (which needs Codeware) if you want Max Payne's text and
    Input Loader if you want `/` as the Bullet Time key out of the box (Vortex lists them as requirements on
    the Nexus page).
 2. Download `ShootDodge-<version>.zip` with **Mod Manager Download**, or drag the zip into Vortex's

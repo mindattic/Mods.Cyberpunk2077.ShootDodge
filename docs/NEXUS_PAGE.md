@@ -82,7 +82,7 @@ Gameplay (alternative: Combat)
 
 ## Summary (max 350 characters)
 
-Max Payne 2's Shootdodge in first person. Press Ctrl + Space: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension optional.
+Max Payne 2's Shootdodge in first person. Press Ctrl + Space: V dives, time slows while your aim and fire stay fast, then you hit the floor prone and keep shooting or get up. Bullet-time hourglass, Max's outfit, twin pistols with Double Trouble, and Max Payne himself texts you. Needs CET and redscript; Phone Extension (needs Codeware) optional.
 
 ## Tags
 
@@ -97,11 +97,14 @@ install them and the page lists them:
 |---|---|---|
 | Cyber Engine Tweaks | https://www.nexusmods.com/cyberpunk2077/mods/107 | Runs the whole mod. |
 | redscript | https://www.nexusmods.com/cyberpunk2077/mods/1511 | Compiles the Max Payne phone contact. |
-| Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Optional. Lets Max Payne text V in the Messages app. |
+| Phone Extension | https://www.nexusmods.com/cyberpunk2077/mods/24949 | Optional. Lets Max Payne text V in the Messages app. Needs Codeware + redscript. |
+| Codeware | https://www.nexusmods.com/cyberpunk2077/mods/7780 | Only if you install Phone Extension (needs RED4ext). ShootDodge itself does not need it. |
 | Input Loader | https://www.nexusmods.com/cyberpunk2077/mods/4575 | Optional. Makes the / key the default Bullet Time key (needs RED4ext). Without it, bind the key in CET. |
 
-Plus Cyberpunk 2077 (PC). Nothing else: no TweakXL, ArchiveXL or Codeware, and no RED4ext of its own
-(Input Loader runs on RED4ext). Phone Extension itself needs only redscript.
+Plus Cyberpunk 2077 (PC). ShootDodge itself needs no TweakXL, ArchiveXL, Codeware or RED4ext. Codeware (which
+needs RED4ext) is required only if you install Phone Extension, which needs Codeware + redscript.
+
+Troubleshooting: A "REDScript compilation has failed" popup that names `PhoneExtension` means Codeware is missing: install [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) or disable Phone Extension. Any redscript failure stops every redscript mod loading, ShootDodge's included.
 
 ## Install
 
@@ -182,10 +185,13 @@ Max Payne 2's signature move, in first person. Press Ctrl + Space, and V dives: 
 [*]Cyberpunk 2077 (PC)
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/107]Cyber Engine Tweaks[/url]
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/1511]redscript[/url]
-[*][url=https://www.nexusmods.com/cyberpunk2077/mods/24949]Phone Extension[/url] (for Max Payne's text)
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/24949]Phone Extension[/url] (optional, for Max Payne's text; needs Codeware + redscript)
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/7780]Codeware[/url] (only if you install Phone Extension; needs RED4ext)
 [*][url=https://www.nexusmods.com/cyberpunk2077/mods/4575]Input Loader[/url] (optional, needs RED4ext: makes the / key the default Bullet Time key)
 [/list]
-Nothing else: no TweakXL, ArchiveXL or Codeware. Phone Extension is optional and install order does not matter: without it the phone script compiles to nothing, only Max Payne's text is missing, and no other redscript mod is affected. Input Loader is optional too: without it the / key does nothing and you bind Bullet Time in CET instead.
+ShootDodge itself needs no TweakXL, ArchiveXL or Codeware. Phone Extension is optional and install order does not matter: without it the phone script compiles to nothing, only Max Payne's text is missing, and no other redscript mod is affected. Input Loader is optional too: without it the / key does nothing and you bind Bullet Time in CET instead.
+
+[b]Troubleshooting:[/b] A "REDScript compilation has failed" popup that names PhoneExtension means Codeware is missing: install Codeware or disable Phone Extension. Any redscript failure stops every redscript mod loading, ShootDodge's included.
 
 [size=5][b]Install[/b][/size]
 [list=1]

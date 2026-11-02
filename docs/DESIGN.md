@@ -289,7 +289,9 @@ text needs it). `ShootDodgePhone.reds` guards its imports and every declaration 
 `@if(ModuleExists("PhoneExtension.Classes"))` / `System`, so without the framework it compiles to
 nothing and cannot break other redscript mods (C2SD-T29). Phone Extension is four
 `.reds` files (`r6/scripts/PhoneExtension/PhoneExtension.{Classes,DataStructures,Overrides,System}.reds`)
-and depends on nothing but redscript. Nothing in the code uses TweakXL, ArchiveXL, Codeware or RED4ext.
+and needs Codeware (it calls `GameInstance.GetInkSystem()`) plus redscript; Codeware needs RED4ext. Without
+Codeware redscript fails with `UNRESOLVED_METHOD ... GetInkSystem`, and then no redscript mod loads, ShootDodge's
+included (C2SD-T47). ShootDodge's own code uses no TweakXL, ArchiveXL, Codeware or RED4ext.
 
 ## In-game text message (C2SD-T27)
 
@@ -376,7 +378,7 @@ underneath is proven — that's a follow-up ticket once C2SD-T14 lands, not part
 
 - **Cyber Engine Tweaks (CET)** — input hooks, the state machine, time dilation calls, the ImGui
   debug overlay. Everything in the ticket log above is CET Lua only.
-- **redscript + optional Phone Extension** — only for Max Payne's phone text (C2SD-T27,
+- **redscript + optional Phone Extension (which needs Codeware)** — only for Max Payne's phone text (C2SD-T27,
   `r6/scripts/ShootDodge/ShootDodgePhone.reds`); everything else stays CET Lua.
 - **TweakXL** — not needed: the loadout grant (C2SD-T4) gives vanilla TweakDB records as they are.
 - **WolvenKit + REDmod**, if/when the animation follow-up is picked up: extracting the player

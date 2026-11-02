@@ -6,7 +6,7 @@ the table at the end. Cases marked **(M)** and **(F)** are run once on a male V 
 
 ## Setup
 
-1. Install Cyber Engine Tweaks and redscript (Phone Extension too, for the text cases; it may go in before or after ShootDodge;
+1. Install Cyber Engine Tweaks and redscript (Phone Extension plus Codeware and RED4ext too, for the text cases; Phone Extension needs Codeware; it may go in before or after ShootDodge;
    RED4ext + Input Loader too, for the `/` default key, cases I3-I3d), then ShootDodge: the release zip
    through Vortex (section N) or extracted into the game folder, or from the repo copy
    `bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge/`, `r6/scripts/ShootDodge/` and `r6/input/` into the game's
@@ -421,7 +421,7 @@ Expected: the mod's files are gone from the game folder, and the game starts wit
 
 ## O. Text from Max Payne (C2SD-T27)
 
-Needs redscript and Phone Extension (setup step 1). The text does not depend on the **Enabled** tick.
+Needs redscript, Phone Extension and Codeware (setup step 1). The text does not depend on the **Enabled** tick.
 
 **O1. First text.** Load a save that never had the mod (or start a new game). Wait about 10 seconds
 after V appears, unpaused.
@@ -460,6 +460,10 @@ Expected: the text arrives once for that save, as in O1.
 Expected: redscript compiles with no error (the phone script compiles to nothing), the game and all
 other redscript mods work, no text, no on-screen substitute, and the overlay shows `Intro message
 problem: phone route missing ...`. Put Phone Extension back afterwards.
+
+**O9. Phone Extension without Codeware.** Install Phone Extension but remove Codeware.
+Expected: a "REDScript compilation has failed" popup naming `PhoneExtension` (`GetInkSystem` not found);
+no redscript mod loads, ShootDodge's included. Installing Codeware (or disabling Phone Extension) fixes it.
 
 The overlay's **Re-send to phone** button (under **Texts from Max Payne**) pops the notification
 again for retesting O2-O4 without a new save; it does not change the save's fact.
