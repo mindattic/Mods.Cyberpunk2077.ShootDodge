@@ -21,6 +21,8 @@ local LoadoutDriver = require("modules/LoadoutDriver")
 -- C2SD-T27: the once-per-save phone text thread from Max Payne (needs redscript + Phone Extension).
 local IntroMessage = require("modules/IntroMessage")
 local IntroMessageDriver = require("modules/IntroMessageDriver")
+-- C2SD-T56: every headshot is lethal while the dive is in the air.
+local HeadshotDriver = require("modules/HeadshotDriver")
 
 local ShootDodge = {
   -- C2SD-T27: release version; tools/package.ps1 names dist/ShootDodge-<version>.zip from it.
@@ -105,6 +107,11 @@ registerForEvent("onInit", function()
   -- C2SD-T53: the landing turns into a slide along the dive line at the landing speed.
   ProneDriver.lastLanding = function() return DiveDriver.lastLanding end
   ShootDodge.machine:AddListener(ProneDriver.OnStateChange)
+  -- C2SD-T56: lethal headshots on while DIVING/AIRBORNE, off the same frame the dive ends.
+  ShootDodge.machine:AddListener(function(from, to)
+    local ok, err = pcall(HeadshotDriver.OnStateChange, from, to)
+    if not ok then print("[ShootDodge] lethal headshots error: " .. tostring(err)) end
+  end)
   -- C2SD-T12: PRONE -> GETUP -> NONE. ProneDriver's stand press (fresh move) is handed to the
   -- get-up through its hook; the get-up also starts right after impact when movement was held
   -- through the landing, then runs a short scramble (push in the held direction, speed capped)
@@ -147,6 +154,7 @@ registerForEvent("onShutdown", function()
   ShootDodge.machine:Reset("shutdown")
   BulletTimeDriver.Clear()
   pcall(DivePolishDriver.Cancel)
+  pcall(HeadshotDriver.Cancel) -- C2SD-T56
 end)
 
 registerForEvent("onUpdate", function(deltaTime)
@@ -219,6 +227,8 @@ registerForEvent("onUpdate", function(deltaTime)
   end
   -- C2SD-T14: FOV pull-back and music/ambience muffle follow the state every frame, enabled or
   -- not, on real time, so landing (either path), abort, pause and mod disable all revert them.
+  -- C2SD-T56: the lethal-headshot modifier can never outlive the dive.
+  pcall(HeadshotDriver.Update, machine, ShootDodge.enabled)
   local polishOk, polishErr = pcall(DivePolishDriver.Update, machine, ShootDodge.enabled,
     deltaTime or 0, BulletTimeDriver.paused)
   if not polishOk then
