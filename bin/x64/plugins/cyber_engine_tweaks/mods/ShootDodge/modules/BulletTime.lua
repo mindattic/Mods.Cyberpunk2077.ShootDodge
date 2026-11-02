@@ -17,11 +17,11 @@ BulletTime.__index = BulletTime
 
 BulletTime.defaults = {
   -- World time scale while diving (1.0 = normal speed). Configurable from the overlay.
-  factor = 0.2,
+  factor = 0.05, -- C2SD-T52: 5% (was 20%): enemies take several hits, so the world crawls
   -- Master switch for the effect (the dive itself still works with it off).
   enabled = true,
   -- Clamp for the configurable factor: never freeze time, never speed it up.
-  minFactor = 0.05,
+  minFactor = 0.01,
   maxFactor = 1.0,
 }
 

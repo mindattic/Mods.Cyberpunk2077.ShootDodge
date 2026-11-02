@@ -82,7 +82,7 @@ registerForEvent("onInit", function()
   -- C2SD-T38: in Bullet Time mode, Space alone is the Shootdodge (no aim; held direction or forward).
   Input.isBulletTimeMode = function() return MeterDriver.meter.mode == true end
 
-  -- C2SD-T5 / C2SD-T46: detect the Shootdodge (Ctrl + Space; Space alone in Bullet Time mode).
+  -- C2SD-T5 / C2SD-T51: detect the Shootdodge (Shift + Space; Space alone in Bullet Time mode).
   -- C2SD-T7: a detected combo launches the dive (NONE -> DIVING) in the held movement direction.
   DiveDriver.isGrounded = Input.IsGrounded
   ShootDodge.combo = Input.Install()
@@ -264,8 +264,8 @@ registerForEvent("onDraw", function()
 
   local combo = ShootDodge.combo
   if combo then
-    -- C2SD-T46: the Shootdodge is Ctrl + Space.
-    ImGui.Text(string.format("Ctrl + Space = Shootdodge | Ctrl %s | move %.2f | detected %d",
+    -- C2SD-T51: the Shootdodge is Shift + Space.
+    ImGui.Text(string.format("Shift + Space = Shootdodge | Shift %s | move %.2f | detected %d",
       combo.modifierHeld and "held" or "-", combo:MoveMagnitude(), combo.triggerCount))
     -- C2SD-T38: Space alone dives while Bullet Time mode is on.
     if MeterDriver.meter.mode then ImGui.Text("Space = Shootdodge (Bullet Time)") end

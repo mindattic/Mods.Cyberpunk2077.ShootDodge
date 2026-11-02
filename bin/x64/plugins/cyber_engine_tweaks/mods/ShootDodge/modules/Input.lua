@@ -119,7 +119,7 @@ function Input.WeaponStatus(player)
   return allowed, label
 end
 
--- C2SD-T46: the redscript side's own read of Ctrl (r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds),
+-- C2SD-T46: the redscript side's own read of Shift (r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds),
 -- false when redscript or Input Loader is missing. C2SD-T48: must be defined above Input.Context,
 -- which calls it (a local declared later is an undefined global there).
 local function ctrlHeldByScript()
@@ -145,11 +145,11 @@ function Input.Context(player)
   }
 end
 
--- C2SD-T46: the actions that mean "Ctrl (crouch) is down". Vanilla binds Left Ctrl to Dodge and
--- Right Ctrl to Crouch (hold), and many players put crouch (Crouch / ToggleCrouch) on Ctrl;
--- ShootDodgeModifier is this mod's own Input Loader action on both Ctrl keys, so Ctrl still counts
--- whatever those are bound to. Crouch + jump = the Shootdodge.
-local MODIFIER_ACTIONS = { Dodge = true, Crouch = true, ToggleCrouch = true, ShootDodgeModifier = true }
+-- C2SD-T51: the actions that mean "Shift (sprint) is down" (C2SD-T46 had Ctrl). Vanilla binds Left
+-- Shift to ToggleSprint and Right Shift to Sprint (hold); ShootDodgeModifier is this mod's own
+-- Input Loader action on both Shift keys, so Shift still counts whatever those are bound to.
+-- Sprint + jump = the Shootdodge.
+local MODIFIER_ACTIONS = { Sprint = true, ToggleSprint = true, ShootDodgeModifier = true }
 
 local function actionName(action)
   return Game.NameToString(action:GetName(action))
@@ -174,7 +174,7 @@ local function onAction(player, action)
   local now = Input.clock
 
   if isCtrl then
-    -- C2SD-T46: Ctrl held / released (Ctrl + Space is the Shootdodge).
+    -- C2SD-T51: Shift held / released (Shift + Space is the Shootdodge).
     if kind == "BUTTON_PRESSED" then
       d:OnModifier(true)
     elseif kind == "BUTTON_RELEASED" then

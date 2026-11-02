@@ -1,6 +1,6 @@
 -- ComboDetector: recognizes the Shootdodge input and debounces it against normal play.
 --
--- C2SD-T46: the Shootdodge is Ctrl + Space (either Ctrl): no aim needed, it dives the way you're
+-- C2SD-T51: the Shootdodge is Shift + Space (either Shift; C2SD-T46 had Ctrl): no aim needed, it dives the way you're
 -- moving, or straight forward with no direction held. In Bullet Time mode Space alone does the
 -- same. Plain Space is always a normal jump. This replaces the original aim + jump + move combo
 -- (C2SD-T5); the aim/move tracking below is kept for the landing and get-up, which read it.
@@ -53,7 +53,7 @@ ComboDetector.Reject = {
   noMove = "no movement direction",
   moveTooShort = "movement held too briefly",
   cooldown = "cooldown",
-  noCtrl = "Ctrl not held", -- C2SD-T46
+  noCtrl = "Shift not held", -- C2SD-T46 / C2SD-T51: the modifier is Shift
 }
 
 local function clamp(v, lo, hi)
@@ -85,7 +85,7 @@ function ComboDetector:Reset()
   self.lastTrigger = nil
   self.lastReject = nil
   self.triggerCount = 0
-  self.modifierHeld = false -- C2SD-T46: Ctrl
+  self.modifierHeld = false -- C2SD-T51: Shift
 end
 
 function ComboDetector:SetEnabled(enabled)
@@ -145,7 +145,7 @@ function ComboDetector:OnJump(pressed, now, context)
   return self:Evaluate(now, context)
 end
 
--- C2SD-T46: Ctrl (either one) held or released. While it is held, Space is the Shootdodge.
+-- C2SD-T46 / C2SD-T51: Shift (either one) held or released. While it is held, Space is the Shootdodge.
 function ComboDetector:OnModifier(pressed)
   self.modifierHeld = pressed and true or false
 end
@@ -156,8 +156,8 @@ function ComboDetector:Evaluate(now, context)
   context = context or {}
 
   local reason
-  -- C2SD-T46: Ctrl + Space dives exactly like Space in Bullet Time mode (no aim needed; the held
-  -- direction, or forward with none). context.modifier lets the glue add its own read of Ctrl.
+  -- C2SD-T51: Shift + Space dives exactly like Space in Bullet Time mode (no aim needed; the held
+  -- direction, or forward with none). context.modifier lets the glue add its own read of Shift.
   local ctrl = self.modifierHeld == true or context.modifier == true
   local bulletTime = context.bulletTime == true or ctrl
   if not self.enabled then
@@ -175,7 +175,7 @@ function ComboDetector:Evaluate(now, context)
       reason = R.cooldown
     end
   else
-    -- C2SD-T46: outside Bullet Time mode the Shootdodge is Ctrl + Space; plain Space is a jump.
+    -- C2SD-T51: outside Bullet Time mode the Shootdodge is Shift + Space; plain Space is a jump.
     reason = R.noCtrl
   end
 

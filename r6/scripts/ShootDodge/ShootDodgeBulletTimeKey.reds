@@ -22,7 +22,7 @@ public class ShootDodgeBulletTimeKeyListener {
         owner.OnKeyPressed();
       };
     };
-    // C2SD-T46: Ctrl held (Ctrl + Space is the Shootdodge).
+    // C2SD-T46 / C2SD-T51: Shift held (Shift + Space is the Shootdodge).
     if Equals(ListenerAction.GetName(action), n"ShootDodgeModifier") {
       let ctrl: ref<ShootDodgeBulletTimeKeySystem> = this.m_owner;
       if IsDefined(ctrl) {
@@ -85,7 +85,7 @@ public class ShootDodgeBulletTimeKeySystem extends ScriptableSystem {
     return this.m_total;
   }
 
-  // C2SD-T46: whether Ctrl is down right now (false without Input Loader).
+  // C2SD-T46 / C2SD-T51: whether Shift is down right now (false without Input Loader).
   public func IsModifierHeld() -> Bool {
     return this.m_modifier;
   }

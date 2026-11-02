@@ -117,7 +117,7 @@ IntroMessage.messages = {
     .. "installed. Without it, or for another key, open the Bindings tab in that same overlay, "
     .. "find ShootDodge, click the binding, press the key you want, done. Never V. V "
     .. "already summons your ride and the city has enough cars trying to kill you.",
-  "Crouch and jump at once, Ctrl and Space, leaning the way you want to go. Throw the rules out the window, odds are you'll go that way too. "
+  "Sprint and jump at once, Shift and Space, leaning the way you want to go. Throw the rules out the window, odds are you'll go that way too. "
     .. "You leave the ground sideways, like a bad decision with a head start. Gravity swears it "
     .. "will take you at the usual speed. Logic was such a liar.",
   "The world goes thick as cold syrup. When you're looking down the barrel of a gun, time slows "
@@ -133,7 +133,7 @@ IntroMessage.messages = {
     .. "Bullet Time, the slash key, is the answer. Press it and the city crawls while the "
     .. "sand runs out. It trickles back on its own, every kill pours some back, and a shootdodge "
     .. "costs you nothing.",
-  "And in Bullet Time you don't even need the Ctrl. Space alone sends you flying. No crouch, "
+  "And in Bullet Time you don't even need the Shift. Space alone sends you flying. No sprint, "
     .. "just the way you're leaning, or straight ahead if you're leaning nowhere. The dive takes "
     .. "over the slow-mo and the hourglass stops running. Land, switch it back on, do it again.",
   "I felt the rise of that old familiar feeling. I hated it. I welcomed it. Death is "

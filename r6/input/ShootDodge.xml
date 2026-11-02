@@ -28,10 +28,10 @@
 		<button id="IK_NumSlash" />
 	</mapping>
 
-	<!-- C2SD-T46: Ctrl (either), read as "held" so Ctrl + Space is the Shootdodge. Vanilla also uses
-	     Left Ctrl for Dodge and Right Ctrl for Crouch; this action only listens, it blocks neither. -->
+	<!-- C2SD-T51: Shift (either), read as "held" so Shift + Space is the Shootdodge (C2SD-T46 had Ctrl).
+	     Vanilla also uses Shift for sprint; this action only listens, it blocks nothing. -->
 	<mapping name="ShootDodgeModifier_Button" type="Button" >
-		<button id="IK_LControl" />
-		<button id="IK_RControl" />
+		<button id="IK_LShift" />
+		<button id="IK_RShift" />
 	</mapping>
 </bindings>
