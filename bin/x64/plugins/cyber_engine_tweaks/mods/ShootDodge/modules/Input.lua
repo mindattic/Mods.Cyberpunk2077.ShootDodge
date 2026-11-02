@@ -119,6 +119,18 @@ function Input.WeaponStatus(player)
   return allowed, label
 end
 
+-- C2SD-T46: the redscript side's own read of Ctrl (r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds),
+-- false when redscript or Input Loader is missing. C2SD-T48: must be defined above Input.Context,
+-- which calls it (a local declared later is an undefined global there).
+local function ctrlHeldByScript()
+  local ok, held = pcall(function()
+    local system = Game.GetScriptableSystemsContainer():Get("ShootDodgeBulletTimeKeySystem")
+    if system == nil then return false end
+    return system:IsModifierHeld()
+  end)
+  return ok and held == true
+end
+
 -- The combo context at the instant jump is pressed.
 function Input.Context(player)
   local blocked = player == nil or isInVehicle(player) or Input.isBlocked()
@@ -138,17 +150,6 @@ end
 -- ShootDodgeModifier is this mod's own Input Loader action on both Ctrl keys, so Ctrl still counts
 -- whatever those are bound to. Crouch + jump = the Shootdodge.
 local MODIFIER_ACTIONS = { Dodge = true, Crouch = true, ToggleCrouch = true, ShootDodgeModifier = true }
-
--- C2SD-T46: the redscript side's own read of Ctrl (r6/scripts/ShootDodge/ShootDodgeBulletTimeKey.reds),
--- false when redscript or Input Loader is missing.
-local function ctrlHeldByScript()
-  local ok, held = pcall(function()
-    local system = Game.GetScriptableSystemsContainer():Get("ShootDodgeBulletTimeKeySystem")
-    if system == nil then return false end
-    return system:IsModifierHeld()
-  end)
-  return ok and held == true
-end
 
 local function actionName(action)
   return Game.NameToString(action:GetName(action))
