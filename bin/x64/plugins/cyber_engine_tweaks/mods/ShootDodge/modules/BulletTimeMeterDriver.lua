@@ -164,6 +164,19 @@ end
 
 local WINDOW_FLAGS = nil
 
+-- Bitwise OR of two non-negative flag masks. NoInputs and NoNav share the NoNavInputs/NoNavFocus
+-- bits, so adding them with + carried into other flags (dropping NoNavInputs, setting
+-- UnsavedDocument).
+local function orFlags(a, b)
+  local result, bitValue = 0, 1
+  while a > 0 or b > 0 do
+    if a % 2 == 1 or b % 2 == 1 then result = result + bitValue end
+    a, b = math.floor(a / 2), math.floor(b / 2)
+    bitValue = bitValue * 2
+  end
+  return result
+end
+
 local function windowFlags()
   if WINDOW_FLAGS ~= nil then return WINDOW_FLAGS end
   local f = ImGuiWindowFlags
@@ -172,7 +185,7 @@ local function windowFlags()
       "NoBackground", "NoInputs", "NoSavedSettings", "NoFocusOnAppearing", "NoNav",
       "AlwaysAutoResize" }) do
     local ok, v = pcall(function() return f[name] end)
-    if ok and type(v) == "number" then flags = flags + v end
+    if ok and type(v) == "number" and v >= 0 then flags = orFlags(flags, v) end
   end
   WINDOW_FLAGS = flags
   return flags

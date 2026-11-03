@@ -42,6 +42,9 @@ local function remove()
   local mod, id = HeadshotDriver.modifier, HeadshotDriver.ownerID
   HeadshotDriver.modifier, HeadshotDriver.ownerID = nil, nil
   if mod == nil then return end
+  -- C2SD-T45: no game calls outside a real session (loading, main menu). The modifier sat on the
+  -- previous session's V, which is gone, so there is nothing left to remove.
+  if not Session.Ready() then return end
   local ok, err = pcall(function() Game.GetStatsSystem():RemoveModifier(id, mod) end)
   if ok then print("[ShootDodge] lethal headshots off") else note("remove: " .. tostring(err)) end
 end

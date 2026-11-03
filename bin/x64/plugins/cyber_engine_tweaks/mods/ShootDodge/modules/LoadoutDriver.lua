@@ -63,6 +63,12 @@ end
 
 -- Check the save and grant what's missing. Safe to call any number of times.
 function LoadoutDriver.Check()
+  -- C2SD-T45: the overlay's "Check loadout now" can be pressed from the main menu, which has a
+  -- player too; quest facts and the inventory must not be touched there.
+  if not Session.Ready() then
+    LoadoutDriver.lastResult = "waiting for a session"
+    return false
+  end
   local player = Game.GetPlayer()
   if player == nil then return false end
   local qs = Game.GetQuestsSystem()
