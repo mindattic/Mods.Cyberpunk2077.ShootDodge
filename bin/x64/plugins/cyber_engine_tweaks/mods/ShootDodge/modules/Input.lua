@@ -21,6 +21,7 @@ local Input = {
   -- C2SD-T38: whether Bullet Time mode is on (set by init.lua from the meter); while it is, jump
   -- alone is the Shootdodge (see modules/ComboDetector.lua).
   isBulletTimeMode = function() return false end,
+  controlsInactive = false, -- C2SD-T73: last frame's on-foot-controls-inactive read
 }
 
 -- Detailed locomotion states in which V is not standing on the ground. Looked up by name and
@@ -214,6 +215,43 @@ function Input.Install(config)
   return Input.detector
 end
 
+-- C2SD-T73: whether the on-foot (Locomotion) input context is likely inactive right now: V in a
+-- vehicle, a menu open, or a scene that takes the controls away. While it is, the game delivers no
+-- Shift/Space release to PlayerPuppet:OnAction or to the redscript listener, so a key let go there
+-- would stay "held". Every read is pcall-guarded; a failed read counts as "active".
+local function onFootControlsInactive()
+  local player = Game.GetPlayer()
+  if player == nil then return true end
+  if isInVehicle(player) then return true end
+  local okMenu, inMenu = pcall(function()
+    local defs = GetAllBlackboardDefs().UI_System
+    return Game.GetBlackboardSystem():Get(defs):GetBool(defs.IsInMenu)
+  end)
+  if okMenu and inMenu == true then return true end
+  local okTier, tier = pcall(function()
+    local defs = GetAllBlackboardDefs().PlayerStateMachine
+    local bb = Game.GetBlackboardSystem():GetLocalInstanced(player:GetEntityID(), defs)
+    return bb:GetInt(defs.SceneTier)
+  end)
+  -- SceneTier 1 is free control; higher tiers restrict or take over V's movement.
+  if okTier and type(tier) == "number" and tier > 1 then return true end
+  return false
+end
+
+-- C2SD-T73: forget held Shift/Space (Lua detector and the redscript modifier), keeping aim, move
+-- axes, the trigger history and the enabled toggle. A key that is still down needs a fresh press.
+function Input.ReleaseHeld()
+  local d = Input.detector
+  if d ~= nil then
+    d:OnJump(false, Input.clock)
+    d:OnModifier(false)
+  end
+  pcall(function()
+    local system = Game.GetScriptableSystemsContainer():Get("ShootDodgeBulletTimeKeySystem")
+    if system ~= nil then system:ReleaseModifier() end
+  end)
+end
+
 -- Call from onUpdate with its deltaTime.
 function Input.Update(deltaTime)
   Input.clock = Input.clock + (deltaTime or 0)
@@ -222,6 +260,16 @@ function Input.Update(deltaTime)
   local hasPlayer = Session.Ready() -- C2SD-T45: not the main menu's player
   if hasPlayer and not Input.hadPlayer then Input.Reset() end
   Input.hadPlayer = hasPlayer
+  -- C2SD-T73: on-foot controls going inactive (or coming back) drops a held Shift/Space whose
+  -- release the game never delivered.
+  if hasPlayer then
+    local ok, inactive = pcall(onFootControlsInactive)
+    inactive = ok and inactive == true
+    if inactive ~= Input.controlsInactive then Input.ReleaseHeld() end
+    Input.controlsInactive = inactive
+  else
+    Input.controlsInactive = false
+  end
 end
 
 -- Forget held inputs (on game load / session end), so a stale "aim held" can't carry over.

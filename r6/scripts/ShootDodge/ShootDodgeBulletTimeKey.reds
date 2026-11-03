@@ -67,6 +67,12 @@ public class ShootDodgeBulletTimeKeySystem extends ScriptableSystem {
     this.m_modifier = held;
   }
 
+  // C2SD-T73: CET calls this when the on-foot controls go inactive (vehicle, menu, scene), where
+  // the Shift release never reaches this listener, so the modifier can't stay stuck on.
+  public func ReleaseModifier() -> Void {
+    this.m_modifier = false;
+  }
+
   public func OnKeyPressed() -> Void {
     this.m_pending += 1;
     this.m_total += 1;

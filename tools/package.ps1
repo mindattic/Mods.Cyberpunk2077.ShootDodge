@@ -13,7 +13,10 @@
 
   Only the mod's own tracked .lua, .reds and r6/input .xml files go in: no docs, no dev files, and no runtime
   state (polish_restore.txt, CET's db.sqlite3, logs), because the file list comes from git, not
-  the folder on disk (new files must be git-added before a build). Entry names use forward slashes (PowerShell 5.1's Compress-Archive writes
+  the folder on disk (new files must be git-added before a build). File CONTENTS come from the git
+  index too (git checkout-index into a temp folder), not the working tree, so a partial commit
+  (`git commit -- <paths>`, which the pre-commit hook packages against the commit's own index)
+  never ships unstaged edits in the dist zip (C2SD-T73). Entry names use forward slashes (PowerShell 5.1's Compress-Archive writes
   backslashes, which some extractors and Vortex's archive reader don't treat as folders).
 
 .PARAMETER Version
@@ -31,14 +34,6 @@ $repo = Split-Path -Parent $PSScriptRoot
 $modRel = 'bin/x64/plugins/cyber_engine_tweaks/mods/ShootDodge'
 $redsRel = 'r6/scripts/ShootDodge'
 $inputRel = 'r6/input'
-$initPath = Join-Path $repo ($modRel + '/init.lua')
-
-if (-not $Version) {
-  $match = Select-String -Path $initPath -Pattern '^\s*version\s*=\s*"([^"]+)"' | Select-Object -First 1
-  if (-not $match) { throw "No version = ""x.y.z"" found in $initPath" }
-  $Version = $match.Matches[0].Groups[1].Value
-}
-if ($Version -notmatch '^[0-9A-Za-z.\-]+$') { throw "Unusable version '$Version'" }
 
 # Tracked files under the mod folders only, then an allow-list of what each needs at run time.
 $allowedIn = @{ $modRel = '.lua'; $redsRel = '.reds'; $inputRel = '.xml' }
@@ -56,6 +51,23 @@ if (-not ($files -contains ($modRel + '/init.lua'))) { throw "init.lua is not tr
 if (-not ($files | Where-Object { $_.StartsWith($redsRel + '/') })) { throw "no .reds file is tracked under $redsRel" }
 if (-not ($files -contains ($inputRel + '/ShootDodge.xml'))) { throw "$inputRel/ShootDodge.xml is not tracked" }
 
+# Export the index (staged) content of those files, not the working tree (C2SD-T73). Honors
+# GIT_INDEX_FILE, so inside the pre-commit hook this is exactly what the commit will contain.
+$stage = Join-Path ([IO.Path]::GetTempPath()) ('ShootDodge-package-' + [Guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Force -Path $stage | Out-Null
+try {
+$prefix = $stage.Replace('\', '/') + '/'
+& git -C $repo checkout-index "--prefix=$prefix" -- $files
+if ($LASTEXITCODE -ne 0) { throw 'git checkout-index failed' }
+$initPath = Join-Path $stage ($modRel + '/init.lua')
+
+if (-not $Version) {
+  $match = Select-String -Path $initPath -Pattern '^\s*version\s*=\s*"([^"]+)"' | Select-Object -First 1
+  if (-not $match) { throw "No version = ""x.y.z"" found in $initPath" }
+  $Version = $match.Matches[0].Groups[1].Value
+}
+if ($Version -notmatch '^[0-9A-Za-z.\-]+$') { throw "Unusable version '$Version'" }
+
 $dist = Join-Path $repo 'dist'
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 $zipPath = Join-Path $dist ("ShootDodge-$Version.zip")
@@ -66,12 +78,15 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::Open($zipPath, [IO.Compression.ZipArchiveMode]::Create)
 try {
   foreach ($rel in $files) {
-    $source = Join-Path $repo $rel
+    $source = Join-Path $stage $rel
     [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $source, $rel,
       [IO.Compression.CompressionLevel]::Optimal) | Out-Null
   }
 } finally {
   $zip.Dispose()
+}
+} finally {
+  Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # Check what was written: every entry under one of the canonical prefixes with that prefix's
