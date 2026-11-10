@@ -109,4 +109,5 @@ _Nothing recorded yet._
 | C2SD-T71 | 2026-11-02 | docs | open | Adopt MindAttic.Agency docs-site pipeline, publish README to GitHub Pages (HOUSE-LAW-14) | — |
 | C2SD-T72 | 2026-11-02 | fix | closed | Bughunt sweep, two passes: find and fix real bugs across tracked source (user request 2026-11-02) | — |
 | C2SD-T73 | 2026-11-02 | fix | closed | Fix the open items the 2026-11-02 bughunt left for decision (stuck Shift/Space on controls inactive, package.ps1 zips index content) | — |
-| C2SD-T74 | 2026-11-10 | chore | open | Crash recovery: commit the Nexus Mods page assets (assets/header.png, assets/1920x1080.jpg) and the command-catalog/docs sync left uncommitted by the session crash | — |
+| C2SD-T74 | 2026-11-10 | chore | closed | Crash recovery: commit the Nexus Mods page assets (assets/header.png, assets/1920x1080.jpg) and the command-catalog/docs sync left uncommitted by the session crash | — |
+| C2SD-T75 | 2026-11-10 | chore | open | Crash recovery / fleet sync: commit the regenerated docs/USER_STORIES.md left uncommitted after other tickets closed elsewhere | — |
