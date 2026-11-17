@@ -106,8 +106,10 @@ _Nothing recorded yet._
 | C2SD-T68 | 2026-11-01 | feature | closed | Optional MP2 lie-and-fire landing: CET overlay switch for prone landing (eye low, hold until a fresh direction press); landing on feet stays the default | 403766f |
 | C2SD-T69 | 2026-11-01 | docs | closed | Docs for the Max Payne 2 alignment (C2SD-T63 to T68): clean launch arc, flat dive, Bullet Time mode depth with kills, mode muffle, lie-and-fire option; fix stale comments in DiveDriver.lua and ComboDetector.lua | 03f579d |
 | C2SD-T70 | 2026-11-01 | chore | closed | Rebuild dist zip automatically whenever mod files land: local pre-commit hook runs tools/package.ps1 and stages the zip into the same commit | a6257a7 |
-| C2SD-T71 | 2026-11-02 | docs | open | Adopt MindAttic.Agency docs-site pipeline, publish README to GitHub Pages (HOUSE-LAW-14) | — |
+| C2SD-T71 | 2026-11-02 | docs | closed | Adopt MindAttic.Agency docs-site pipeline, publish README to GitHub Pages (HOUSE-LAW-14) | — |
 | C2SD-T72 | 2026-11-02 | fix | closed | Bughunt sweep, two passes: find and fix real bugs across tracked source (user request 2026-11-02) | — |
 | C2SD-T73 | 2026-11-02 | fix | closed | Fix the open items the 2026-11-02 bughunt left for decision (stuck Shift/Space on controls inactive, package.ps1 zips index content) | — |
 | C2SD-T74 | 2026-11-10 | chore | closed | Crash recovery: commit the Nexus Mods page assets (assets/header.png, assets/1920x1080.jpg) and the command-catalog/docs sync left uncommitted by the session crash | — |
-| C2SD-T75 | 2026-11-10 | chore | open | Crash recovery / fleet sync: commit the regenerated docs/USER_STORIES.md left uncommitted after other tickets closed elsewhere | — |
+| C2SD-T75 | 2026-11-10 | chore | closed | Crash recovery / fleet sync: commit the regenerated docs/USER_STORIES.md left uncommitted after other tickets closed elsewhere | — |
+| C2SD-T76 | 2026-11-10 | chore | closed | Adopt the shared docs-site pipeline: turn on GitHub Pages | — |
+| C2SD-T77 | 2026-11-17 | docs | closed | Update USER_STORIES.md | — |
